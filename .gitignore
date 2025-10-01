@@ -100,3 +100,8 @@ InitTestScene*.unity*
 
 # Put any IDE-specific files/folders here
 .idea/
+.vsconfig/
+
+# Art and Model related folders here
+/Assets/Art/
+/Assets/Models/
