@@ -139,16 +139,16 @@ public class FrameController : MonoBehaviour
         Vector2Int resolution = tex ? new Vector2Int(tex.width, tex.height) : baseResolution;
         float aspectRatio = resolution.x / (float)resolution.y; // width / height
         float imgHeight = nominalImageHeight;
-        float imgWeidth = imgHeight * aspectRatio;
+        float imgWidth = imgHeight * aspectRatio;
 
         Transform quadT = imageQuadRenderer.transform;
-        quadT.localScale = new Vector3(imgWeidth, imgHeight, 1f);
+        quadT.localScale = new Vector3(imgWidth, imgHeight, 1f);
 
-        // 3) Build/Update border geometry around the image plane
+        // builds/updates border geometry
         EnsureBorders();
-        UpdateBorders(imgWeidth, imgHeight);
+        UpdateBorders(imgWidth, imgHeight);
 
-        // 4) Scale the entire frame based on resolution vs base
+        // scale entire frame based on resolution vs base(reference) resolution
         float overallScale = ComputeResolutionScale(resolution, baseResolution, scaleMode);
         transform.localScale = new Vector3(overallScale, overallScale, overallScale);
     }
