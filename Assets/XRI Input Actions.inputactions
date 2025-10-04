@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "name": "XRI Default Input Actions",
+    "name": "XRI Input Actions",
     "maps": [
         {
             "name": "XRI Head",
@@ -1306,7 +1306,7 @@
                     "name": "Teleport Mode Cancel",
                     "type": "Button",
                     "id": "89ce8348-6001-41a3-85b9-f8f2e2dcad7c",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
