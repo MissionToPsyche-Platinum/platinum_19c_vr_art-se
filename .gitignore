@@ -2,6 +2,9 @@
 #
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
+# ----------------------------------------------------------------------------------
+# Git ignore for Unity 
+# ----------------------------------------------------------------------------------
 .utmp/
 /Psyche VR Experience/[Ll]ibrary/
 /Psyche VR Experience/[Tt]emp/
@@ -104,3 +107,14 @@ v.vsconfig/
 
 # Art and Model related folders here
 Psyche VR Experience//Assets/Art/
+
+# ----------------------------------------------------------------------------------
+# Git ignore for Web Scraper 
+# ----------------------------------------------------------------------------------
+
+Psyche Artwork Web Scraper/.idea/
+Psyche Artwork Web Scraper/.vscode/
+Psyche Artwork Web Scraper/.DS_Store
+Psyche Artwork Web Scraper/__pycache__/
+
+
