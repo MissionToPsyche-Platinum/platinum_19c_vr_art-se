@@ -12,6 +12,7 @@ def getArtInfo(url):
     pageContent = BeautifulSoup(artPage.text, "html.parser")
     artContent = pageContent.find("div", class_="row justify-content-center")
 
+    # grab sets of tags that are useful
     h2Tags = artContent.find_all("h2")
     h3Tags = artContent.find_all("h3")
     h4Tags = artContent.find_all("h4")
@@ -62,11 +63,11 @@ def getArtInfo(url):
     else:
         results["date"] = standardizeDate(date)
 
-        # major is contained in the second h4 tag (excluding the first 7 characters, which say "Major: ")
+        # major is contained in the second h4 tag
         artistMajor = cleanString(pageTags[1].text)
         results["artistMajor"] = artistMajor
 
-    # genre is contained in the third h4 tag (excluding the first 14 characters, which say "Genre/Medium: ")
+    # genre is contained in the third h4 tag
     genre = cleanString(pageTags[2].text)
     results["genre"] = genre
 
@@ -120,7 +121,7 @@ def standardizeDate(date):
     # Remove suffixes (st, nd, rd, th)
     clean_date = re.sub(r'(\d+)(st|nd|rd|th)', r'\1', date)
 
-    # Some month(s) is misspelled >:(
+    # Some month(s) are misspelled >:(
     dateTime = None
     try:
         # Put string into a datetime object
