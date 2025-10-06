@@ -1,66 +1,169 @@
+from datetime import datetime
+import re
 import requests
 from bs4 import BeautifulSoup
 
-# returns a list of [artTitle, artistName, date (returned as *month day, year*), artistMajor, genre, description]
+# returns a dictionary with keys [artTitle, artistName, date (returned as *month day, year*), artistMajor, genre, description]
 def getArtInfo(url):
-    results = []
+    results = {}
 
     # grab the html and create a beautiful soup object of parsed HTML
     artPage = requests.get(url)
-    content = BeautifulSoup(artPage.text, "html.parser")
+    pageContent = BeautifulSoup(artPage.text, "html.parser")
+    artContent = pageContent.find("div", class_="row justify-content-center")
 
-    # art title is contained in the first (and only) h2 tag with class pt-3 m-0
-    artTitle = content.find("h2", class_="pt-3 m-0").text
-    results.append(artTitle)
+    h2Tags = artContent.find_all("h2")
+    h3Tags = artContent.find_all("h3")
+    h4Tags = artContent.find_all("h4")
+    pTags = artContent.find_all("p")
 
-    # artist name is contained in the first h3 tag
-    artistName = content.find("h3").text
-    results.append(artistName)
+    # art title is contained in the first h2 tag
+    artTitle = h2Tags[0].text.strip()
+    results["artTitle"] = artTitle
 
-    h4Tags = content.find_all("h4")
+    # art title is in the first h3 tag without a class, or in the second h2Tag if there are none/only the h3 tag for the slides
+    if len(h3Tags) == 0 or (len(h3Tags) == 1 and h3Tags[0].has_attr("class")):
+        # There is an exception where the first p tag contains the artist name rather than the date
+        if not cleanString(pTags[0].text)[-1].isdigit():
+            results["artistName"] = standardizeName(pTags[0].text)
+            # pretend the exception of the first p tag being the artist name never happened
+            pTags.remove(pTags[0])
+        else:
+            results["artistName"] = standardizeName(h2Tags[1].text)
+    else:
+        artistName = artContent.find(lambda tag: tag.name == "h3" and not tag.has_attr("class")).text.strip()
+        results["artistName"] = standardizeName(artistName)
 
-    # The more modern pages use h4 tags
+    # This will be how many p tags we have gone through before grabbing the description
+    pTagCounter = -1
+    # Rarely, there are links within the description in <a> tags, which is how we tell how we tell when the description is over, this variable always reads the first part of the description
+    firstDescriptionTag = True
+
+    # The more modern pages use h4 tags, the older ones use p tags
+    pageTags = []
     if len(h4Tags) > 0:
-        # date is contained in the first h4 tag
-        date = h4Tags[0].text
-        results.append(date)
+        pageTags = h4Tags
+        pTagCounter = 0
+
+    else:
+        pageTags = pTags
+        pTagCounter = 3
+
+    # date is always contained in the first h4 tag
+    date = cleanString(pageTags[0].text)
+
+    # A small amount of art entries combine art and major in the first p tag, so they will have a newline
+    if date.find("\n") != -1:
+        dateAndMajor = date.split("\n")
+        results["date"] = standardizeDate(dateAndMajor[0])
+
+        artistMajor = cleanString(dateAndMajor[1])
+        results["artistMajor"] = artistMajor
+    else:
+        results["date"] = standardizeDate(date)
 
         # major is contained in the second h4 tag (excluding the first 7 characters, which say "Major: ")
-        artistMajor = h4Tags[1].text[7:]
-        results.append(artistMajor)
+        artistMajor = cleanString(pageTags[1].text)
+        results["artistMajor"] = artistMajor
 
-        # genre is contained in the third h4 tag (excluding the first 14 characters, which say "Genre/Medium: ")
-        genre = h4Tags[2].text[14:]
-        results.append(genre)
+    # genre is contained in the third h4 tag (excluding the first 14 characters, which say "Genre/Medium: ")
+    genre = cleanString(pageTags[2].text)
+    results["genre"] = genre
 
-        # description is contained in the first p tag
-        description = content.find("p").text
-        results.append(description)
-    else:
-        pTags = content.find_all("p")
+    description = ""
+    currentPTag = pTags[pTagCounter]
 
-        # date is contained in the first p tag (excluding the first 6 characters, which say "Date: ", and a trailing space)
-        date = pTags[0].text[6:-1]
-        results.append(date)
-        print(date[-1])
+    # read the description until we find an <a> tag, which means it is the end of the description
+    while firstDescriptionTag or not currentPTag.find("a"):
+        description += " " + currentPTag.text.strip()
 
-        # major is contained in the second p tag (excluding the first 7 characters, which say "Major: ", and a trailing space)
-        artistMajor = pTags[1].text[7:-1]
-        results.append(artistMajor)
-
-        # genre is contained in the third p tag (excluding the first 14 characters, which say "Genre/Medium: ", and a trailing space)
-        genre = pTags[2].text[14:-1]
-        results.append(genre)
-
-        # description is contained in the fourth p tag (excluding the first 16 characters, which say "About the work: ")
-        description = pTags[3].text[16:]
-        results.append(description)
-
+        firstDescriptionTag = False
+        pTagCounter += 1
+        currentPTag = pTags[pTagCounter]
+    results["description"] = standardizeDescription(cleanString(description))
 
     return results
 
+# for debugging
+def printArtProject(artInfo):
+    print("-----------------------------------------------------------------------------------------------------------")
+    print("Art Project Title:", artInfo["artTitle"])
+    print("Artist:", artInfo["artistName"])
+    print("Date:", artInfo["date"])
+    print("Artist Major:", artInfo["artistMajor"])
+    print("Genre:", artInfo["genre"])
+    print("Description:", artInfo["description"])
+    print("-----------------------------------------------------------------------------------------------------------")
 
+# Get rid of trailing/leading whitespace and header (like "Date:") at the beginning of string (if it has it)
+def cleanString(string):
+    string = string.strip()
+    colonIndex = string.find(":")
+    if colonIndex != -1:
+        string = string[colonIndex + 1:]
+        string = string.strip()
+    return string
 
-artURL = "https://psyche.ssl.berkeley.edu/gallery/light-curves/"
-getArtInfo(artURL)
+# Make the first letter of each part of the name capitalized
+def standardizeName(name):
+    return name.title().strip()
 
+# Get rid of any new lines
+def standardizeDescription(description):
+    if description.find("\n") != -1:
+        return description.replace("\n", ". ")
+    else:
+        return description
+
+# Takes a date in a form like "January 1st, 2025" or "January 1, 2025" and turns it into YYYY-MM-DD
+def standardizeDate(date):
+    # Remove suffixes (st, nd, rd, th)
+    clean_date = re.sub(r'(\d+)(st|nd|rd|th)', r'\1', date)
+
+    # Some month(s) is misspelled >:(
+    dateTime = None
+    try:
+        # Put string into a datetime object
+        dateTime = datetime.strptime(clean_date, "%B %d, %Y")
+    except ValueError:
+        # an instance where April is misspelled
+        if clean_date.find("Arpil") != -1:
+            index = clean_date.find("Arpil")
+            clean_date = "April" + clean_date[index + 5:]
+            dateTime = datetime.strptime(clean_date, "%B %d, %Y")
+        # A couple instances of "month,date year"
+        else:
+            clean_date = clean_date.replace(",", " ")
+            dateParts = clean_date.split(" ")
+            clean_date = f"{dateParts[0]} {dateParts[1]}, {dateParts[2]}"
+            dateTime = datetime.strptime(clean_date, "%B %d, %Y")
+
+    # Format the datetime object as "YYYY-MM-DD" string (that is how SQL date is)
+    return dateTime.strftime("%Y-%m-%d")
+
+def scrapePsyche():
+    pageURL = "https://psyche.ssl.berkeley.edu/galleries/artwork/page/"
+    pageNum = 1
+    projectID = 0
+
+    # Get the page with up to 16 art projects
+    psychePage = requests.get(pageURL + str(pageNum))
+    content = BeautifulSoup(psychePage.text, "html.parser")
+
+    # Art project titles are held in span tags with the "caption title" - this while loop goes until none are found on the current page
+    while artCaptions := content.find_all("a", class_="excerpt"):
+        # for every title on the page ...
+        for caption in artCaptions:
+            # href has the link to the project page
+            print(str(projectID) + ": " + caption["href"])      # TODO: delete this, it's for debugging
+            artInfo = getArtInfo(caption["href"])
+            projectID += 1
+            printArtProject(artInfo)        # TODO: delete this, it's for debugging
+
+        # Move on and grab the content on the next page
+        pageNum += 1
+        psychePage = requests.get(pageURL + str(pageNum))
+        content = BeautifulSoup(psychePage.text, "html.parser")
+        print("Starting page number: " + str(pageNum))       # TODO: delete this, it's for debugging
+
+scrapePsyche()
