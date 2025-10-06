@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Readers;
@@ -12,9 +13,9 @@ public class TeleportLocomotion : MonoBehaviour
     [SerializeField]
     XRInputButtonReader cancelInput;
 
-    bool teleportState = false;
+    enum TELESTATE { IDLE, TELEPORTHELD, CANCELLED }
 
-    bool ignoreInputUntilCancelReleased = false;
+    TELESTATE state = TELESTATE.IDLE;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -25,52 +26,54 @@ public class TeleportLocomotion : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //TODO: please go back and clean this up, my eyes hurt
-        if (teleInput != null && cancelInput != null && rig != null)
-        {
-            if (!teleportState)
-            {
-                float cancelPressed = cancelInput.ReadValue();
-
-                if(cancelPressed == 1)
-                {
-                    ignoreInputUntilCancelReleased = true;
-                }           
-
-                Vector2 value = teleInput.ReadValue();
-                bool teleportPressed = value != new Vector2();
-
-                if (teleportPressed && !ignoreInputUntilCancelReleased)
-                {
-                    teleportState = true;
-                    return;
-                }
-
-                if (!teleportPressed)
-                {
-                    ignoreInputUntilCancelReleased = false;
-                }
-
-            } else
-            {
-                float cancelPressed = cancelInput.ReadValue();
-                
-                if(cancelPressed == 1)
-                {
-                    teleportState = false;
-                    return;
-                }
-
-                //on release, attempt teleport
-                if (teleInput.ReadValue() == new Vector2() && Physics.Raycast(new Ray(transform.position, transform.forward), out RaycastHit hit, Mathf.Infinity, (1 << 6)))
-                {
-                    rig.transform.position = hit.point;
-                    teleportState = false;
-                }
-            }
-        } else
+        if (teleInput == null || cancelInput == null || rig == null)
         {
             Debug.LogWarning("TELEPORT LOCOMOTION ERROR: Check the input values and rig fields! They are not set properly!");
+            return;
+        }
+
+        bool cancelPresssed = cancelInput.ReadValue() == 1;
+        Vector2 value = teleInput.ReadValue();
+        bool teleportPressed = value != new Vector2();
+
+        //this should always happen
+        if (cancelPresssed)
+        {
+            state = TELESTATE.CANCELLED;
+        }
+
+        switch (state)
+        {
+            case TELESTATE.IDLE:
+                if (teleportPressed)
+                {
+                    state = TELESTATE.TELEPORTHELD;
+                    return;
+                }
+                break;
+            case TELESTATE.TELEPORTHELD:
+                if (!teleportPressed)
+                {
+                    state = TELESTATE.IDLE;
+                    TeleportToPoint();
+                    return;
+                }
+                break;
+            case TELESTATE.CANCELLED:
+                if(!cancelPresssed && !teleportPressed)
+                {
+                    state = TELESTATE.IDLE;
+                    return;
+                }
+                break;
+        }
+    }
+
+    public void TeleportToPoint()
+    {
+        if(Physics.Raycast(new Ray(transform.position, transform.forward), out RaycastHit hit, Mathf.Infinity, (1 << 6)))
+        {
+            rig.transform.position = hit.point;
         }
     }
 }
