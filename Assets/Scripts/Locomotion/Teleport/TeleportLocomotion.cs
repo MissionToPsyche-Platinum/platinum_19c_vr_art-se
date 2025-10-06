@@ -17,6 +17,9 @@ public class TeleportLocomotion : MonoBehaviour
 
     TELESTATE state = TELESTATE.IDLE;
 
+    [SerializeField]
+    public TeleportVisual teleportVisual;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -52,14 +55,32 @@ public class TeleportLocomotion : MonoBehaviour
                 }
                 break;
             case TELESTATE.TELEPORTHELD:
+
+                TeleportData data = FindTeleportPoint();
+
+                if (teleportVisual && data.valid)
+                {
+                    teleportVisual.SetTarget(data.position);
+                } else if (teleportVisual)
+                {
+                    teleportVisual.Unvisualize();
+                }
+
                 if (!teleportPressed)
                 {
                     state = TELESTATE.IDLE;
-                    TeleportToPoint();
+                    TeleportToPoint(data);
+                    teleportVisual.Unvisualize();
                     return;
                 }
                 break;
             case TELESTATE.CANCELLED:
+
+                if (teleportVisual.lineRenderer.enabled)
+                {
+                    teleportVisual.Unvisualize();
+                }
+
                 if(!cancelPresssed && !teleportPressed)
                 {
                     state = TELESTATE.IDLE;
@@ -69,11 +90,41 @@ public class TeleportLocomotion : MonoBehaviour
         }
     }
 
+    struct TeleportData
+    {
+        public bool valid;
+        public Vector3 position;
+
+        public TeleportData(bool valid, Vector3 position)
+        {
+            this.valid = valid;
+            this.position = position;
+        }
+    }
+
+    TeleportData FindTeleportPoint()
+    {
+        if (Physics.Raycast(new Ray(transform.position, transform.forward), out RaycastHit hit, Mathf.Infinity, (1 << 6)))
+        {
+            return new TeleportData(true, hit.point);
+        } else
+        {
+            return new TeleportData(false, Vector3.zero);
+        }
+    }
+
     public void TeleportToPoint()
     {
-        if(Physics.Raycast(new Ray(transform.position, transform.forward), out RaycastHit hit, Mathf.Infinity, (1 << 6)))
+        TeleportData data = FindTeleportPoint();
+
+        TeleportToPoint(data);
+    }
+
+    void TeleportToPoint(TeleportData data)
+    {
+        if (data.valid)
         {
-            rig.transform.position = hit.point;
+            rig.transform.position = data.position;
         }
     }
 }
