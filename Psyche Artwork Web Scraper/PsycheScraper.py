@@ -1,5 +1,7 @@
+import os.path
 from datetime import datetime
 import re
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -17,6 +19,7 @@ def getArtInfo(url):
     h3Tags = artContent.find_all("h3")
     h4Tags = artContent.find_all("h4")
     pTags = artContent.find_all("p")
+    aTags = artContent.find_all("a")
 
     # art title is contained in the first h2 tag
     artTitle = h2Tags[0].text.strip()
@@ -83,6 +86,42 @@ def getArtInfo(url):
         currentPTag = pTags[pTagCounter]
     results["description"] = standardizeDescription(cleanString(description))
 
+    # find all download links
+    download_link = []
+    for tag in aTags:
+        if tag.has_attr("class") and tag["class"] == ['link', 'mb-5', 'mr-sm']:
+            if "," in tag["data-downloads"]:
+                download_link = tag["data-downloads"].split(",")
+            else:
+                download_link = [tag["data-downloads"]]
+
+    # create media folder if it doesn't already exist
+    os.makedirs(os.path.join(os.getcwd(), "psyche_media"), exist_ok=True)
+
+
+    # download each link and store it in the media file
+    file_paths = []
+    for link in download_link:
+        try:
+            # Send GET request to the URL
+            response = requests.get(link)
+
+            if(response.status_code == 200):
+                with open(os.path.join(os.getcwd(), "psyche_media", link.split("/")[-1]), 'wb') as file:
+                    file.write(response.content)
+                    file_paths.append(os.path.join("psyche_media", link.split("/")[-1]))
+            else:
+                file_paths.append("ERROR: " + link)
+
+        except Exception as e:
+            print("There was an error downloading the link " + link)
+            print(e)
+
+            file_paths.append("ERROR: " + link)
+
+    results["file_paths"] = file_paths
+
+
     return results
 
 # for debugging
@@ -94,6 +133,7 @@ def printArtProject(artInfo):
     print("Artist Major:", artInfo["artistMajor"])
     print("Genre:", artInfo["genre"])
     print("Description:", artInfo["description"])
+    print("Art File Path(s):", artInfo["file_paths"])
     print("-----------------------------------------------------------------------------------------------------------")
 
 # Get rid of trailing/leading whitespace and header (like "Date:") at the beginning of string (if it has it)
