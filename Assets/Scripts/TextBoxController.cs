@@ -13,6 +13,13 @@ public class TextBoxController : MonoBehaviour
     [Tooltip("Material for the frame borders (4 extruded squares to make up edges).")]
     [SerializeField] Material frameMaterial;
 
+    [Header("Images")]
+    [Tooltip("All images this frame can show. Only one is visible at a time. API is available.")]
+    [SerializeField] List<Texture2D> images = new List<Texture2D>();
+
+    [Tooltip("Index into Images to show.")]
+    [SerializeField] int currentImageIndex = 0;
+
     [Header("Aspect & Sizing")]
 
     [Tooltip("How overall frame scale is derived from resolution vs Base Resolution.")]
