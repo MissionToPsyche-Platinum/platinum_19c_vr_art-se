@@ -2,6 +2,7 @@ import os.path
 from datetime import datetime
 import re
 
+import bs4
 import requests
 from bs4 import BeautifulSoup
 
@@ -20,6 +21,7 @@ def getArtInfo(url):
     h4Tags = artContent.find_all("h4")
     pTags = artContent.find_all("p")
     aTags = artContent.find_all("a")
+    iframeTag = pageContent.find("div", class_="gallery-slide").find("iframe")
 
     # art title is contained in the first h2 tag
     artTitle = h2Tags[0].text.strip()
@@ -86,38 +88,61 @@ def getArtInfo(url):
         currentPTag = pTags[pTagCounter]
     results["description"] = standardizeDescription(cleanString(description))
 
-    # find all download links
-    download_link = []
-    for tag in aTags:
-        if tag.has_attr("class") and tag["class"] == ['link', 'mb-5', 'mr-sm']:
-            if "," in tag["data-downloads"]:
-                download_link = tag["data-downloads"].split(",")
-            else:
-                download_link = [tag["data-downloads"]]
-
     # create media folder if it doesn't already exist
     os.makedirs(os.path.join(os.getcwd(), "psyche_media"), exist_ok=True)
 
-
-    # download each link and store it in the media file
     file_paths = []
-    for link in download_link:
+    if type(iframeTag) is bs4.Tag and iframeTag.has_attr("src"):
         try:
+            # Use stream=True to download in chunks
+            response = requests.get(iframeTag.get("src"), stream=True, timeout=30)
+            response.raise_for_status()
+
+            # Get file size from headers if available
+            total_size = int(response.headers.get('content-length', 0))
+
             # Send GET request to the URL
-            response = requests.get(link)
+            response = requests.get(iframeTag.get("src"))
 
-            if(response.status_code == 200):
-                with open(os.path.join(os.getcwd(), "psyche_media", link.split("/")[-1]), 'wb') as file:
+            if response.status_code == 200:
+                with open(os.path.join("psyche_media", artTitle.replace(" ", "") + ".mp4"), 'wb') as file:
                     file.write(response.content)
-                    file_paths.append(os.path.join("psyche_media", link.split("/")[-1]))
+                    file_paths.append(os.path.join("psyche_media", artTitle.replace(" ", "") + ".mp4"))
             else:
+                file_paths.append("ERROR: " + iframeTag.get("src"))
+
+            print("Downloaded video as " + artTitle.replace(" ", "") + ".mp4")
+        except requests.exceptions.RequestException as e:
+            print("Error processing link " + url)
+
+    else:
+        # find all download links
+        download_link = []
+        for tag in aTags:
+            if tag.has_attr("class") and tag["class"] == ['link', 'mb-5', 'mr-sm']:
+                if "," in tag["data-downloads"]:
+                    download_link = tag["data-downloads"].split(",")
+                else:
+                    download_link = [tag["data-downloads"]]
+
+        # download each link and store it in the media file
+        for link in download_link:
+            try:
+                # Send GET request to the URL
+                response = requests.get(link)
+
+                if(response.status_code == 200):
+                    with open(os.path.join(os.getcwd(), "psyche_media", link.split("/")[-1]), 'wb') as file:
+                        file.write(response.content)
+                        file_paths.append(os.path.join("psyche_media", link.split("/")[-1]))
+                else:
+                    file_paths.append("ERROR: " + link)
+
+            except requests.exceptions.RequestException as e:
+                print("There was an error downloading the link " + link)
+                print(e)
+
                 file_paths.append("ERROR: " + link)
-
-        except Exception as e:
-            print("There was an error downloading the link " + link)
-            print(e)
-
-            file_paths.append("ERROR: " + link)
 
     results["file_paths"] = file_paths
 
@@ -184,7 +209,7 @@ def standardizeDate(date):
 
 def scrapePsyche():
     pageURL = "https://psyche.ssl.berkeley.edu/galleries/artwork/page/"
-    pageNum = 1
+    pageNum = 2 # TODO: CHANGE THIS BACK
     projectID = 0
 
     # Get the page with up to 16 art projects
