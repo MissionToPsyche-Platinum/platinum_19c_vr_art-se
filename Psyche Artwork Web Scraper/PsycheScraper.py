@@ -5,6 +5,7 @@ import re
 import bs4
 import requests
 from bs4 import BeautifulSoup
+from pytubefix import YouTube
 
 # returns a dictionary with keys [artTitle, artistName, date (returned as *month day, year*), artistMajor, genre, description]
 def getArtInfo(url):
@@ -91,30 +92,22 @@ def getArtInfo(url):
     # create media folder if it doesn't already exist
     os.makedirs(os.path.join(os.getcwd(), "psyche_media"), exist_ok=True)
 
+    # list to hold all paths to generated files
     file_paths = []
+    # download video if there is one embedded
     if type(iframeTag) is bs4.Tag and iframeTag.has_attr("src"):
+        # create YouTube link from embedded source
+        link = "https://www.youtube.com/watch?v=" + iframeTag["src"].split("/")[-1].split("?")[0]
+        yt_link = YouTube(link)
+
+        # download video
         try:
-            # Use stream=True to download in chunks
-            response = requests.get(iframeTag.get("src"), stream=True, timeout=30)
-            response.raise_for_status()
+            yt_link.streams.filter(progressive=True, file_extension="mp4").first().download(output_path= os.path.join(os.getcwd(), "psyche_media"), filename = results["artistName"] + results["artTitle"] + ".mp4")
+            file_paths.append(os.path.join("psyche_media", results["artistName"].replace(" ", "") + results["artTitle"].replace(" ", "") + ".mp4"))
+        except Exception as e:
+            print("Error downloading video from link " + link)
 
-            # Get file size from headers if available
-            total_size = int(response.headers.get('content-length', 0))
-
-            # Send GET request to the URL
-            response = requests.get(iframeTag.get("src"))
-
-            if response.status_code == 200:
-                with open(os.path.join("psyche_media", artTitle.replace(" ", "") + ".mp4"), 'wb') as file:
-                    file.write(response.content)
-                    file_paths.append(os.path.join("psyche_media", artTitle.replace(" ", "") + ".mp4"))
-            else:
-                file_paths.append("ERROR: " + iframeTag.get("src"))
-
-            print("Downloaded video as " + artTitle.replace(" ", "") + ".mp4")
-        except requests.exceptions.RequestException as e:
-            print("Error processing link " + url)
-
+    # download regular art files if there is no video
     else:
         # find all download links
         download_link = []
@@ -209,7 +202,7 @@ def standardizeDate(date):
 
 def scrapePsyche():
     pageURL = "https://psyche.ssl.berkeley.edu/galleries/artwork/page/"
-    pageNum = 2 # TODO: CHANGE THIS BACK
+    pageNum = 1
     projectID = 0
 
     # Get the page with up to 16 art projects
