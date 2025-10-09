@@ -9,6 +9,7 @@ from pytubefix import YouTube
 
 import sqlite3
 import hashlib
+import shutil
 from pathlib import Path
 from contextlib import contextmanager
 from typing import Optional
@@ -215,23 +216,19 @@ DB_PATH = DB_DIR / "psyche.db"
 @contextmanager
 def connection():
     # SQLite connection with FK enforcement, synchronous normal mode
-    connection = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH)
     try:
-        connection.execute(""" 
-                PRAGMA foreign_keys = ON; 
-                PRAGMA journal_mode = WAL; 
-                PRAGMA synchronous = NORMAL;
-        """)
-        yield connection
-        connection.commit()
+        conn.execute("PRAGMA foreign_keys = ON;")
+        yield conn
+        conn.commit()
     finally:
-        connection.close()
+        conn.close()
 
 
 def init_db():
     # create tables and indexes if they don't exist.
-    with connection() as connection:
-        cursor = connection.cursor()
+    with connection() as conn:
+        cursor = conn.cursor()
 
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS artists (
@@ -295,8 +292,8 @@ def make_media_id(artist_name: str, artwork_title: str, filepath: str) -> int:
 
 # insert/update on artist table
 def upsert_artist(artist_id: int, name: str, major: Optional[str] = None):
-    with connection() as connection:
-        connection.execute("""
+    with connection() as conn:
+        conn.execute("""
             INSERT INTO artists (artist_id, name, major)
             VALUES (?, ?, ?)
             ON CONFLICT(artist_id) DO UPDATE SET
@@ -307,8 +304,8 @@ def upsert_artist(artist_id: int, name: str, major: Optional[str] = None):
 # insert/update on project table
 def upsert_project(project_id: int, title: str, description: Optional[str],
                    date: Optional[str], genre_medium: Optional[str], artist_id: int):
-    with connection() as connection:
-        connection.execute("""
+    with connection() as conn:
+        conn.execute("""
             INSERT INTO projects (project_id, title, description, date, genre_medium, artist_id)
             VALUES (?, ?, ?, ?, ?, ?)
             ON CONFLICT(project_id) DO UPDATE SET
@@ -321,8 +318,8 @@ def upsert_project(project_id: int, title: str, description: Optional[str],
 
 # insert/update on media table
 def upsert_media(media_id: int, filepath: str, media_type: str, project_id: int):
-    with connection() as connection:
-        connection.execute("""
+    with connection() as conn:
+        conn.execute("""
             INSERT INTO project_media (media_id, filepath, media_type, project_id)
             VALUES (?, ?, ?, ?)
             ON CONFLICT(media_id) DO UPDATE SET
@@ -344,6 +341,7 @@ def detect_media_type(filepath: str) -> str:
 
 
 def scrapePsyche():
+
     pageURL = "https://psyche.ssl.berkeley.edu/galleries/artwork/page/"
     pageNum = 1
     projectID = 0
@@ -379,7 +377,7 @@ def scrapePsyche():
             for filepath in temp_files:
                 media_type = detect_media_type(filepath)
                 media_id = make_media_id(artist_name, art_title, filepath)
-                upsert_media(media_id,final_path, media_type, project_id)
+                upsert_media(media_id,filepath, media_type, project_id)
 
         # Move on and grab the content on the next page
         pageNum += 1
@@ -387,4 +385,5 @@ def scrapePsyche():
         content = BeautifulSoup(psychePage.text, "html.parser")
         print("Starting page number: " + str(pageNum))       # TODO: delete this, it's for debugging
 
+init_db()
 scrapePsyche()
