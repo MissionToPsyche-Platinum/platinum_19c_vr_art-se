@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from pytubefix import YouTube
 
 import sqlite3
+import hashlib
 from pathlib import Path
 from contextlib import contextmanager
 from typing import Optional
@@ -216,7 +217,11 @@ def connection():
     # SQLite connection with FK enforcement, synchronous normal mode
     connection = sqlite3.connect(DB_PATH)
     try:
-        connection.execute("PRAGMA foreign_keys = ON;")
+        connection.execute(""" 
+                PRAGMA foreign_keys = ON; 
+                PRAGMA journal_mode = WAL; 
+                PRAGMA synchronous = NORMAL;
+        """)
         yield connection
         connection.commit()
     finally:
@@ -267,8 +272,29 @@ def init_db():
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_projects_artist ON projects(artist_id);")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_media_project  ON project_media(project_id);")
 
+
+# hash stuff to help generate hashes for project, artist, and media ids
+def _norm(s: str) -> str:
+    return s.strip().lower()
+
+def _hash_to_int63(seed: str) -> int:
+    h = hashlib.sha256(seed.encode("utf-8")).hexdigest()
+    return int(h[:16], 16) & ((1 << 63) - 1)
+
+def make_artist_id(artist_name: str) -> int:
+    return _hash_to_int63(f"artist::{_norm(artist_name)}")
+
+def make_project_id(artist_name: str, artwork_title: str) -> int:
+    return _hash_to_int63(f"project::{_norm(artist_name)}::{_norm(artwork_title)}")
+
+def make_media_id(artist_name: str, artwork_title: str, filepath: str) -> int:
+    basename = Path(filepath).name
+    return _hash_to_int63(f"media::{_norm(artist_name)}::{_norm(artwork_title)}::{_norm(basename)}")
+
+
+
 # insert/update on artist table
-def upsert_artist(self, artist_id: int, name: str, major: Optional[str] = None):
+def upsert_artist(artist_id: int, name: str, major: Optional[str] = None):
     with connection() as connection:
         connection.execute("""
             INSERT INTO artists (artist_id, name, major)
@@ -279,7 +305,7 @@ def upsert_artist(self, artist_id: int, name: str, major: Optional[str] = None):
         """, (artist_id, name, major))
 
 # insert/update on project table
-def upsert_project(self, project_id: int, title: str, description: Optional[str],
+def upsert_project(project_id: int, title: str, description: Optional[str],
                    date: Optional[str], genre_medium: Optional[str], artist_id: int):
     with connection() as connection:
         connection.execute("""
@@ -294,7 +320,7 @@ def upsert_project(self, project_id: int, title: str, description: Optional[str]
         """, (project_id, title, description, date, genre_medium, artist_id))
 
 # insert/update on media table
-def upsert_media(self, media_id: int, filepath: str, media_type: str, project_id: int):
+def upsert_media(media_id: int, filepath: str, media_type: str, project_id: int):
     with connection() as connection:
         connection.execute("""
             INSERT INTO project_media (media_id, filepath, media_type, project_id)
@@ -304,6 +330,17 @@ def upsert_media(self, media_id: int, filepath: str, media_type: str, project_id
                 media_type = excluded.media_type,
                 project_id = excluded.project_id;
         """, (media_id, filepath, media_type, project_id))
+
+# *should* detect media type. I am not sure all of the media types that get downloaded but all of the
+# ones i am aware of are here. If they aren't correct or the lists aren't comprehensive for our use case,
+# please update the areas lacking :)
+def detect_media_type(filepath: str) -> str:
+    ext = Path(filepath).suffix.lower()
+    if ext in {".mp4", ".mov", ".m4v", ".avi", ".webm"}:
+        return "video"
+    if ext in {".mp3", ".wav", ".flac", ".ogg", ".m4a"}:
+        return "audio"
+    return "image"
 
 
 def scrapePsyche():
@@ -324,6 +361,25 @@ def scrapePsyche():
             artInfo = getArtInfo(caption["href"])
             projectID += 1
             printArtProject(artInfo)        # TODO: delete this, it's for debugging
+
+            artist_name = artInfo["artistName"]
+            art_title = artInfo["artTitle"]
+            date_iso = artInfo["date"]
+            artist_major = artInfo["artistMajor"]
+            genre_medium = artInfo["genre"]
+            description = artInfo["description"]
+            temp_files = artInfo["file_paths"]  # downloaded to ./psyche_media
+
+            # artist and project hash and upsert
+            artist_id = make_artist_id(artist_name)
+            project_id = make_project_id(artist_name,art_title)
+            upsert_artist(artist_id, artist_name, artist_major)
+            upsert_project(project_id, art_title, description, date_iso,genre_medium, artist_id)
+            # media hash and upsert
+            for filepath in temp_files:
+                media_type = detect_media_type(filepath)
+                media_id = make_media_id(artist_name, art_title, filepath)
+                upsert_media(media_id,final_path, media_type, project_id)
 
         # Move on and grab the content on the next page
         pageNum += 1
