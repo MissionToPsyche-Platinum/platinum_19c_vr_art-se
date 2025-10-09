@@ -7,6 +7,11 @@ import requests
 from bs4 import BeautifulSoup
 from pytubefix import YouTube
 
+import sqlite3
+from pathlib import Path
+from contextlib import contextmanager
+from typing import Optional
+
 # returns a dictionary with keys [artTitle, artistName, date (returned as *month day, year*), artistMajor, genre, description]
 def getArtInfo(url):
     results = {}
@@ -199,6 +204,107 @@ def standardizeDate(date):
 
     # Format the datetime object as "YYYY-MM-DD" string (that is how SQL date is)
     return dateTime.strftime("%Y-%m-%d")
+
+# *** DB path: one directory up - Psyche VR Experience/Assets/Database/psyche.db ***
+HERE = Path(__file__).resolve().parent
+DB_DIR = (HERE / ".." / "Psyche VR Experience" / "Assets" / "Database").resolve()
+DB_DIR.mkdir(parents=True, exist_ok=True)
+DB_PATH = DB_DIR / "psyche.db"
+
+@contextmanager
+def connection():
+    # SQLite connection with FK enforcement, synchronous normal mode
+    connection = sqlite3.connect(DB_PATH)
+    try:
+        connection.execute("PRAGMA foreign_keys = ON;")
+        yield connection
+        connection.commit()
+    finally:
+        connection.close()
+
+
+def init_db():
+    # create tables and indexes if they don't exist.
+    with connection() as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS artists (
+                artist_id INTEGER PRIMARY KEY,
+                name      TEXT NOT NULL,
+                major     TEXT
+            );
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS projects (
+                project_id   INTEGER PRIMARY KEY,
+                title        TEXT NOT NULL,
+                description  TEXT,
+                date         TEXT,           -- ISO (YYYY-MM-DD) recommended
+                genre_medium TEXT,
+                artist_id    INTEGER NOT NULL,
+                FOREIGN KEY (artist_id)
+                    REFERENCES artists(artist_id)
+                    ON UPDATE CASCADE
+                    ON DELETE CASCADE
+            );
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS project_media (
+                media_id   INTEGER PRIMARY KEY,
+                filepath   TEXT NOT NULL,
+                media_type TEXT NOT NULL CHECK (media_type IN ('image','video','audio')),
+                project_id INTEGER NOT NULL,
+                FOREIGN KEY (project_id)
+                    REFERENCES projects(project_id)
+                    ON UPDATE CASCADE
+                    ON DELETE CASCADE
+            );
+        """)
+
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_projects_artist ON projects(artist_id);")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_media_project  ON project_media(project_id);")
+
+# insert/update on artist table
+def upsert_artist(self, artist_id: int, name: str, major: Optional[str] = None):
+    with connection() as connection:
+        connection.execute("""
+            INSERT INTO artists (artist_id, name, major)
+            VALUES (?, ?, ?)
+            ON CONFLICT(artist_id) DO UPDATE SET
+                name = excluded.name,
+                major = excluded.major;
+        """, (artist_id, name, major))
+
+# insert/update on project table
+def upsert_project(self, project_id: int, title: str, description: Optional[str],
+                   date: Optional[str], genre_medium: Optional[str], artist_id: int):
+    with connection() as connection:
+        connection.execute("""
+            INSERT INTO projects (project_id, title, description, date, genre_medium, artist_id)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(project_id) DO UPDATE SET
+                title = excluded.title,
+                description = excluded.description,
+                date = excluded.date,
+                genre_medium = excluded.genre_medium,
+                artist_id = excluded.artist_id;
+        """, (project_id, title, description, date, genre_medium, artist_id))
+
+# insert/update on media table
+def upsert_media(self, media_id: int, filepath: str, media_type: str, project_id: int):
+    with connection() as connection:
+        connection.execute("""
+            INSERT INTO project_media (media_id, filepath, media_type, project_id)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(media_id) DO UPDATE SET
+                filepath = excluded.filepath,
+                media_type = excluded.media_type,
+                project_id = excluded.project_id;
+        """, (media_id, filepath, media_type, project_id))
+
 
 def scrapePsyche():
     pageURL = "https://psyche.ssl.berkeley.edu/galleries/artwork/page/"

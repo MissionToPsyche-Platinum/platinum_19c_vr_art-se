@@ -60,38 +60,6 @@ namespace PsycheDB
 
         /*  API  */
 
-        // Simple callable API you asked for.
-        // Provide just the file *name* (e.g., "artists.json"). We’ll look in Assets/Database by default.
-        // Fill in parsing/mapping later.
-        public static void ImportFromJson(string jsonFileName)
-        {
-            // Resolve to Assets/Database/yourfile.json if a bare name was given
-            string path = jsonFileName;
-            if (!Path.IsPathRooted(path))
-            {
-                path = Path.Combine(DatabaseFolder, jsonFileName);
-            }
-
-            if (!File.Exists(path))
-            {
-                Debug.LogError($"[DB] ImportFromJson: File not found: {path}");
-                return;
-            }
-
-            string json = File.ReadAllText(path);
-            Debug.Log($"[DB] ImportFromJson called. Loaded {new FileInfo(path).Length} bytes from {path}.");
-
-            // TODO: Define schema for the JSON and parse here.
-            // proposed structure:
-            // {
-            //   "artists":[{ "artist_id":1, "name":"...", "major":"..." }, ...],
-            //   "projects":[{ "project_id":1, "title":"...", "description":"...", "date":"2025-10-07", "genre_medium":"...", "artist_id":1 }, ...],
-            //   "project_media":[{ "media_id":1, "filepath":"Assets/Images/foo.png", "media_type":"image", "project_id":1 }, ...]
-            // }
-            // Then insert in a transaction via the Insert* helpers.
-
-        }
-
         // Insert helpers (use these when finishing ImportFromJson).
         // Upsert(Insert/Update) by primary key.
         public static void UpsertArtist(int artistId, string name, string major)
