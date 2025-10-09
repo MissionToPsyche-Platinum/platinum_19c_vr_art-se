@@ -6,6 +6,7 @@ import bs4
 import requests
 from bs4 import BeautifulSoup
 from pytubefix import YouTube
+from vimeo_downloader import Vimeo
 
 # returns a dictionary with keys [artTitle, artistName, date (returned as *month day, year*), artistMajor, genre, description]
 def getArtInfo(url):
@@ -97,15 +98,30 @@ def getArtInfo(url):
     # download video if there is one embedded
     if type(iframeTag) is bs4.Tag and iframeTag.has_attr("src"):
         # create YouTube link from embedded source
-        link = "https://www.youtube.com/watch?v=" + iframeTag["src"].split("/")[-1].split("?")[0]
-        yt_link = YouTube(link)
+        if "youtube" in iframeTag["src"]: 
+            print("Found a Youtube video")
+            link = "https://www.youtube.com/watch?v=" + iframeTag["src"].split("/")[-1].split("?")[0]
+            yt_link = YouTube(link)
 
-        # download video
-        try:
-            yt_link.streams.filter(progressive=True, file_extension="mp4").first().download(output_path= os.path.join(os.getcwd(), "psyche_media"), filename = results["artistName"] + results["artTitle"] + ".mp4")
-            file_paths.append(os.path.join("psyche_media", results["artistName"].replace(" ", "") + results["artTitle"].replace(" ", "") + ".mp4"))
-        except Exception as e:
-            print("Error downloading video from link " + link)
+            # download video
+            try:
+                yt_link.streams.filter(progressive=True, file_extension="mp4").first().download(output_path= os.path.join(os.getcwd(), "psyche_media"), filename = results["artistName"] + results["artTitle"] + ".mp4")
+                file_paths.append(os.path.join("psyche_media", results["artistName"].replace(" ", "") + results["artTitle"].replace(" ", "") + ".mp4"))
+            except Exception as e:
+                print("Error downloading video from link " + link)
+        
+        elif "vimeo" in iframeTag["src"]:
+            print("Found a Vimeo video")
+            try:
+                v = Vimeo(iframeTag["src"], embedded_on=url)
+                v.streams[-1].download(download_directory = os.path.join(os.getcwd(), "psyche_media"), filename = results["artistName"] + results["artTitle"] + ".mp4")
+                file_paths.append(os.path.join("psyche_media", results["artistName"].replace(" ","") + results["artTitle"].replace(" ","") + ".mp4"))
+            except Exception as e:
+                print("There was an error downloading the vimeo file from link " + iframeTag["src"])
+        #For now this catches anything that isn't Youtube or Vimeo, we could add extra stuff here is something blows up.
+        else:
+            print("Something went terribly wrong. I found an src tag, but don't recognize the host.") 
+
 
     # download regular art files if there is no video
     else:
