@@ -19,6 +19,8 @@ Once verified, install the required libraries by running the following commands:
 ```bash
 pip install requests
 pip install beautifulsoup4
+pip install pytubefix
+pip install vimeo_downloader
 ```
 
 You should be good to go!

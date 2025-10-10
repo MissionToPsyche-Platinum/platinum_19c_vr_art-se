@@ -6,6 +6,8 @@ import bs4
 import requests
 from bs4 import BeautifulSoup
 from pytubefix import YouTube
+from vimeo_downloader import Vimeo
+from concurrent.futures import ThreadPoolExecutor
 
 import sqlite3
 import hashlib
@@ -36,6 +38,9 @@ def _safe_destination(dest_dir: Path, filename: str) -> Path:
 
 # returns a dictionary with keys [artTitle, artistName, date (returned as *month day, year*), artistMajor, genre, description]
 def getArtInfo(url):
+    # TODO: delete later, for debugging
+    print("Starting to scrape: " + url)
+
     results = {}
 
     # grab the html and create a beautiful soup object of parsed HTML
@@ -129,15 +134,40 @@ def getArtInfo(url):
     # download video if there is one embedded
     if type(iframeTag) is bs4.Tag and iframeTag.has_attr("src"):
         # create YouTube link from embedded source
-        link = "https://www.youtube.com/watch?v=" + iframeTag["src"].split("/")[-1].split("?")[0]
-        yt_link = YouTube(link)
+        if "youtube" in iframeTag["src"]: 
+            print("Found a Youtube video")
+            link = "https://www.youtube.com/watch?v=" + iframeTag["src"].split("/")[-1].split("?")[0]
+            yt_link = YouTube(link)
 
-        # download video
-        try:
-            yt_link.streams.filter(progressive=True, file_extension="mp4").first().download(output_path= os.path.join(os.getcwd(), "psyche_media"), filename = results["artistName"] + results["artTitle"] + ".mp4")
-            file_paths.append(os.path.join("psyche_media", results["artistName"].replace(" ", "") + results["artTitle"].replace(" ", "") + ".mp4"))
-        except Exception as e:
-            print("Error downloading video from link " + link)
+            # download highest quality mp4
+            try:
+                print ("Getting Youtube mp4 highest resolution")
+                yt_link.streams.get_highest_resolution().download(output_path= os.path.join(os.getcwd(), "psyche_media"), filename = results["artistName"] + results["artTitle"] + ".mp4")
+                file_paths.append(os.path.join("psyche_media", results["artistName"].replace(" ", "") + results["artTitle"].replace(" ", "") + ".mp4"))
+            except Exception as e:
+                print("Error downloading video from link " + link)
+            
+            #Download AUDIO ONLY
+            try:
+                print("Getting Youtube AUDIO ONLY")
+                yt_link.streams.get_audio_only().download(output_path= os.path.join(os.getcwd(), "psyche_media"), filename = results["artistName"] + results["artTitle"] + "AUDIO.mp4")
+                file_paths.append(os.path.join("psyche_media", results["artistName"].replace(" ", "") + results["artTitle"].replace(" ", "") + "AUDIO.mp4"))
+            except Exception as e:
+                print("Error downloading video from link " + link)
+        
+        elif "vimeo" in iframeTag["src"]:
+            print("Found a Vimeo video")
+            try:
+                v = Vimeo(iframeTag["src"], embedded_on=url)
+                print("Attempting to download vimeo file")
+                v.streams[-1].download(download_directory = os.path.join(os.getcwd(), "psyche_media"), filename = results["artistName"] + results["artTitle"] + ".mp4")
+                file_paths.append(os.path.join("psyche_media", results["artistName"].replace(" ","") + results["artTitle"].replace(" ","") + ".mp4"))
+            except Exception as e:
+                print("There was an error downloading the vimeo file from link " + iframeTag["src"])
+        #For now this catches anything that isn't Youtube or Vimeo, we could add extra stuff here is something blows up.
+        else:
+            print("Something went terribly wrong. I found an src tag, but don't recognize the host.") 
+
 
     # download regular art files if there is no video
     else:
@@ -171,6 +201,9 @@ def getArtInfo(url):
 
     results["file_paths"] = file_paths
 
+    # TODO: delete later, for debugging
+    print("Results of " + url + ":")
+    printArtProject(results)
 
     return results
 
@@ -377,13 +410,15 @@ def scrapePsyche():
 
     # Art project titles are held in span tags with the "caption title" - this while loop goes until none are found on the current page
     while artCaptions := content.find_all("a", class_="excerpt"):
+        projectLinks = []
         # for every title on the page ...
         for caption in artCaptions:
             # href has the link to the project page
-            print(str(projectID) + ": " + caption["href"])      # TODO: delete this, it's for debugging
-            artInfo = getArtInfo(caption["href"])
-            projectID += 1
-            printArtProject(artInfo)        # TODO: delete this, it's for debugging
+            projectLinks.append(caption["href"])
+
+        scrapedResults = []
+        with ThreadPoolExecutor() as executor:
+            scrapedResults = list(executor.map(getArtInfo, projectLinks))
 
             artist_name = artInfo["artistName"]
             art_title = artInfo["artTitle"]
