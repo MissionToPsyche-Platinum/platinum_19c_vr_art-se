@@ -7,9 +7,13 @@ import requests
 from bs4 import BeautifulSoup
 from pytubefix import YouTube
 from vimeo_downloader import Vimeo
+from concurrent.futures import ThreadPoolExecutor
 
 # returns a dictionary with keys [artTitle, artistName, date (returned as *month day, year*), artistMajor, genre, description]
 def getArtInfo(url):
+    # TODO: delete later, for debugging
+    print("Starting to scrape: " + url)
+
     results = {}
 
     # grab the html and create a beautiful soup object of parsed HTML
@@ -155,6 +159,9 @@ def getArtInfo(url):
 
     results["file_paths"] = file_paths
 
+    # TODO: delete later, for debugging
+    print("Results of " + url + ":")
+    printArtProject(results)
 
     return results
 
@@ -227,13 +234,15 @@ def scrapePsyche():
 
     # Art project titles are held in span tags with the "caption title" - this while loop goes until none are found on the current page
     while artCaptions := content.find_all("a", class_="excerpt"):
+        projectLinks = []
         # for every title on the page ...
         for caption in artCaptions:
             # href has the link to the project page
-            print(str(projectID) + ": " + caption["href"])      # TODO: delete this, it's for debugging
-            artInfo = getArtInfo(caption["href"])
-            projectID += 1
-            printArtProject(artInfo)        # TODO: delete this, it's for debugging
+            projectLinks.append(caption["href"])
+
+        scrapedResults = []
+        with ThreadPoolExecutor() as executor:
+            scrapedResults = list(executor.map(getArtInfo, projectLinks))
 
         # Move on and grab the content on the next page
         pageNum += 1
