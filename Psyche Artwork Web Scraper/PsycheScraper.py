@@ -439,6 +439,7 @@ def scrapePsyche():
         with ThreadPoolExecutor() as executor:
             scrapedResults = list(executor.map(getArtInfo, projectLinks))
 
+        for artInfo in scrapedResults:
             artist_name = artInfo["artistName"]
             art_title = artInfo["artTitle"]
             date_iso = artInfo["date"]
