@@ -18,8 +18,8 @@ from typing import Optional
 
 # art folder director
 HERE = Path(__file__).resolve().parent
-ART_DIR = (HERE / ".." / "Psyche VR Experience" / "Assets" / "Artwork").resolve()
-ART_DIR.mkdir(parents=True, exist_ok=True)
+ARTWORK_DIR = (HERE / ".." / "Psyche VR Experience" / "Assets" / "Artwork").resolve()
+ARTWORK_DIR.mkdir(parents=True, exist_ok=True)
 # ART_PATH = ART_DIR / "psyche.db"
 
 
@@ -75,7 +75,7 @@ def getArtInfo(url):
 
     # compute project folder for name and title(project_id hash)
     project_id = make_project_id(results["artistName"], results["artTitle"])
-    project_dir = ARTWORK_ROOT / str(project_id)
+    project_dir = ARTWORK_DIR / str(project_id)
     project_dir.mkdir(parents=True, exist_ok=True)
 
     # This will be how many p tags we have gone through before grabbing the description
@@ -126,9 +126,6 @@ def getArtInfo(url):
         currentPTag = pTags[pTagCounter]
     results["description"] = standardizeDescription(cleanString(description))
 
-    # # create media folder if it doesn't already exist
-    # os.makedirs(os.path.join(os.getcwd(), "psyche_media"), exist_ok=True)
-
     # list to hold all paths to generated files
     file_paths = []
     # download video if there is one embedded
@@ -139,19 +136,31 @@ def getArtInfo(url):
             link = "https://www.youtube.com/watch?v=" + iframeTag["src"].split("/")[-1].split("?")[0]
             yt_link = YouTube(link)
 
+            # names for video/audio
+            base_video = f"{results['artistName'].replace(' ', '')}_{results['artTitle'].replace(' ', '')}.mp4"
+            base_audio = f"{results['artistName'].replace(' ', '')}_{results['artTitle'].replace(' ', '')}_AUDIO.mp4"
+
             # download highest quality mp4
             try:
                 print ("Getting Youtube mp4 highest resolution")
-                yt_link.streams.get_highest_resolution().download(output_path= os.path.join(os.getcwd(), "psyche_media"), filename = results["artistName"] + results["artTitle"] + ".mp4")
-                file_paths.append(os.path.join("psyche_media", results["artistName"].replace(" ", "") + results["artTitle"].replace(" ", "") + ".mp4"))
+                # absolute path for us, relative path for database and unity
+                absolute_destination_video = _safe_destination(project_dir, base_video)
+                relative_destination_video = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_video.name
+
+                yt_link.streams.get_highest_resolution().download(output_path=str(absolute_destination_video.parent), filename= absolute_destination_video.name)
+                file_paths.append(str(relative_destination_video))
             except Exception as e:
                 print("Error downloading video from link " + link)
             
             #Download AUDIO ONLY
             try:
                 print("Getting Youtube AUDIO ONLY")
-                yt_link.streams.get_audio_only().download(output_path= os.path.join(os.getcwd(), "psyche_media"), filename = results["artistName"] + results["artTitle"] + "AUDIO.mp4")
-                file_paths.append(os.path.join("psyche_media", results["artistName"].replace(" ", "") + results["artTitle"].replace(" ", "") + "AUDIO.mp4"))
+                # absolute path for us, relative path for database and unity
+                absolute_destination_audio = _safe_destination(project_dir, base_audio)
+                relative_destination_audio = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_audio.name
+
+                yt_link.streams.get_audio_only().download(output_path=str(absolute_destination_audio.parent),filename=absolute_destination_audio.name)
+                file_paths.append(str(relative_destination_audio))
             except Exception as e:
                 print("Error downloading video from link " + link)
         
@@ -160,8 +169,13 @@ def getArtInfo(url):
             try:
                 v = Vimeo(iframeTag["src"], embedded_on=url)
                 print("Attempting to download vimeo file")
-                v.streams[-1].download(download_directory = os.path.join(os.getcwd(), "psyche_media"), filename = results["artistName"] + results["artTitle"] + ".mp4")
-                file_paths.append(os.path.join("psyche_media", results["artistName"].replace(" ","") + results["artTitle"].replace(" ","") + ".mp4"))
+                base_video= f"{results['artistName'].replace(' ','')}_{results['artTitle'].replace(' ','')}.mp4"
+                # absolute path for us, relative path for database and unity
+                absolute_destination_video = _safe_destination(project_dir, base_video)
+                relative_destination_video = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_video.name
+
+                v.streams[-1].download(download_directory=str(absolute_destination_video.parent),filename=absolute_destination_video.name)
+                file_paths.append(str(relative_destination_video))
             except Exception as e:
                 print("There was an error downloading the vimeo file from link " + iframeTag["src"])
         #For now this catches anything that isn't Youtube or Vimeo, we could add extra stuff here is something blows up.
@@ -187,9 +201,14 @@ def getArtInfo(url):
                 response = requests.get(link)
 
                 if(response.status_code == 200):
-                    with open(os.path.join(os.getcwd(), "psyche_media", link.split("/")[-1]), 'wb') as file:
-                        file.write(response.content)
-                        file_paths.append(os.path.join("psyche_media", link.split("/")[-1]))
+                    orig_name = link.split("/")[-1]
+                    # absolute path for us, relative path for database and unity
+                    absolute_destination = _safe_destination(project_dir, orig_name)
+                    relative_destination = Path("Assets") / "Artwork" / str(project_id) / absolute_destination.name
+                    with open(absolute_destination, "wb") as f:
+                        f.write(response.content)
+
+                    file_paths.append(str(relative_destination))
                 else:
                     file_paths.append("ERROR: " + link)
 
