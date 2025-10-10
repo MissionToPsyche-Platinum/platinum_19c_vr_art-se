@@ -107,10 +107,19 @@ def getArtInfo(url):
             link = "https://www.youtube.com/watch?v=" + iframeTag["src"].split("/")[-1].split("?")[0]
             yt_link = YouTube(link)
 
-            # download video
+            # download highest quality mp4
             try:
-                yt_link.streams.filter(progressive=True, file_extension="mp4").first().download(output_path= os.path.join(os.getcwd(), "psyche_media"), filename = results["artistName"] + results["artTitle"] + ".mp4")
+                print ("Getting Youtube mp4 highest resolution")
+                yt_link.streams.get_highest_resolution().download(output_path= os.path.join(os.getcwd(), "psyche_media"), filename = results["artistName"] + results["artTitle"] + ".mp4")
                 file_paths.append(os.path.join("psyche_media", results["artistName"].replace(" ", "") + results["artTitle"].replace(" ", "") + ".mp4"))
+            except Exception as e:
+                print("Error downloading video from link " + link)
+            
+            #Download AUDIO ONLY
+            try:
+                print("Getting Youtube AUDIO ONLY")
+                yt_link.streams.get_audio_only().download(output_path= os.path.join(os.getcwd(), "psyche_media"), filename = results["artistName"] + results["artTitle"] + "AUDIO.mp4")
+                file_paths.append(os.path.join("psyche_media", results["artistName"].replace(" ", "") + results["artTitle"].replace(" ", "") + "AUDIO.mp4"))
             except Exception as e:
                 print("Error downloading video from link " + link)
         
@@ -118,6 +127,7 @@ def getArtInfo(url):
             print("Found a Vimeo video")
             try:
                 v = Vimeo(iframeTag["src"], embedded_on=url)
+                print("Attempting to download vimeo file")
                 v.streams[-1].download(download_directory = os.path.join(os.getcwd(), "psyche_media"), filename = results["artistName"] + results["artTitle"] + ".mp4")
                 file_paths.append(os.path.join("psyche_media", results["artistName"].replace(" ","") + results["artTitle"].replace(" ","") + ".mp4"))
             except Exception as e:
