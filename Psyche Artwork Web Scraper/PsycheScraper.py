@@ -14,6 +14,26 @@ from pathlib import Path
 from contextlib import contextmanager
 from typing import Optional
 
+# art folder director
+HERE = Path(__file__).resolve().parent
+ART_DIR = (HERE / ".." / "Psyche VR Experience" / "Assets" / "Artwork").resolve()
+ART_DIR.mkdir(parents=True, exist_ok=True)
+# ART_PATH = ART_DIR / "psyche.db"
+
+
+def _safe_destination(dest_dir: Path, filename: str) -> Path:
+    # avoids overwriting existing files by appending -1, -2, ... before the extension.
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    base = Path(filename).stem
+    ext  = Path(filename).suffix
+    candidate = dest_dir / f"{base}{ext}"
+    i = 1
+    while candidate.exists():
+        candidate = dest_dir / f"{base}-{i}{ext}"
+        i += 1
+    return candidate
+
+
 # returns a dictionary with keys [artTitle, artistName, date (returned as *month day, year*), artistMajor, genre, description]
 def getArtInfo(url):
     results = {}
@@ -47,6 +67,11 @@ def getArtInfo(url):
     else:
         artistName = artContent.find(lambda tag: tag.name == "h3" and not tag.has_attr("class")).text.strip()
         results["artistName"] = standardizeName(artistName)
+
+    # compute project folder for name and title(project_id hash)
+    project_id = make_project_id(results["artistName"], results["artTitle"])
+    project_dir = ARTWORK_ROOT / str(project_id)
+    project_dir.mkdir(parents=True, exist_ok=True)
 
     # This will be how many p tags we have gone through before grabbing the description
     pTagCounter = -1
@@ -96,8 +121,8 @@ def getArtInfo(url):
         currentPTag = pTags[pTagCounter]
     results["description"] = standardizeDescription(cleanString(description))
 
-    # create media folder if it doesn't already exist
-    os.makedirs(os.path.join(os.getcwd(), "psyche_media"), exist_ok=True)
+    # # create media folder if it doesn't already exist
+    # os.makedirs(os.path.join(os.getcwd(), "psyche_media"), exist_ok=True)
 
     # list to hold all paths to generated files
     file_paths = []
