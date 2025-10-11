@@ -20,6 +20,7 @@ from typing import Optional
 HERE = Path(__file__).resolve().parent
 ARTWORK_DIR = (HERE / ".." / "Psyche VR Experience" / "Assets" / "Artwork").resolve()
 ARTWORK_DIR.mkdir(parents=True, exist_ok=True)
+FILE_EXTENSIONS = [".bmp", ".exr", ".gif", ".hdr", ".iff", ".jpeg", ".jpg", ".pct", ".pic", ".pict", ".png", ".psd", ".tga", ".tif", ".tiff"]
 # ART_PATH = ART_DIR / "psyche.db"
 
 
@@ -200,8 +201,14 @@ def getArtInfo(url):
                 # Send GET request to the URL
                 response = requests.get(link)
 
-                if(response.status_code == 200):
+                if response.status_code == 200:
                     orig_name = link.split("/")[-1]
+
+                    fileExt = Path(orig_name).suffix
+                    if not fileOK(fileExt):
+                        handleError("Disallowed File")
+                        return None
+
                     # absolute path for us, relative path for database and unity
                     absolute_destination = _safe_destination(project_dir, orig_name)
                     relative_destination = Path("Assets") / "Artwork" / str(project_id) / absolute_destination.name
@@ -246,6 +253,12 @@ def cleanString(string):
         string = string[colonIndex + 1:]
         string = string.strip()
     return string
+
+def fileOK(extension):
+    return extension in FILE_EXTENSIONS
+
+def handleError(error):
+    print("ALERT - AN ERROR HAS OCCURRED: " + error)
 
 # Make the first letter of each part of the name capitalized
 def standardizeName(name):
@@ -346,7 +359,6 @@ def init_db():
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_projects_artist ON projects(artist_id);")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_media_project  ON project_media(project_id);")
 
-
 # hash stuff to help generate hashes for project, artist, and media ids
 def _norm(s: str) -> str:
     return s.strip().lower()
@@ -429,6 +441,8 @@ def scrapePsyche():
 
     # Art project titles are held in span tags with the "caption title" - this while loop goes until none are found on the current page
     while artCaptions := content.find_all("a", class_="excerpt"):
+        print("Starting page number: " + str(pageNum))       # TODO: delete this, it's for debugging
+
         projectLinks = []
         # for every title on the page ...
         for caption in artCaptions:
@@ -463,7 +477,6 @@ def scrapePsyche():
         pageNum += 1
         psychePage = requests.get(pageURL + str(pageNum))
         content = BeautifulSoup(psychePage.text, "html.parser")
-        print("Starting page number: " + str(pageNum))       # TODO: delete this, it's for debugging
 
 init_db()
 scrapePsyche()
