@@ -20,7 +20,8 @@ from typing import Optional
 HERE = Path(__file__).resolve().parent
 ARTWORK_DIR = (HERE / ".." / "Psyche VR Experience" / "Assets" / "Artwork").resolve()
 ARTWORK_DIR.mkdir(parents=True, exist_ok=True)
-FILE_EXTENSIONS = [".bmp", ".exr", ".gif", ".hdr", ".iff", ".jpeg", ".jpg", ".pct", ".pic", ".pict", ".png", ".psd", ".tga", ".tif", ".tiff"]
+#TODO TEMP FIX: ADDED .pdf TO THE ALLOWED EXTENSIONS. REMOVE PDF FROM THIS IT SHOULDN"T BE ALLOWED 
+FILE_EXTENSIONS = [".bmp", ".exr", ".gif", ".hdr", ".iff", ".jpeg", ".jpg", ".pct", ".pdf", ".pic", ".pict", ".png", ".psd", ".tga", ".tif", ".tiff"]
 # ART_PATH = ART_DIR / "psyche.db"
 
 
@@ -60,7 +61,6 @@ def getArtInfo(url):
     # art title is contained in the first h2 tag
     artTitle = h2Tags[0].text.strip()
     results["artTitle"] = artTitle
-
     # art title is in the first h3 tag without a class, or in the second h2Tag if there are none/only the h3 tag for the slides
     if len(h3Tags) == 0 or (len(h3Tags) == 1 and h3Tags[0].has_attr("class")):
         # There is an exception where the first p tag contains the artist name rather than the date
@@ -139,35 +139,58 @@ def getArtInfo(url):
 
             # names for video/audio
             base_video = f"{results['artistName'].replace(' ', '')}_{results['artTitle'].replace(' ', '')}.mp4"
+            base_video_only = f"{results['artistName'].replace(' ', '')}_{results['artTitle'].replace(' ', '')}_VIDONLY.mp4"
             base_audio = f"{results['artistName'].replace(' ', '')}_{results['artTitle'].replace(' ', '')}_AUDIO.mp4"
 
-            # download highest quality mp4
+            # download highest quality precombined mp4
             try:
-                print ("Getting Youtube mp4 highest resolution")
+                print ("Getting Youtube mp4 highest resolution (PreCombined)")
                 # absolute path for us, relative path for database and unity
                 absolute_destination_video = _safe_destination(project_dir, base_video)
                 relative_destination_video = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_video.name
 
                 yt_link.streams.get_highest_resolution().download(output_path=str(absolute_destination_video.parent), filename= absolute_destination_video.name)
                 file_paths.append(str(relative_destination_video))
+                print("Successfully downloaded Youtube video (PRECOMBINED) from " + link)
             except Exception as e:
-                print("Error downloading video from link " + link)
+                print("Error downloading video (COMBO) from link " + link)
             
-            #Download AUDIO ONLY
+             #Download HIGHEST QUALITY VIDEO ONLY
+            try:
+                print("Getting Youtube VIDEO ONLY")
+                # absolute path for us, relative path for database and unity
+                absolute_destination_video_only = _safe_destination(project_dir, base_video_only)
+                relative_destination_video_only = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_video_only.name
+                #Find the highest quality non-progressive mp4
+                #print("Video only Stream Prefind")
+                #print(yt_link.streams.filter(adaptive=True,type='video'))
+                yt_link.streams.get_by_itag(137).download(output_path=str(absolute_destination_video_only.parent), filename= absolute_destination_video_only.name)
+                file_paths.append(str(relative_destination_video_only))
+                #yt_test = yt_link.streams.filter(adaptive=True).order_by('res').desc().first()
+                #print("Video only stream:")
+                print("Successfully downloaded Youtube VIDEO ONLY from " + link)
+            except Exception as e: 
+                print("Error downloading video (VIDEO) from link " + link)
+
+            #Download HIGHEST QUALITY AUDIO ONLY
             try:
                 print("Getting Youtube AUDIO ONLY")
                 # absolute path for us, relative path for database and unity
                 absolute_destination_audio = _safe_destination(project_dir, base_audio)
                 relative_destination_audio = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_audio.name
-
+                #Gets the highest quality audio stream
                 yt_link.streams.get_audio_only().download(output_path=str(absolute_destination_audio.parent),filename=absolute_destination_audio.name)
                 file_paths.append(str(relative_destination_audio))
+                print("Successfully downoaded Youtube AUDIO ONLY from " + link)
             except Exception as e:
-                print("Error downloading video from link " + link)
+                print("Error downloading video (AUDIO) from link " + link)
         
+        #Catch a vimeo video and convert it into an mp4 file.
         elif "vimeo" in iframeTag["src"]:
             print("Found a Vimeo video")
             try:
+                print(url)
+                print(iframeTag["src"])
                 v = Vimeo(iframeTag["src"], embedded_on=url)
                 print("Attempting to download vimeo file")
                 base_video= f"{results['artistName'].replace(' ','')}_{results['artTitle'].replace(' ','')}.mp4"
@@ -206,8 +229,10 @@ def getArtInfo(url):
 
                     fileExt = Path(orig_name).suffix
                     if not fileOK(fileExt):
+                        print(fileExt)
                         handleError("Disallowed File")
-                        return None
+                        #TODO Change this logic to catch the none
+                        return results
 
                     # absolute path for us, relative path for database and unity
                     absolute_destination = _safe_destination(project_dir, orig_name)
