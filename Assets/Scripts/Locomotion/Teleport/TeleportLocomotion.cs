@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -13,7 +14,7 @@ public class TeleportLocomotion : MonoBehaviour
     [SerializeField]
     XRInputButtonReader cancelInput;
 
-    enum TELESTATE { IDLE, TELEPORTHELD, CANCELLED }
+    enum TELESTATE { IDLE, TELEPORTHELD, TELEPORTING, CANCELLED }
 
     TELESTATE state = TELESTATE.IDLE;
 
@@ -39,8 +40,7 @@ public class TeleportLocomotion : MonoBehaviour
         Vector2 value = teleInput.ReadValue();
         bool teleportPressed = value != new Vector2();
 
-        //this should always happen
-        if (cancelPresssed)
+        if (cancelPresssed && state != TELESTATE.TELEPORTING)
         {
             state = TELESTATE.CANCELLED;
         }
@@ -68,9 +68,7 @@ public class TeleportLocomotion : MonoBehaviour
 
                 if (!teleportPressed)
                 {
-                    state = TELESTATE.IDLE;
-                    TeleportToPoint(data);
-                    teleportVisual.Unvisualize();
+                    TeleportAction(data);
                     return;
                 }
                 break;
@@ -88,6 +86,30 @@ public class TeleportLocomotion : MonoBehaviour
                 }
                 break;
         }
+    }
+
+    async void TeleportAction(TeleportData data)
+    {
+        if (LocomotionSettings.TELEPORT_FADE_TO_BLACK)
+        {
+            state = TELESTATE.TELEPORTING;
+            teleportVisual.FadeOut();
+
+            while(teleportVisual.blackScreen.color.a < 1f)
+            {
+                await Task.Delay(10);
+            }
+        }
+
+        teleportVisual.Unvisualize();
+        TeleportToPoint(data);
+
+        while (teleportVisual.fadeState != TeleportVisual.FadeState.IDLE)
+        {
+            await Task.Delay(100);
+        }
+
+        state = TELESTATE.IDLE;
     }
 
     struct TeleportData
