@@ -11,7 +11,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 import sqlite3
 import hashlib
-import shutil
 from pathlib import Path
 from contextlib import contextmanager
 from typing import Optional
@@ -502,6 +501,3 @@ def scrapePsyche():
         pageNum += 1
         psychePage = requests.get(pageURL + str(pageNum))
         content = BeautifulSoup(psychePage.text, "html.parser")
-
-init_db()
-scrapePsyche()
