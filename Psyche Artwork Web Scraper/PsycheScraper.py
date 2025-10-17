@@ -12,6 +12,9 @@ from concurrent.futures import ThreadPoolExecutor
 import sqlite3
 import hashlib
 import shutil
+import ffmpeg
+import yt_dlp
+import datetime 
 from pathlib import Path
 from contextlib import contextmanager
 from typing import Optional
@@ -182,6 +185,9 @@ def getArtInfo(url):
                 yt_link.streams.get_audio_only().download(output_path=str(absolute_destination_audio.parent),filename=absolute_destination_audio.name)
                 file_paths.append(str(relative_destination_audio))
                 print("Successfully downoaded Youtube AUDIO ONLY from " + link)
+
+                yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    error_code = ydl.download(link) 
             except Exception as e:
                 print("Error downloading video (AUDIO) from link " + link)
         
