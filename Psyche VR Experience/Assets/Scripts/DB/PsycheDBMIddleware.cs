@@ -123,7 +123,7 @@ public static class PsycheDBMiddleware
                 target.genre = genre ?? string.Empty;
 
                 target.artistName = artistName ?? string.Empty;
-                target.artistMajor = artistMajor ?? string.Empty;
+                //target.artistMajor = artistMajor ?? string.Empty;
 
                 // convert ISO (YYYY-MM-DD) to "MONTH - DAY - YEAR" as on the website (if possible(just fails if unity has an aneurism))
                 target.artworkDate = ConvertIsoToMonthDayYear(dateIso);
