@@ -14,7 +14,6 @@ import hashlib
 import shutil
 import ffmpeg
 import yt_dlp
-import datetime 
 from pathlib import Path
 from contextlib import contextmanager
 from typing import Optional
@@ -167,10 +166,21 @@ def getArtInfo(url):
                 #Find the highest quality non-progressive mp4
                 #print("Video only Stream Prefind")
                 #print(yt_link.streams.filter(adaptive=True,type='video'))
-                yt_link.streams.get_by_itag(137).download(output_path=str(absolute_destination_video_only.parent), filename= absolute_destination_video_only.name)
-                file_paths.append(str(relative_destination_video_only))
+                ##yt_link.streams.get_by_itag(137).download(output_path=str(absolute_destination_video_only.parent), filename= absolute_destination_video_only.name)
+                ##file_paths.append(str(relative_destination_video_only))
                 #yt_test = yt_link.streams.filter(adaptive=True).order_by('res').desc().first()
                 #print("Video only stream:")
+                ##print("Successfully downloaded Youtube VIDEO ONLY from " + link)
+
+                ydl_video_opts = {
+                    'format' : 'bestvideo',
+                    'outtmpl' : absolute_destination_video_only,
+                    'quiet': 'False'
+                }
+
+                with yt_dlp.YoutubeDL(ydl_video_opts) as ydl:
+                    error_code = ydl.download(link)
+                file_paths.append(str(relative_destination_video_only))
                 print("Successfully downloaded Youtube VIDEO ONLY from " + link)
             except Exception as e: 
                 print("Error downloading video (VIDEO) from link " + link)
@@ -182,15 +192,25 @@ def getArtInfo(url):
                 absolute_destination_audio = _safe_destination(project_dir, base_audio)
                 relative_destination_audio = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_audio.name
                 #Gets the highest quality audio stream
-                yt_link.streams.get_audio_only().download(output_path=str(absolute_destination_audio.parent),filename=absolute_destination_audio.name)
-                file_paths.append(str(relative_destination_audio))
-                print("Successfully downoaded Youtube AUDIO ONLY from " + link)
+                ##yt_link.streams.get_audio_only().download(output_path=str(absolute_destination_audio.parent),filename=absolute_destination_audio.name)
+                ##file_paths.append(str(relative_destination_audio))
+                ##print("Successfully downoaded Youtube AUDIO ONLY from " + link)
+                
+                
+                
+                ydl_audio_opts = {
+                    'format' : 'm4a/bestaudio/best',
+                    'quiet' : False,
+                    'outtmpl' : absolute_destination_audio
+                }
 
-                yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    error_code = ydl.download(link) 
+                with yt_dlp.YoutubeDL(ydl_audio_opts) as ydl:
+                    error_code = ydl.download(link)
+                file_paths.append(str(relative_destination_audio))        
+                print("Successfully downoaded Youtube AUDIO ONLY from " + link)
             except Exception as e:
                 print("Error downloading video (AUDIO) from link " + link)
-        
+            
         #Catch a vimeo video and convert it into an mp4 file.
         elif "vimeo" in iframeTag["src"]:
             print("Found a Vimeo video")
