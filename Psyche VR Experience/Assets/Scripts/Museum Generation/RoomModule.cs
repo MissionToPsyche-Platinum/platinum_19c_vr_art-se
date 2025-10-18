@@ -10,7 +10,8 @@ public class RoomModule : MonoBehaviour
         TwoOpenLShape,
         TwoOpenStraight,
         ThreeOpen,
-        FourOpen
+        FourOpen,
+        SIZE
     }
 
     public RoomType roomType = RoomType.OneOpen;
@@ -40,27 +41,17 @@ public class RoomModule : MonoBehaviour
         {RoomType.FourOpen,   new bool[] {true, true, true, true } }              
     };
 
+    //number of openings in each room
+    int[] roomOpeningCounts = new int[(int)RoomType.SIZE];
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    void Awake()
     {
         SetupActiveRoom();
-        Demo();
-    }
 
-    private async void Demo()
-    {
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < (int)RoomType.SIZE; i++)
         {
-            for (int j = 0; j < 4; j++)
-            {
-                if (gameObject == null)
-                {
-                    return;
-                }
-
-                SetRoomActive((RoomType)i, (Orientation)j);
-                await Task.Delay(1000);
-            }
+            roomOpeningCounts[i] = CountNumDirections(roomInfos[(RoomType)i]);
         }
     }
 
@@ -146,6 +137,42 @@ public class RoomModule : MonoBehaviour
         }
     }
 
+    bool[] RotatedRoom(RoomType room, Orientation orient)
+    {
+        bool[] info = roomInfos[room];
+        bool[] final = new bool[4];
+
+        switch (orient)
+        {
+            case Orientation.North:
+                final[0] = info[0];
+                final[1] = info[1];
+                final[2] = info[2];
+                final[3] = info[3];
+                break;
+            case Orientation.South:
+                final[0] = info[1]; //SOUTH
+                final[1] = info[0]; //NORTH
+                final[2] = info[3];  //EAST
+                final[3] = info[2];  //WEST
+                break;
+            case Orientation.West:
+                final[0] = info[3]; //EAST
+                final[1] = info[2]; //WEST
+                final[2] = info[0]; //NORTH
+                final[3] = info[1];  //SOUTH
+                break;
+            case Orientation.East:
+                final[0] = info[2]; //WEST
+                final[1] = info[3]; //EAST
+                final[2] = info[1]; //SOUTH
+                final[3] = info[0]; //NORTH
+                break;
+        }
+
+        return final;
+    }
+
     public void SetOrientation(Orientation orientation, bool updateRoomOpenings = true)
     {
         this.orientation = orientation;
@@ -168,5 +195,88 @@ public class RoomModule : MonoBehaviour
 
         if (updateRoomOpenings)
             UpdateRoomOpenings();
+    }
+
+
+    int CountNumDirections(bool[] directions)
+    {
+        int count = 0;
+
+        for(int i = 0; i < directions.Length; i++)
+        {
+            if(directions[i]) count++;
+        }
+
+        return count;
+    }
+
+    /// <summary>
+    /// Takes in a boolean list of openings {north, south, west, east} and figures out which room shape fits.
+    /// This function is a bit of a mess, but it should do the job.
+    /// </summary>
+    /// <param name="openings">Boolean openings for each direction {north, south, west, east}</param>
+    /// <returns>The RoomType corresponding to the shape of openings</returns>
+    RoomType FigureOutRoomTypeFromOpenings(bool[] openings)
+    {
+        List<RoomType> rooms = new List<RoomType>();
+
+        int numOpenings = CountNumDirections(openings);
+
+        //this will need to be updated whenever new rooms are added
+        for (int i = 0; i < (int)RoomType.SIZE; i++)
+        {
+            int roomSize = roomOpeningCounts[i];
+
+            if (roomSize == numOpenings)
+            {
+                rooms.Add((RoomType)i);
+            }
+        }
+
+        if (rooms.Count == 0)
+        {
+            return RoomType.SIZE;
+        }
+
+        if (rooms.Count == 1)
+            return rooms[0];
+
+        if (openings[0] && openings[1] || openings[2] && openings[3])
+        {
+            return RoomType.TwoOpenStraight;
+        }
+        else
+        {
+            return RoomType.TwoOpenLShape;
+        }
+    }
+
+    public void SetOpenings(bool north, bool south, bool west, bool east)
+    {
+        bool[] directions = new bool[4] { north, south, west, east };
+
+        RoomType room = FigureOutRoomTypeFromOpenings(directions);
+
+        if(room == RoomType.SIZE)
+        {
+            Debug.LogError("ERROR: NUMBER OF OPENINGS SUPPORTS NO LOGGED ROOM TYPE");
+            return;
+        }
+
+        //guess and check! there's probably a better way to do this
+        Orientation dir = Orientation.North;
+        
+        for (int i = 0; i < 4; i++)
+        {
+            dir = (Orientation)i;
+            bool[] info = RotatedRoom(room, dir);
+                
+            if(info[0] == directions[0] && info[1] == directions[1] && info[2] == directions[2] && info[3] == directions[3])
+            {
+                break;
+            }
+        }
+
+        SetRoomActive(room, dir);
     }
 }
