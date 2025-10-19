@@ -1,7 +1,9 @@
 import os.path
 from datetime import datetime
 import re
-
+import fitz # PyMuPDF
+from PIL import Image
+from io import BytesIO
 import bs4
 import requests
 from bs4 import BeautifulSoup
@@ -247,6 +249,8 @@ def getArtInfo(url):
         # download each link and store it in the media file
         for link in download_link:
             try:
+                pdf = False
+
                 # Send GET request to the URL
                 response = requests.get(link)
 
@@ -255,6 +259,9 @@ def getArtInfo(url):
 
                     fileExt = Path(orig_name).suffix
                     if not fileOK(fileExt):
+                        if fileExt == ".pdf":
+                            pdf = True
+                            break
                         print(fileExt)
                         handleError("Disallowed File")
                         #TODO Change this logic to catch the none
@@ -263,10 +270,13 @@ def getArtInfo(url):
                     # absolute path for us, relative path for database and unity
                     absolute_destination = _safe_destination(project_dir, orig_name)
                     relative_destination = Path("Assets") / "Artwork" / str(project_id) / absolute_destination.name
-                    with open(absolute_destination, "wb") as f:
-                        f.write(response.content)
+                    if pdf:
+                        file_paths.append(convertAndDownloadPDF(response, absolute_destination))
+                    else:
+                        with open(absolute_destination, "wb") as f:
+                            f.write(response.content)
 
-                    file_paths.append(str(relative_destination))
+                        file_paths.append(str(relative_destination))
                 else:
                     file_paths.append("ERROR: " + link)
 
@@ -307,6 +317,37 @@ def cleanString(string):
 
 def fileOK(extension):
     return extension in FILE_EXTENSIONS
+
+# combines all pages of a pdf into one image
+def convertAndDownloadPDF(response, destination):
+    destination = Path(destination).stem + ".pdf"
+
+    # keep the pdf in memory rather than downloading it and having to change it later
+    pdf = fitz.open(stream=response.content, filetype="pdf")
+    images = []
+
+    # make each page a PIL image
+    for page_index in range(pdf.page_count):
+        page = pdf.load_page(page_index)
+        pix = page.get_pixmap()
+        img = Image.open(BytesIO(pix.tobytes("png")))
+        images.append(img)
+
+    # stack images to combine all of them
+    total_height = sum([img.height for img in images])
+    max_width = max([img.width for img in images])
+    combined = Image.new("RGB", (max_width, total_height), (255, 255, 255))
+
+    yPos = 0
+    for img in images:
+        combined.paste(img, (0, yPos))
+        yPos += img.height
+
+    # save Image
+    combined.save(destination)
+    pdf.close()
+
+    return destination
 
 def handleError(error):
     print("ALERT - AN ERROR HAS OCCURRED: " + error)

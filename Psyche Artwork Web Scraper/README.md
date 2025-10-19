@@ -21,6 +21,7 @@ pip install requests
 pip install beautifulsoup4
 pip install pytubefix
 pip install vimeo_downloader
+pip install PyMuPDF
 ```
 
 You should be good to go!
