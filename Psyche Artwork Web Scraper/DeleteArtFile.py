@@ -17,7 +17,7 @@ def delete_art_file():
             print(f"{i + 1}. {title_list[i][0]}")
 
         # get user's input on which art project to delete from
-        print("Enter the number of the art project would you like to delete an art file from (q to quit): ", end="")
+        print("Enter the number of the art project to which you would you like to delete an art file (q to quit): ", end="")
         title_selection = input()
 
         # quit
@@ -36,7 +36,7 @@ def delete_art_file():
             # find all project media belonging to selected project
             cursor.execute("select filepath from project_media where project_id = ?", (project_id,))
             media_list = list(cursor)
-            print("\nYou are deleting a file from the project " + title_list[title_selection][0])
+            print("\nYou are deleting a file from the project " + title_list[title_selection][0] + ".")
             for i in range(0, len(media_list)):
                 print(f"{i + 1}. {media_list[i][0]}")
 
