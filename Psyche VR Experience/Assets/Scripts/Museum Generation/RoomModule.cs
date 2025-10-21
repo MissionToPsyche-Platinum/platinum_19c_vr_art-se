@@ -1,6 +1,7 @@
-using UnityEngine;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using UnityEngine;
+using static RoomModule;
 
 public class RoomModule : MonoBehaviour
 {
@@ -11,6 +12,7 @@ public class RoomModule : MonoBehaviour
         TwoOpenStraight,
         ThreeOpen,
         FourOpen,
+        FlatOpen,
         SIZE
     }
 
@@ -32,13 +34,33 @@ public class RoomModule : MonoBehaviour
     //indicates the direction that -Z points
     public Orientation orientation = Orientation.North;
 
+    public class RoomInfo
+    {
+        bool openNorth;
+        bool openSouth;
+        public bool openWest;
+        public bool openEast;
+
+        int numArt;
+
+        public RoomInfo(bool openNorth, bool openSouth, bool openWest, bool openEast, int numArt)
+        {
+            this.openNorth = openNorth;
+            this.openSouth = openSouth;
+            this.openWest = openWest;
+            this.openEast = openEast;
+            this.numArt = numArt;
+        }
+    }
+
     ////boolean openings in each room are ordered: North, South, West, East
-    Dictionary<RoomType, bool[]> roomInfos = new Dictionary<RoomType, bool[]> {
-        {RoomType.OneOpen, new bool[] {false, true, false, false } },             
-        {RoomType.TwoOpenLShape,    new bool[] {false, true, true, false } },     
-        {RoomType.TwoOpenStraight,   new bool[] {true, true, false, false} },     
-        {RoomType.ThreeOpen,   new bool[] {false, true, true, true } },           
-        {RoomType.FourOpen,   new bool[] {true, true, true, true } }              
+    Dictionary<RoomType, RoomInfo> roomInfos = new Dictionary<RoomType, RoomInfo> {
+        {RoomType.OneOpen, new RoomInfo(false, true, false, false, 0) },             
+        {RoomType.TwoOpenLShape, new RoomInfo(false, true, true, false, 0) },     
+        {RoomType.TwoOpenStraight,   new RoomInfo(true, true, false, false, 0) },     
+        {RoomType.ThreeOpen,   new RoomInfo(false, true, true, true, 0) },           
+        {RoomType.FourOpen,   new RoomInfo(true, true, true, true, 0) },           
+        {RoomType.FlatOpen,   new RoomInfo(true, true, true, true, 0) }              
     };
 
     //number of openings in each room

@@ -28,9 +28,8 @@ public class MuseumManager : MonoBehaviour
         roomLinkedList.rm.SetOpenings(true, false, false, false);
     }
 
-    // Update is called once per frame
-    void Update()
+    void GenerateMuseum(int numArtPieces)
     {
-        
+
     }
 }
