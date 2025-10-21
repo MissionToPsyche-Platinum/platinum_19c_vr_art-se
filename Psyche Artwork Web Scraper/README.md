@@ -17,10 +17,7 @@ pip --version
 ### 2. Install Dependencies
 Once verified, install the required libraries by running the following commands:
 ```bash
-pip install requests
-pip install beautifulsoup4
-pip install pytubefix
-pip install vimeo_downloader
+pip install -r requirements.txt
 ```
 
 You should be good to go!
