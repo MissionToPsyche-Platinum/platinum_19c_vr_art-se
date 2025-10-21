@@ -1,4 +1,6 @@
 import PsycheScraper
+from AddArtFile import add_art_file
+from DeleteArtFile import delete_art_file
 
 if __name__ == '__main__':
     print("""Welcome to the Psyche VR Museum CLI Interface!  What would you like to do?
@@ -14,10 +16,10 @@ q: Quit""")
             PsycheScraper.init_db()
             PsycheScraper.scrapePsyche()
         elif in_str == '2':
-            # TODO: add art file
+            add_art_file()
             pass
         elif in_str == '3':
-            # TODO: remove art file
+            delete_art_file()
             pass
         elif in_str == 'q':
             print("Goodbye!")
