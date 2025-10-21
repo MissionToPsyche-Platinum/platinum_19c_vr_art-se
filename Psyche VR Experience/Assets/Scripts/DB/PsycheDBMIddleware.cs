@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using Mono.Data.Sqlite;       // assumes sqlite dlls and mono.data.sqlite is already included in plugins folder
+using UnityEditor.XR.LegacyInputHelpers;
 using UnityEngine;
 
 public static class PsycheDBMiddleware
@@ -36,14 +37,14 @@ public static class PsycheDBMiddleware
     {
         if (target == null)
         {
-            Debug.LogError("PsycheDbBridge.TryLoadArtworkByProjectId: target ArtworkData is null.");
+            Debug.LogError("PsycheDbMiddleware.TryLoadArtworkByProjectId: target ArtworkData is null.");
             return false;
         }
 
         string dbPath = dbPathOverride ?? GetDefaultDbPath();
         if (!File.Exists(dbPath))
         {
-            Debug.LogError($"PsycheDbBridge: DB not found at {dbPath}");
+            Debug.LogError($"PsycheDbMiddleware: DB not found at {dbPath}");
             return false;
         }
 
@@ -84,7 +85,7 @@ public static class PsycheDBMiddleware
                     {
                         if (!reader.Read())
                         {
-                            Debug.LogWarning($"PsycheDbBridge: No project found with id {projectId}");
+                            Debug.LogWarning($"PsycheDbMiddleware: No project found with id {projectId}");
                             return false;
                         }
 
@@ -139,7 +140,7 @@ public static class PsycheDBMiddleware
         }
         catch (Exception ex)
         {
-            Debug.LogError($"PsycheDbBridge.TryLoadArtworkByProjectId exception: {ex}");
+            Debug.LogError($"PsycheDbMiddleware.TryLoadArtworkByProjectId exception: {ex}");
             return false;
         }
     }
@@ -177,4 +178,51 @@ public static class PsycheDBMiddleware
 
         return iso; // return original
     }
+
+    // will return all projectIds currently in the project for use in random selection
+    // or for direct usage into LoadArtworkIntoNewSO/TryLoadArtworkByProjectId
+    public static List<int> GetAllProjectIds(string dbPathOverride = null)
+    {
+        var dbPath = dbPathOverride ?? GetDefaultDbPath();
+        if (!File.Exists(dbPath))
+        {
+            Debug.LogError($"PsycheDbMiddleware: db not found at {dbPath}");
+            return new List<int>();
+        }
+        var projectIds = new List<int>();
+        using (var conn = new SqliteConnection(BuildConnString(dbPath)))
+        {
+            conn.Open();
+            using (var command = new SqliteCommand("SELECT project_id FROM projects;", conn))
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    projectIds.Add(Convert.ToInt32(reader["project_id"]));
+                }
+            }
+        }
+        return projectIds;
+    }
+
+    // randomized the project ids, selecting a range that is entered as an input, allowing us to adjust to that sweet spot.
+    // Once we figure that out we can make a duplicate method that does a specific amount for exhibit mode and for full mode
+    public static List<int> GetRandomProjectIds(int count, string dbPathOverride = null)
+    {
+        var allIds = GetAllProjectIds(dbPathOverride);
+        if (allIds.Count == 0) return allIds;
+        if (count == 0) return new List<int>();
+
+        var random = new System.Random();
+        // using Fisher Yates shuffle to randomize list and then select the range of size count
+        for(int i = allIds.Count - 1; i > 0; i--)
+        {
+            int j = random.Next(i + 1);
+            (allIds[i], allIds[j]) = (allIds[j],allIds[i]); 
+        }
+        // this conditional is after the shuffle so the exhibit is *functionally* never the same
+        if (count >= allIds.Count) return allIds;
+        return allIds.GetRange(0, count);
+    }
+
 }
