@@ -31,7 +31,7 @@ def _safe_destination(dest_dir: Path, filename: str) -> Path:
     # avoids overwriting existing files by appending -1, -2, ... before the extension.
     dest_dir.mkdir(parents=True, exist_ok=True)
     base = Path(filename).stem
-    ext  = Path(filename).suffix
+    ext  = Path(filename).suffix    
     candidate = dest_dir / f"{base}{ext}"
     i = 1
     while candidate.exists():
@@ -151,9 +151,9 @@ def getArtInfo(url):
                 absolute_destination_video = _safe_destination(project_dir, base_video)
                 relative_destination_video = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_video.name
 
-                yt_link.streams.get_highest_resolution().download(output_path=str(absolute_destination_video.parent), filename= absolute_destination_video.name)
-                file_paths.append(str(relative_destination_video))
-                print("Successfully downloaded Youtube video (PRECOMBINED) from " + link)
+                ##yt_link.streams.get_highest_resolution().download(output_path=str(absolute_destination_video.parent), filename= absolute_destination_video.name)
+                ##file_paths.append(str(relative_destination_video))
+                ##print("Successfully downloaded Youtube video (PRECOMBINED) from " + link)
             except Exception as e:
                 print("Error downloading video (COMBO) from link " + link)
             
@@ -210,6 +210,27 @@ def getArtInfo(url):
                 print("Successfully downoaded Youtube AUDIO ONLY from " + link)
             except Exception as e:
                 print("Error downloading video (AUDIO) from link " + link)
+            
+            try:
+                print("Hello World")
+                #Get the input paths from the yt-dlp downloads
+                video_input_path = str(absolute_destination_video_only)
+                audio_input_path = str(absolute_destination_audio)
+                final_output_path = str(absolute_destination_video)
+                
+                #Create the audio and video inputs
+                video_input = ffmpeg.input(video_input_path)
+                audio_input = ffmpeg.input(audio_input_path)
+
+                input = ffmpeg.input(relative_destination_video_only)
+                #audio = input.audio.filter("aecho", 0.8, 0.9, 1000, 0.3)
+                #video = input.video.hflip()
+                output_stream = ffmpeg.output(audio_input, video_input, final_output_path)
+                ffmpeg.run(output_stream, overwrite_output=True)
+                file_paths.append(str(relative_destination_video))
+                print("Successfully combined Video and Audio into one finalized version")
+            except Exception as e:
+                print("Error combining audio and video files together into one")
             
         #Catch a vimeo video and convert it into an mp4 file.
         elif "vimeo" in iframeTag["src"]:
