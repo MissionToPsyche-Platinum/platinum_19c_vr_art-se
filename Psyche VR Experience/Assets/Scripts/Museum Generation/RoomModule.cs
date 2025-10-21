@@ -65,10 +65,10 @@ public class RoomModule : MonoBehaviour
 
     ////boolean openings in each room are ordered: North, South, West, East
     Dictionary<RoomType, RoomInfo> roomInfos = new Dictionary<RoomType, RoomInfo> {
-        {RoomType.OneOpen, new RoomInfo(false, true, false, false, 0) },             
-        {RoomType.TwoOpenLShape, new RoomInfo(false, true, true, false, 0) },     
-        {RoomType.TwoOpenStraight,   new RoomInfo(true, true, false, false, 0) },     
-        {RoomType.ThreeOpen,   new RoomInfo(false, true, true, true, 0) },           
+        {RoomType.OneOpen, new RoomInfo(false, true, false, false, 1) },             
+        {RoomType.TwoOpenLShape, new RoomInfo(false, true, true, false, 1) },     
+        {RoomType.TwoOpenStraight,   new RoomInfo(true, true, false, false, 1) },     
+        {RoomType.ThreeOpen,   new RoomInfo(false, true, true, true, 1) },           
         {RoomType.FourOpen,   new RoomInfo(true, true, true, true, 0) },           
         {RoomType.FlatOpen,   new RoomInfo(true, true, true, true, 0) }              
     };
