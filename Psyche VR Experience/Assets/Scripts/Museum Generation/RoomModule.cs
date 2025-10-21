@@ -36,12 +36,13 @@ public class RoomModule : MonoBehaviour
 
     public class RoomInfo
     {
-        bool openNorth;
-        bool openSouth;
+        public bool openNorth;
+        public bool openSouth;
         public bool openWest;
         public bool openEast;
 
-        int numArt;
+        public int numArt;
+        public int numDirections = 0;
 
         public RoomInfo(bool openNorth, bool openSouth, bool openWest, bool openEast, int numArt)
         {
@@ -50,6 +51,15 @@ public class RoomModule : MonoBehaviour
             this.openWest = openWest;
             this.openEast = openEast;
             this.numArt = numArt;
+
+            if (openNorth)
+                numDirections++;
+            if (openSouth)
+                numDirections++;
+            if (openWest)
+                numDirections++;
+            if (openEast)
+                numDirections++;
         }
     }
 
@@ -70,11 +80,6 @@ public class RoomModule : MonoBehaviour
     void Awake()
     {
         SetupActiveRoom();
-
-        for (int i = 0; i < (int)RoomType.SIZE; i++)
-        {
-            roomOpeningCounts[i] = CountNumDirections(roomInfos[(RoomType)i]);
-        }
     }
 
     /// <summary>
@@ -128,67 +133,44 @@ public class RoomModule : MonoBehaviour
     /// </summary>
     private void UpdateRoomOpenings()
     {
-        bool[] info = roomInfos[roomType];
+        bool[] info = RotatedRoom(roomType, orientation);
 
-        switch (orientation)
-        {
-            case Orientation.North:
-                openNorth = info[0];
-                openSouth = info[1];
-                openWest = info[2];
-                openEast = info[3];
-                break;
-            case Orientation.South:
-                openNorth = info[1]; //SOUTH
-                openSouth = info[0]; //NORTH
-                openWest = info[3];  //EAST
-                openEast = info[2];  //WEST
-                break;
-            case Orientation.West:
-                openNorth = info[3]; //EAST
-                openSouth = info[2]; //WEST
-                openWest = info[0]; //NORTH
-                openEast = info[1];  //SOUTH
-                break;
-            case Orientation.East:
-                openNorth = info[2]; //WEST
-                openSouth = info[3]; //EAST
-                openWest = info[1]; //SOUTH
-                openEast = info[0]; //NORTH
-                break;
-        }
+        openNorth = info[0];
+        openSouth = info[1];
+        openWest = info[2];
+        openEast = info[3];
     }
 
     bool[] RotatedRoom(RoomType room, Orientation orient)
     {
-        bool[] info = roomInfos[room];
+        RoomInfo info = roomInfos[room];
         bool[] final = new bool[4];
 
         switch (orient)
         {
             case Orientation.North:
-                final[0] = info[0];
-                final[1] = info[1];
-                final[2] = info[2];
-                final[3] = info[3];
+                final[0] = info.openNorth; 
+                final[1] =  info.openSouth;
+                final[2] = info.openWest;  
+                final[3] = info.openEast;  
                 break;
             case Orientation.South:
-                final[0] = info[1]; //SOUTH
-                final[1] = info[0]; //NORTH
-                final[2] = info[3];  //EAST
-                final[3] = info[2];  //WEST
+                final[0] =  info.openSouth;
+                final[1] =  info.openNorth;
+                final[2] = info.openEast;  
+                final[3] = info.openWest;  
                 break;
             case Orientation.West:
-                final[0] = info[3]; //EAST
-                final[1] = info[2]; //WEST
-                final[2] = info[0]; //NORTH
-                final[3] = info[1];  //SOUTH
+                final[0] =  info.openEast; 
+                final[1] =  info.openWest; 
+                final[2] = info.openNorth; 
+                final[3] = info.openSouth; 
                 break;
             case Orientation.East:
-                final[0] = info[2]; //WEST
-                final[1] = info[3]; //EAST
-                final[2] = info[1]; //SOUTH
-                final[3] = info[0]; //NORTH
+                final[0] =  info.openWest; 
+                final[1] =  info.openEast; 
+                final[2] = info.openSouth; 
+                final[3] = info.openNorth; 
                 break;
         }
 
@@ -224,9 +206,9 @@ public class RoomModule : MonoBehaviour
     {
         int count = 0;
 
-        for(int i = 0; i < directions.Length; i++)
+        for (int i = 0; i < directions.Length; i++)
         {
-            if(directions[i]) count++;
+            if (directions[i]) count++;
         }
 
         return count;
@@ -247,7 +229,7 @@ public class RoomModule : MonoBehaviour
         //this will need to be updated whenever new rooms are added
         for (int i = 0; i < (int)RoomType.SIZE; i++)
         {
-            int roomSize = roomOpeningCounts[i];
+            int roomSize = roomInfos[(RoomType)i].numDirections;
 
             if (roomSize == numOpenings)
             {
@@ -260,17 +242,19 @@ public class RoomModule : MonoBehaviour
             return RoomType.SIZE;
         }
 
-        if (rooms.Count == 1)
-            return rooms[0];
+        if (numOpenings == 2)
+        {
+            if (openings[0] && openings[1] || openings[2] && openings[3])
+            {
+                return RoomType.TwoOpenStraight;
+            }
+            else
+            {
+                return RoomType.TwoOpenLShape;
+            }
+        }
 
-        if (openings[0] && openings[1] || openings[2] && openings[3])
-        {
-            return RoomType.TwoOpenStraight;
-        }
-        else
-        {
-            return RoomType.TwoOpenLShape;
-        }
+        return rooms[0];
     }
 
     public void SetOpenings(bool north, bool south, bool west, bool east)

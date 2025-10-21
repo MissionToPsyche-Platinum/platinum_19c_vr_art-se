@@ -25,7 +25,7 @@ public class MuseumManager : MonoBehaviour
     void Start()
     {
         roomLinkedList = new RoomListNode(Instantiate(roomModulePrefab));
-        roomLinkedList.rm.SetOpenings(true, false, false, false);
+        roomLinkedList.rm.SetOpenings(true, true, true, true);
     }
 
     void GenerateMuseum(int numArtPieces)
