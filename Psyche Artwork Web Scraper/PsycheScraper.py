@@ -23,8 +23,7 @@ from typing import Optional
 HERE = Path(__file__).resolve().parent
 ARTWORK_DIR = (HERE / ".." / "Psyche VR Experience" / "Assets" / "Artwork").resolve()
 ARTWORK_DIR.mkdir(parents=True, exist_ok=True)
-#TODO TEMP FIX: ADDED .pdf TO THE ALLOWED EXTENSIONS. REMOVE PDF FROM THIS IT SHOULDN"T BE ALLOWED 
-FILE_EXTENSIONS = [".bmp", ".exr", ".gif", ".hdr", ".iff", ".jpeg", ".jpg", ".pct", ".pdf", ".pic", ".pict", ".png", ".psd", ".tga", ".tif", ".tiff"]
+FILE_EXTENSIONS = [".bmp", ".exr", ".gif", ".hdr", ".iff", ".jpeg", ".jpg", ".pct", ".pic", ".pict", ".png", ".psd", ".tga", ".tif", ".tiff"]
 # ART_PATH = ART_DIR / "psyche.db"
 
 
@@ -258,13 +257,14 @@ def getArtInfo(url):
 
                     fileExt = Path(orig_name).suffix
                     if not fileOK(fileExt):
+                        handleable = False
                         if fileExt == ".pdf":
                             pdf = True
-                            break
-                        print(fileExt)
-                        handleError("Disallowed File")
-                        #TODO Change this logic to catch the none
-                        return results
+                            handleable = True
+                        if not handleable:
+                            handleError("Disallowed File")
+                            #TODO Change this logic to catch the none
+                            return results
 
                     # absolute path for us, relative path for database and unity
                     absolute_destination = _safe_destination(project_dir, orig_name)
@@ -319,7 +319,7 @@ def fileOK(extension):
 
 # combines all pages of a pdf into one image
 def convertAndDownloadPDF(response, destination):
-    destination = Path(destination).stem + ".pdf"
+    destination = Path(destination).with_suffix(".png")
 
     # keep the pdf in memory rather than downloading it and having to change it later
     pdf = fitz.open(stream=response.content, filetype="pdf")
