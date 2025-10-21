@@ -26,6 +26,9 @@ ARTWORK_DIR.mkdir(parents=True, exist_ok=True)
 FILE_EXTENSIONS = [".bmp", ".exr", ".gif", ".hdr", ".iff", ".jpeg", ".jpg", ".pct", ".pdf", ".pic", ".pict", ".png", ".psd", ".tga", ".tif", ".tiff"]
 # ART_PATH = ART_DIR / "psyche.db"
 
+# global list to collect failed download URLs
+FAILED_DOWNLOADS = []
+
 
 def _safe_destination(dest_dir: Path, filename: str) -> Path:
     # avoids overwriting existing files by appending -1, -2, ... before the extension.
@@ -173,9 +176,13 @@ def getArtInfo(url):
                 ##print("Successfully downloaded Youtube VIDEO ONLY from " + link)
 
                 ydl_video_opts = {
-                    'format' : 'bestvideo',
+                    'format' : 'bv+ba/b',
                     'outtmpl' : absolute_destination_video_only,
-                    'quiet': 'False'
+                    'quiet': False,
+                    'merge_output_format': 'mp4',
+                    'retries': 5,
+                    'ignoreerrors': False,
+                    'noplaylist': True,
                 }
 
                 with yt_dlp.YoutubeDL(ydl_video_opts) as ydl:
@@ -184,6 +191,10 @@ def getArtInfo(url):
                 print("Successfully downloaded Youtube VIDEO ONLY from " + link)
             except Exception as e: 
                 print("Error downloading video (VIDEO) from link " + link)
+                try:
+                    FAILED_DOWNLOADS.append({'url': link, 'stage': 'video', 'error': str(e)})
+                except Exception:
+                    pass
 
             #Download HIGHEST QUALITY AUDIO ONLY
             try:
@@ -201,7 +212,10 @@ def getArtInfo(url):
                 ydl_audio_opts = {
                     'format' : 'm4a/bestaudio/best',
                     'quiet' : False,
-                    'outtmpl' : absolute_destination_audio
+                    'outtmpl' : absolute_destination_audio,
+                    'retries': 5,
+                    'noplaylist': True,
+                    'ignoreerrors': True
                 }
 
                 with yt_dlp.YoutubeDL(ydl_audio_opts) as ydl:
@@ -210,6 +224,10 @@ def getArtInfo(url):
                 print("Successfully downoaded Youtube AUDIO ONLY from " + link)
             except Exception as e:
                 print("Error downloading video (AUDIO) from link " + link)
+                try:
+                    FAILED_DOWNLOADS.append({'url': link, 'stage': 'audio', 'error': str(e)})
+                except Exception:
+                    pass
             
             try:
                 print("Hello World")
@@ -231,6 +249,10 @@ def getArtInfo(url):
                 print("Successfully combined Video and Audio into one finalized version")
             except Exception as e:
                 print("Error combining audio and video files together into one")
+                try:
+                    FAILED_DOWNLOADS.append({'url': link, 'stage': 'combine', 'error': str(e)})
+                except Exception:
+                    pass
             
         #Catch a vimeo video and convert it into an mp4 file.
         elif "vimeo" in iframeTag["src"]:
@@ -249,6 +271,10 @@ def getArtInfo(url):
                 file_paths.append(str(relative_destination_video))
             except Exception as e:
                 print("There was an error downloading the vimeo file from link " + iframeTag["src"])
+                try:
+                    FAILED_DOWNLOADS.append({'url': iframeTag["src"], 'stage': 'vimeo', 'error': str(e)})
+                except Exception:
+                    pass
         #For now this catches anything that isn't Youtube or Vimeo, we could add extra stuff here is something blows up.
         else:
             print("Something went terribly wrong. I found an src tag, but don't recognize the host.") 
@@ -550,5 +576,13 @@ def scrapePsyche():
         psychePage = requests.get(pageURL + str(pageNum))
         content = BeautifulSoup(psychePage.text, "html.parser")
 
-init_db()
-scrapePsyche()
+    # after scraping completes, print any failed downloads
+    if FAILED_DOWNLOADS:
+        print("\nThe following video downloads failed:")
+        for failed in FAILED_DOWNLOADS:
+            url = failed.get('url') if isinstance(failed, dict) else str(failed)
+            stage = failed.get('stage') if isinstance(failed, dict) else 'unknown'
+            err = failed.get('error') if isinstance(failed, dict) else ''
+            print(f" - [{stage}] {url} {(' - ' + err) if err else ''}")
+    else:
+        print("\nAll video downloads completed successfully.")
