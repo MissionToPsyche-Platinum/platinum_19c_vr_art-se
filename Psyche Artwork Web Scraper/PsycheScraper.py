@@ -13,7 +13,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 import sqlite3
 import hashlib
-import shutil
 import ffmpeg
 import yt_dlp
 from pathlib import Path
@@ -197,9 +196,9 @@ def getArtInfo(url):
                 ##yt_link.streams.get_audio_only().download(output_path=str(absolute_destination_audio.parent),filename=absolute_destination_audio.name)
                 ##file_paths.append(str(relative_destination_audio))
                 ##print("Successfully downoaded Youtube AUDIO ONLY from " + link)
-                
-                
-                
+
+
+
                 ydl_audio_opts = {
                     'format' : 'm4a/bestaudio/best',
                     'quiet' : False,
@@ -208,11 +207,11 @@ def getArtInfo(url):
 
                 with yt_dlp.YoutubeDL(ydl_audio_opts) as ydl:
                     error_code = ydl.download(link)
-                file_paths.append(str(relative_destination_audio))        
+                file_paths.append(str(relative_destination_audio))
                 print("Successfully downoaded Youtube AUDIO ONLY from " + link)
             except Exception as e:
                 print("Error downloading video (AUDIO) from link " + link)
-            
+
         #Catch a vimeo video and convert it into an mp4 file.
         elif "vimeo" in iframeTag["src"]:
             print("Found a Vimeo video")
@@ -569,6 +568,3 @@ def scrapePsyche():
         pageNum += 1
         psychePage = requests.get(pageURL + str(pageNum))
         content = BeautifulSoup(psychePage.text, "html.parser")
-
-init_db()
-scrapePsyche()
