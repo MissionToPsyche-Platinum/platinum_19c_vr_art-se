@@ -1,3 +1,6 @@
+import shutil
+from pathlib import Path
+
 from PsycheScraper import upsert_artist, upsert_project, upsert_media, make_artist_id, make_project_id, detect_media_type, make_media_id
 from datetime import datetime
 import os
@@ -16,11 +19,26 @@ def addArtProject(artInfo):
     project_id = make_project_id(artist_name,art_title)
     upsert_artist(artist_id, artist_name, artist_major)
     upsert_project(project_id, art_title, description, date_iso,genre_medium, artist_id)
+
+    # create project directory
+    dst_dir_abs_path = (Path(__file__).resolve().parent / ".." / "Psyche VR Experience" / "Assets" / "Artwork").resolve() / str(project_id)
+    os.makedirs(dst_dir_abs_path, exist_ok=True)
+
     # media hash and upsert
     for filepath in temp_files:
+        # create absolute path and relative path
+        file_name = filepath.split("\\")[-1]
+        dst_abs_path = dst_dir_abs_path / file_name
+        dst_rel_path = Path("Assets") / "Artwork" / str(project_id) / file_name
+        # copy file to new destination
+        shutil.copy(filepath, dst_abs_path)
+
+        # add media to database
         media_type = detect_media_type(filepath)
         media_id = make_media_id(artist_name, art_title, filepath)
-        upsert_media(media_id,filepath, media_type, project_id)
+        upsert_media(media_id, str(dst_rel_path), media_type, project_id)
+
+        print("Art project added successfully!\n")
 
 def getArtProjectInfo():
     results = {}
@@ -40,12 +58,13 @@ def getArtProjectInfo():
         except ValueError:
             print("Invalid format. Please enter date as YYYY-MM-DD.")
 
+    print("Enter the absolute file path of each art file you wish to add, pressing enter in between each file.  When you have entered the last file, enter \"f\".  (To get the absolute path, right click on the desired file in your file explorer and click \"Copy as path\".  Paste the copied text into the command line.)")
     file_paths = []
     while True:
-        file_path = input("Enter the absolute file path of the art file you wish to add.  (To get the absolute path, right click on the desired file in your file explorer and click \"Copy as path\".  Paste the copied text into the command line.) (q to quit): ")
+        file_path = input()
         file_path = file_path.replace("\"", "")
 
-        if file_path == "q":
+        if file_path.lower() == "f":
             print("Ending file collection.")
             break
         if os.path.isfile(file_path):
