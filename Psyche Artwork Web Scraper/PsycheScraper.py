@@ -56,8 +56,9 @@ def getArtInfo(url, verbose):
     try:
         artPage = requests.get(url)
     except requests.exceptions.RequestException as e:
-        print(RED + "[ERROR] There was an error accessing this art project: " + url + "[ERROR]" + RESET)
-        print(RED + str(e) + RESET)    # TODO: Make this part of a verbose option
+        if verbose:
+            print(RED + "[ERROR] There was an error accessing this art project: " + url + "[ERROR]" + RESET)
+            print(RED + str(e) + RESET)
         return None
     pageContent = BeautifulSoup(artPage.text, "html.parser")
     artContent = pageContent.find("div", class_="row justify-content-center")
@@ -115,8 +116,9 @@ def getArtInfo(url, verbose):
         try:
             results["date"] = standardizeDate(dateAndMajor[0])
         except ValueError as e:
-            print(RED + "[ERROR] There was an error converting the date for project with title: " + results["title"] + ". Please change it manually [ERROR]" + YELLOW + "Continuing with incorrect date." + RESET)
-            print(RED + str(e) + RESET)    # TODO: Make this part of a verbose option
+            if verbose:
+                print(RED + "[ERROR] There was an error converting the date for project with title: " + results["title"] + ". Please change it manually [ERROR]" + YELLOW + "Continuing with incorrect date." + RESET)
+                print(RED + str(e) + RESET)
 
         artistMajor = cleanString(dateAndMajor[1])
         results["artistMajor"] = artistMajor
@@ -124,8 +126,9 @@ def getArtInfo(url, verbose):
         try:
             results["date"] = standardizeDate(date)
         except ValueError as e:
-            print(RED + "[ERROR] There was an error converting the date for project with title: " + results["title"] + ". Please change it manually [ERROR]" + YELLOW + "Continuing with incorrect date." + RESET)
-            print(RED + str(e) + RESET)    # TODO: Make this part of a verbose option
+            if verbose:
+                print(RED + "[ERROR] There was an error converting the date for project with title: " + results["title"] + ". Please change it manually [ERROR]" + YELLOW + "Continuing with incorrect date." + RESET)
+                print(RED + str(e) + RESET)
 
         # major is contained in the second h4 tag
         artistMajor = cleanString(pageTags[1].text)
@@ -166,7 +169,7 @@ def getArtInfo(url, verbose):
             # download highest quality precombined mp4
             try:
                 if verbose:
-                    print ("Getting Youtube mp4 highest resolution (PreCombined)") # TODO: Make this part of a verbose option
+                    print ("Getting Youtube mp4 highest resolution (PreCombined)")
                 # absolute path for us, relative path for database and unity
                 absolute_destination_video = _safe_destination(project_dir, base_video)
                 relative_destination_video = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_video.name
@@ -174,10 +177,11 @@ def getArtInfo(url, verbose):
                 yt_link.streams.get_highest_resolution().download(output_path=str(absolute_destination_video.parent), filename= absolute_destination_video.name)
                 file_paths.append(str(relative_destination_video))
                 if verbose:
-                    print("Successfully downloaded Youtube video (PRECOMBINED) from " + link) # TODO: Make this part of a verbose option
+                    print("Successfully downloaded Youtube video (PRECOMBINED) from " + link)
             except Exception as e:
-                print(YELLOW + "[ERROR] There was an error getting video + sound from: " + link + "[ERROR]. " + YELLOW + "Video + sound NOT added." + RESET)
-                print(RED + str(e) + RESET)    # TODO: Make this part of a verbose option
+                if verbose:
+                    print(YELLOW + "[ERROR] There was an error getting video + sound from: " + link + "[ERROR]. " + YELLOW + "Video + sound NOT added." + RESET)
+                    print(RED + str(e) + RESET)
 
              #Download HIGHEST QUALITY VIDEO ONLY
             try:
@@ -207,13 +211,14 @@ def getArtInfo(url, verbose):
                 if verbose:
                     print("Successfully downloaded Youtube VIDEO ONLY from " + link)
             except Exception as e:
-                print(RED + "[ERROR] There was an error getting video from: " + link + "[ERROR]. " + YELLOW + "Video NOT added." + RESET)
-                print(RED + str(e) + RESET)    # TODO: Make this part of a verbose option
+                if verbose:
+                    print(RED + "[ERROR] There was an error getting video from: " + link + "[ERROR]. " + YELLOW + "Video NOT added." + RESET)
+                    print(RED + str(e) + RESET)
 
             #Download HIGHEST QUALITY AUDIO ONLY
             try:
                 if verbose:
-                    print("Getting Youtube AUDIO ONLY") # TODO: Make this part of a verbose option
+                    print("Getting Youtube AUDIO ONLY")
                 # absolute path for us, relative path for database and unity
                 absolute_destination_audio = _safe_destination(project_dir, base_audio)
                 relative_destination_audio = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_audio.name
@@ -232,10 +237,11 @@ def getArtInfo(url, verbose):
                     error_code = ydl.download(link)
                 file_paths.append(str(relative_destination_audio))
                 if verbose:
-                    print("Successfully downloaded Youtube AUDIO ONLY from " + link) # TODO: Make this part of a verbose option
+                    print("Successfully downloaded Youtube AUDIO ONLY from " + link)
             except Exception as e:
-                print(RED + "[ERROR] There was an error getting audio from: " + link + "[ERROR]. " + YELLOW + "Audio NOT added." + RESET)
-                print(RED + str(e) + RESET)    # TODO: Make this part of a verbose option
+                if verbose:
+                    print(RED + "[ERROR] There was an error getting audio from: " + link + "[ERROR]. " + YELLOW + "Audio NOT added." + RESET)
+                    print(RED + str(e) + RESET)
 
         #Catch a vimeo video and convert it into an mp4 file.
         elif "vimeo" in iframeTag["src"]:
@@ -255,8 +261,9 @@ def getArtInfo(url, verbose):
                 v.streams[-1].download(download_directory=str(absolute_destination_video.parent),filename=absolute_destination_video.name)
                 file_paths.append(str(relative_destination_video))
             except Exception as e:
-                print(RED + "[ERROR] There was an error downloading the vimeo file from link: " + iframeTag["src"] + "[ERROR]. " + YELLOW + "Video NOT added." + RESET)
-                print(RED + str(e) + RESET)    # TODO: Make this part of a verbose option
+                if verbose:
+                    print(RED + "[ERROR] There was an error downloading the vimeo file from link: " + iframeTag["src"] + "[ERROR]. " + YELLOW + "Video NOT added." + RESET)
+                    print(RED + str(e) + RESET)
 
         # For now this catches anything that isn't Youtube or Vimeo, we could add extra stuff here is something blows up.
         else:
@@ -301,7 +308,7 @@ def getArtInfo(url, verbose):
                     absolute_destination = _safe_destination(project_dir, orig_name)
                     relative_destination = Path("Assets") / "Artwork" / str(project_id) / absolute_destination.name
                     if pdf:
-                        convertedFilePath = convertAndDownloadPDF(response, absolute_destination)
+                        convertedFilePath = convertAndDownloadPDF(response, absolute_destination, verbose)
                         if not convertedFilePath is None:
                             file_paths.append(convertedFilePath)
                     else:
@@ -313,8 +320,9 @@ def getArtInfo(url, verbose):
                     file_paths.append("ERROR: " + link)
 
             except requests.exceptions.RequestException as e:
-                print(RED + "[ERROR] There was an error downloading from the link: " + link + "[ERROR]. " + YELLOW + "Video NOT added." + RESET)
-                print(RED + str(e) + RESET)    # TODO: Make this part of a verbose option
+                if verbose:
+                    print(RED + "[ERROR] There was an error downloading from the link: " + link + "[ERROR]. " + YELLOW + "Video NOT added." + RESET)
+                    print(RED + str(e) + RESET)
                 continue
 
     results["file_paths"] = file_paths
@@ -347,7 +355,7 @@ def cleanString(string):
     return string
 
 # combines all pages of a pdf into one image (png)
-def convertAndDownloadPDF(response, destination):
+def convertAndDownloadPDF(response, destination, verbose):
     try:
         destination = Path(destination).with_suffix(".png")
 
@@ -378,8 +386,9 @@ def convertAndDownloadPDF(response, destination):
 
         return str(destination)
     except Exception as e:
-        print(RED + "[ERROR] There was an error converting a pdf to a png. [ERROR]. " + YELLOW + "File NOT added." + RESET)
-        print(RED + str(e) + RESET)    # TODO: Make this part of a verbose option
+        if verbose:
+            print(RED + "[ERROR] There was an error converting a pdf to a png. [ERROR]. " + YELLOW + "File NOT added." + RESET)
+            print(RED + str(e) + RESET)
         return None
 
 # Make the first letter of each part of the name capitalized
