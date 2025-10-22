@@ -321,7 +321,7 @@ def getArtInfo(url, verbose):
 
             except requests.exceptions.RequestException as e:
                 if verbose:
-                    print(RED + "[ERROR] There was an error downloading from the link: " + link + "[ERROR]. " + YELLOW + "Video NOT added." + RESET)
+                    print(RED + "[ERROR] There was an error downloading from the link: " + link + "[ERROR]. " + YELLOW + "File NOT added." + RESET)
                     print(RED + str(e) + RESET)
                 continue
 
