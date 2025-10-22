@@ -41,9 +41,9 @@ def _safe_destination(dest_dir: Path, filename: str) -> Path:
 
 
 # returns a dictionary with keys [artTitle, artistName, date (returned as *month day, year*), artistMajor, genre, description]
-def getArtInfo(url):
-    # TODO: delete later, for debugging
-    print("Starting to scrape: " + url)
+def getArtInfo(url, verbose):
+    if verbose:
+        print("Starting to scrape: " + url)
 
     results = {}
 
@@ -134,8 +134,9 @@ def getArtInfo(url):
     # download video if there is one embedded
     if type(iframeTag) is bs4.Tag and iframeTag.has_attr("src"):
         # create YouTube link from embedded source
-        if "youtube" in iframeTag["src"]: 
-            print("Found a Youtube video")
+        if "youtube" in iframeTag["src"]:
+            if verbose:
+                print("Found a Youtube video")
             link = "https://www.youtube.com/watch?v=" + iframeTag["src"].split("/")[-1].split("?")[0]
             yt_link = YouTube(link)
 
@@ -146,20 +147,23 @@ def getArtInfo(url):
 
             # download highest quality precombined mp4
             try:
-                print ("Getting Youtube mp4 highest resolution (PreCombined)")
+                if verbose:
+                    print ("Getting Youtube mp4 highest resolution (PreCombined)")
                 # absolute path for us, relative path for database and unity
                 absolute_destination_video = _safe_destination(project_dir, base_video)
                 relative_destination_video = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_video.name
 
                 yt_link.streams.get_highest_resolution().download(output_path=str(absolute_destination_video.parent), filename= absolute_destination_video.name)
                 file_paths.append(str(relative_destination_video))
-                print("Successfully downloaded Youtube video (PRECOMBINED) from " + link)
+                if verbose:
+                    print("Successfully downloaded Youtube video (PRECOMBINED) from " + link)
             except Exception as e:
                 print("Error downloading video (COMBO) from link " + link)
             
              #Download HIGHEST QUALITY VIDEO ONLY
             try:
-                print("Getting Youtube VIDEO ONLY")
+                if verbose:
+                    print("Getting Youtube VIDEO ONLY")
                 # absolute path for us, relative path for database and unity
                 absolute_destination_video_only = _safe_destination(project_dir, base_video_only)
                 relative_destination_video_only = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_video_only.name
@@ -175,19 +179,21 @@ def getArtInfo(url):
                 ydl_video_opts = {
                     'format' : 'bestvideo',
                     'outtmpl' : absolute_destination_video_only,
-                    'quiet': 'False'
+                    'quiet': not verbose
                 }
 
                 with yt_dlp.YoutubeDL(ydl_video_opts) as ydl:
                     error_code = ydl.download(link)
                 file_paths.append(str(relative_destination_video_only))
-                print("Successfully downloaded Youtube VIDEO ONLY from " + link)
+                if verbose:
+                    print("Successfully downloaded Youtube VIDEO ONLY from " + link)
             except Exception as e: 
                 print("Error downloading video (VIDEO) from link " + link)
 
             #Download HIGHEST QUALITY AUDIO ONLY
             try:
-                print("Getting Youtube AUDIO ONLY")
+                if verbose:
+                    print("Getting Youtube AUDIO ONLY")
                 # absolute path for us, relative path for database and unity
                 absolute_destination_audio = _safe_destination(project_dir, base_audio)
                 relative_destination_audio = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_audio.name
@@ -200,25 +206,28 @@ def getArtInfo(url):
                 
                 ydl_audio_opts = {
                     'format' : 'm4a/bestaudio/best',
-                    'quiet' : False,
+                    'quiet' : not verbose,
                     'outtmpl' : absolute_destination_audio
                 }
 
                 with yt_dlp.YoutubeDL(ydl_audio_opts) as ydl:
                     error_code = ydl.download(link)
                 file_paths.append(str(relative_destination_audio))        
-                print("Successfully downoaded Youtube AUDIO ONLY from " + link)
+                if verbose:
+                    print("Successfully downoaded Youtube AUDIO ONLY from " + link)
             except Exception as e:
                 print("Error downloading video (AUDIO) from link " + link)
             
         #Catch a vimeo video and convert it into an mp4 file.
         elif "vimeo" in iframeTag["src"]:
-            print("Found a Vimeo video")
+            if verbose:
+                print("Found a Vimeo video")
             try:
-                print(url)
-                print(iframeTag["src"])
+                if verbose:
+                    print(url)
+                    print(iframeTag["src"])
+                    print("Attempting to download vimeo file")
                 v = Vimeo(iframeTag["src"], embedded_on=url)
-                print("Attempting to download vimeo file")
                 base_video= f"{results['artistName'].replace(' ','')}_{results['artTitle'].replace(' ','')}.mp4"
                 # absolute path for us, relative path for database and unity
                 absolute_destination_video = _safe_destination(project_dir, base_video)
@@ -255,7 +264,8 @@ def getArtInfo(url):
 
                     fileExt = Path(orig_name).suffix
                     if not fileOK(fileExt):
-                        print(fileExt)
+                        if verbose:
+                            print(fileExt)
                         handleError("Disallowed File")
                         #TODO Change this logic to catch the none
                         return results
@@ -278,9 +288,9 @@ def getArtInfo(url):
 
     results["file_paths"] = file_paths
 
-    # TODO: delete later, for debugging
-    print("Results of " + url + ":")
-    printArtProject(results)
+    if verbose:
+        print("Results of " + url + ":")
+        printArtProject(results)
 
     return results
 
@@ -480,11 +490,10 @@ def detect_media_type(filepath: str) -> str:
     return "image"
 
 
-def scrapePsyche():
+def scrapePsyche(verbose=False):
 
     pageURL = "https://psyche.ssl.berkeley.edu/galleries/artwork/page/"
     pageNum = 1
-    projectID = 0
 
     # Get the page with up to 16 art projects
     psychePage = requests.get(pageURL + str(pageNum))
@@ -492,7 +501,8 @@ def scrapePsyche():
 
     # Art project titles are held in span tags with the "caption title" - this while loop goes until none are found on the current page
     while artCaptions := content.find_all("a", class_="excerpt"):
-        print("Starting page number: " + str(pageNum))       # TODO: delete this, it's for debugging
+        if verbose:
+            print("Starting page number: " + str(pageNum))
 
         projectLinks = []
         # for every title on the page ...
@@ -500,11 +510,12 @@ def scrapePsyche():
             # href has the link to the project page
             projectLinks.append(caption["href"])
 
-        scrapedResults = []
+        scraped_results = []
         with ThreadPoolExecutor() as executor:
-            scrapedResults = list(executor.map(getArtInfo, projectLinks))
+            verbose_list = [verbose] * len(projectLinks)
+            scraped_results = list(executor.map(getArtInfo, projectLinks, verbose_list))
 
-        for artInfo in scrapedResults:
+        for artInfo in scraped_results:
             artist_name = artInfo["artistName"]
             art_title = artInfo["artTitle"]
             date_iso = artInfo["date"]
@@ -530,4 +541,4 @@ def scrapePsyche():
         content = BeautifulSoup(psychePage.text, "html.parser")
 
 init_db()
-scrapePsyche()
+scrapePsyche(verbose=True)
