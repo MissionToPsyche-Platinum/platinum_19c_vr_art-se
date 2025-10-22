@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using Mono.Data.Sqlite;       // assumes sqlite dlls and mono.data.sqlite is already included in plugins folder
@@ -198,6 +199,7 @@ public static class PsycheDBMiddleware
             {
                 while (reader.Read())
                 {
+
                     projectIds.Add(Convert.ToInt32(reader["project_id"]));
                 }
             }
@@ -223,6 +225,31 @@ public static class PsycheDBMiddleware
         // this conditional is after the shuffle so the exhibit is *functionally* never the same
         if (count >= allIds.Count) return allIds;
         return allIds.GetRange(0, count);
+    }
+
+
+    // safe for runtime use, all returned Scriptable objects are stored in memory(currently
+    public static List<ArtworkData> LoadRandomArtworkData(int count, string dbPathOverride = null)
+    {
+        
+        var ids = GetRandomProjectIds(count, dbPathOverride);
+        var list = new List<ArtworkData>(ids.Count);
+        foreach (var id in ids)
+        {
+            var so = ScriptableObject.CreateInstance<ArtworkData>();
+            if (TryLoadArtworkByProjectId(id, so, dbPathOverride))
+            {
+                // @TODO
+                // add a check for having media files associated with project id, in the event of invalid types.
+                list.Add(so);
+            }
+            else
+            {
+                //in case of fail, don't keep Scriptable object in memory
+                UnityEngine.Object.Destroy(so);
+            }
+        }
+        return list;
     }
 
 }
