@@ -1,4 +1,5 @@
 import PsycheScraper
+from AddArtProject import *
 from AddArtFile import add_art_file
 from DeleteArtFile import delete_art_file
 
@@ -7,6 +8,7 @@ if __name__ == '__main__':
 1: Run the web scraper
 2: Add an art file to an existing art project
 3: Remove an art file from an existing art project
+4: Add a completely new art project
 q: Quit""")
 
     while True:
@@ -20,6 +22,12 @@ q: Quit""")
             pass
         elif in_str == '3':
             delete_art_file()
+            pass
+        elif in_str == '4':
+            artInfo = getArtProjectInfo()
+            # TODO: Create function to move art to desired destination in assets/artwork (see around line 57 of AddArtFile.py)
+            # TODO: Don't forget to change artInfo["file_paths"]
+            addArtProject(artInfo)
             pass
         elif in_str == 'q':
             print("Goodbye!")
