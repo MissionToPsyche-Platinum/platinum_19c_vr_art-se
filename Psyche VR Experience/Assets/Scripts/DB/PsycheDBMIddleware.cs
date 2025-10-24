@@ -6,6 +6,7 @@ using System.IO;
 using Mono.Data.Sqlite;       // assumes sqlite dlls and mono.data.sqlite is already included in plugins folder
 using UnityEditor.XR.LegacyInputHelpers;
 using UnityEngine;
+using static PsycheDBMiddleware;
 
 public static class PsycheDBMiddleware
 {
@@ -207,11 +208,36 @@ public static class PsycheDBMiddleware
         return projectIds;
     }
 
+    // will return all projectIds with a media filepath in the database. Any without will be excluded.
+    // This will see more usage than GetAllProjectIds, considering it returns invalid projects 
+    public static List<int> GetProjectIdsWithMediaRows(string dbPathOverride = null)
+    {
+        var dbPath = dbPathOverride ?? GetDefaultDbPath();
+        if (!File.Exists(dbPath))
+        {
+            Debug.LogError($"PsycheDbMiddleware: DB not found at {dbPath}");
+            return new List<int>();
+        }
+
+        var ids = new List<int>();
+        using (var conn = new SqliteConnection(BuildConnString(dbPath)))
+        {
+            conn.Open();
+            using (var cmd = new SqliteCommand("SELECT DISTINCT project_id FROM project_media;", conn))
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                    ids.Add(Convert.ToInt32(reader["project_id"]));
+            }
+        }
+        return ids;
+    }
+
     // randomized the project ids, selecting a range that is entered as an input, allowing us to adjust to that sweet spot.
     // Once we figure that out we can make a duplicate method that does a specific amount for exhibit mode and for full mode
     public static List<int> GetRandomProjectIds(int count, string dbPathOverride = null)
     {
-        var allIds = GetAllProjectIds(dbPathOverride);
+        var allIds = GetProjectIdsWithMediaRows(dbPathOverride);
         if (allIds.Count == 0) return allIds;
         if (count == 0) return new List<int>();
 
@@ -251,5 +277,62 @@ public static class PsycheDBMiddleware
         }
         return list;
     }
+
+    /*********************************************************************************************
+     *  Implemented the factory pattern within the file. The goal is to keep in self-contained   *
+     *********************************************************************************************/
+
+    public interface InterfaceArtworkFactory
+    {
+        ArtworkData Create(int projectId);
+        List<ArtworkData> CreateMany(IEnumerable<int> projectIds);
+        List<ArtworkData> CreateRandom(int count);
+    }
+
+    // apparently sealing a class allows the compiler to perform optimizations by removing the ability to 
+    // factory class to allow ease of use  of the entirety of this classes functionality. I left the methods of
+    // PsycheDBMiddleware public just in case and for testing purposes, but this class is how we will likely be using
+    // the db
+    public sealed class ArtworkFactory : InterfaceArtworkFactory
+    {
+        private readonly string _dbPathOverride;
+
+        public ArtworkFactory(string dbPathOverride = null)
+        {
+            _dbPathOverride = dbPathOverride;
+        }
+
+        //factory method to create a singular instance of a scriptable object with the project id.
+        public ArtworkData Create(int projectId)
+        {
+            var so = ScriptableObject.CreateInstance<ArtworkData>();
+            if (!TryLoadArtworkByProjectId(projectId, so, _dbPathOverride))
+            {
+                UnityEngine.Object.Destroy(so);
+                return null;
+            }
+            return so;
+        }
+
+        // factory method to return Scriptable objects for the passed in list of project ids
+        public List<ArtworkData> CreateMany(IEnumerable<int> ids)
+        {
+            var list = new List<ArtworkData>();
+            foreach (var id in ids)
+            {
+                var so = Create(id);
+                if (so != null) list.Add(so);
+            }
+            return list;
+        }
+        // factory method to return the random scriptable objects based on the prior work with random ids and
+        // valid projects(has media row in DB)
+        public List<ArtworkData> CreateRandom(int count)
+        {
+            var ids = GetRandomProjectIds(count);
+            return CreateMany(ids);
+        }
+    }
+
 
 }
