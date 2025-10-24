@@ -289,10 +289,9 @@ public static class PsycheDBMiddleware
         List<ArtworkData> CreateRandom(int count);
     }
 
-    // apparently sealing a class allows the compiler to perform optimizations by removing the ability to 
+    // sealing a class allows the compiler to perform optimizations by removing the ability to inherit.
     // factory class to allow ease of use  of the entirety of this classes functionality. I left the methods of
-    // PsycheDBMiddleware public just in case and for testing purposes, but this class is how we will likely be using
-    // the db
+    // PsycheDBMiddleware public just in case and for testing purposes, but this class is the smooth way
     public sealed class ArtworkFactory : InterfaceArtworkFactory
     {
         private readonly string _dbPathOverride;
@@ -334,5 +333,15 @@ public static class PsycheDBMiddleware
         }
     }
 
+    // this is the method that puts it all together, callable and all that ;)
+    // standard usage :
+    // var exhibitSOs = PsycheDBMiddleware.CreateRandomProjectSObjects(n);
+    // testing or using a different version of the db somewhere else:
+    // var testExhibitSOs = PsycheDBMiddleware.CreateRandomProjectSObjects(n, testDB_path);
+    public static List<ArtworkData> CreateRandomProjectSObjects(int count, string dbPathOverride = null)
+    {
+        var factory = new ArtworkFactory(dbPathOverride);
+        return factory.CreateRandom(count);
+    }
 
 }
