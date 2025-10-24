@@ -144,21 +144,17 @@ def getArtInfo(url):
             yt_link = YouTube(link)
 
             # names for video/audio
-            base_video = f"{results['artistName'].replace(' ', '')}_{results['artTitle'].replace(' ', '')}.mp4"
+            base_video = f"{results['artistName'].replace(' ', '')}_{results['artTitle'].replace(' ', '')}_FINAL.mp4"
             base_video_only = f"{results['artistName'].replace(' ', '')}_{results['artTitle'].replace(' ', '')}_VIDONLY.mp4"
             base_audio = f"{results['artistName'].replace(' ', '')}_{results['artTitle'].replace(' ', '')}_AUDIO.mp4"
 
             # download highest quality precombined mp4
             try:
-                print ("Getting Youtube mp4 highest resolution (PreCombined)")
                 # absolute path for us, relative path for database and unity
                 absolute_destination_video = _safe_destination(project_dir, base_video)
                 relative_destination_video = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_video.name
-                ##yt_link.streams.get_highest_resolution().download(output_path=str(absolute_destination_video.parent), filename= absolute_destination_video.name)
-                ##file_paths.append(str(relative_destination_video))
-                ##print("Successfully downloaded Youtube video (PRECOMBINED) from " + link)
             except Exception as e:
-                print("Error downloading video (COMBO) from link " + link)
+                print("Error setting the path for final video: ", e)
             
              #Download HIGHEST QUALITY VIDEO ONLY
             try:
@@ -178,11 +174,9 @@ def getArtInfo(url):
                 }
 
                 with yt_dlp.YoutubeDL(ydl_video_opts) as ydl:
-                    error_code = ydl.download(link)
+                    ydl.download(link)
                 file_paths.append(str(relative_destination_video_only))
                 print("Successfully downloaded Youtube VIDEO ONLY from " + link)
-                print(absolute_destination_video_only)
-                print(relative_destination_video_only)
                 SUCCESS_DOWNLOADS.append({'url': link, 'stage': 'video', 'dest': file_paths})
             except Exception as e: 
                 print("Error downloading video (VIDEO) from link " + link)
@@ -202,14 +196,14 @@ def getArtInfo(url):
                 ydl_audio_opts = {
                     'format' : 'ba/b',
                     'quiet' : False,
-                    'outtmpl' : absolute_destination_audio,
+                    'outtmpl' : str(absolute_destination_audio),
                     'retries': 5,
                     'noplaylist': True,
-                    'ignoreerrors': True
+                    'ignoreerrors': False
                 }
 
                 with yt_dlp.YoutubeDL(ydl_audio_opts) as ydl:
-                    error_code = ydl.download(link)
+                    ydl.download(link)
                 file_paths.append(str(relative_destination_audio))        
                 print("Successfully downoaded Youtube AUDIO ONLY from " + link)
                 SUCCESS_DOWNLOADS.append({'url': link, 'stage': 'audio', 'dest': file_paths})
@@ -226,33 +220,69 @@ def getArtInfo(url):
                 video_input_path = Path(absolute_destination_video_only).resolve()
                 audio_input_path = Path(absolute_destination_audio).resolve()
                 final_output_path = Path(absolute_destination_video).resolve()
-
-                #Create the audio and video inputs
-                video_input = ffmpeg.input(str(video_input_path))
-                #SUCCESS_DOWNLOADS.append({'url':link,'stage':'2combineVIDEO2','dest': video_input})
-                audio_input = ffmpeg.input(str(audio_input_path))
-                #SUCCESS_DOWNLOADS.append({'url':link,'stage':'2combineAUDIO2','dest': audio_input})
                 
-                #Tries to combine the two files together using FFMPEG
-                try:
-                    ffmpeg.output(audio_input, video_input, str(final_output_path),
-                            vcodec='copy', acodec='copy', format='mp4') \
-                    .run(overwrite_output=True)
-                except Exception as e:
-                    print("Error when trying to Combine the videos" , e)
-                    FAILED_DOWNLOADS.append({'url': link, 'stage': 'Combination', 'error': str(e)})
-                
-                #Adds the new video to the file_paths   
-                file_paths.append(str(relative_destination_video))
-                print("Successfully combined Video and Audio into one finalized version")
-                #DEBUG: Tells you which videos succeedded
-                SUCCESS_DOWNLOADS.append({'url': link, 'stage': '2combine', 'dest': file_paths})
+                if(video_input_path.exists() & audio_input_path.exists()):
+                    #Create the audio and video inputs
+                    video_input = ffmpeg.input(str(video_input_path))
+                    #SUCCESS_DOWNLOADS.append({'url':link,'stage':'2combineVIDEO2','dest': video_input})
+                    audio_input = ffmpeg.input(str(audio_input_path))
+                    #SUCCESS_DOWNLOADS.append({'url':link,'stage':'2combineAUDIO2','dest': audio_input})
+                    
+                    #Tries to combine the two files together using FFMPEG
+                    try:
+                        ffmpeg.output(audio_input, video_input, str(final_output_path),
+                                vcodec='copy', acodec='copy', format='mp4') \
+                        .run(overwrite_output=True)
+                        SUCCESS_DOWNLOADS.append({'url': link, 'stage': 'combine', 'dest': file_paths})
+                        try:
+                            os.remove(absolute_destination_video_only)
+                            os.remove(absolute_destination_audio)
+                        except Exception as e:
+                            print("There was an issue removing the video and audio files: ", e)
+                    except Exception as e:
+                        print("Error when trying to Combine the videos" , e)
+                        FAILED_DOWNLOADS.append({'url': link, 'stage': 'Combination', 'error': str(e)})
+                    
+                    #Adds the new video to the file_paths   
+                    file_paths.append(str(relative_destination_video))
+                    print("Successfully combined Video and Audio into one finalized version")
+                    #DEBUG: Tells you which videos succeedded
+                    #SUCCESS_DOWNLOADS.append({'url': link, 'stage': '2combine', 'dest': file_paths})
+                else:
+                    ydl_final_opts = {
+                        'format' : 'b',
+                        'quiet' : False,
+                        'outtmpl' : absolute_destination_video,
+                        'retries': 5,
+                        'noplaylist': True,
+                        'ignoreerrors': False
+                        }
+                   
+                    try: 
+                        with yt_dlp.YoutubeDL(ydl_final_opts) as ydl:
+                            ydl.download(link)
+                            print("Successfully downloaded the best precombined version of ", link)
+                            SUCCESS_DOWNLOADS.append({'url': link, 'stage': 'precombined', 'dest': file_paths})
+                    except Exception as e:
+                        print("There was an issue downloading the best COMBINED video file ", e, link)
+                    if(video_input_path.exists()):
+                        try:
+                            os.remove(absolute_destination_video_only)
+                        except Exception as e:
+                            print("There was an issue removing the video file: ", e)
+                    if(audio_input_path.exists()):
+                        try:
+                            os.remove(absolute_destination_audio)
+                        except Exception as e:
+                            print("There was an issue removing the audio file: ", e)
+                    file_paths.append(str(relative_destination_video))
             except Exception as e:
                 print("Error combining audio and video files together into one")
                 try:
-                    FAILED_DOWNLOADS.append({'url': link, 'stage': 'combine2', 'error': str(e)})
+                    FAILED_DOWNLOADS.append({'url': link, 'stage': 'precombined', 'error': str(e)})
                 except Exception:
                     pass
+            
         #Catch a vimeo video and convert it into an mp4 file.
         elif "vimeo" in iframeTag["src"]:
             print("Found a Vimeo video")
@@ -261,12 +291,18 @@ def getArtInfo(url):
                 print(iframeTag["src"])
                 v = Vimeo(iframeTag["src"], embedded_on=url)
                 print("Attempting to download vimeo file")
-                base_video= f"{results['artistName'].replace(' ','')}_{results['artTitle'].replace(' ','')}.mp4"
+                #base_video= f"{results['artistName'].replace(' ','')}_{results['artTitle'].replace(' ','')}.mp4"
                 # absolute path for us, relative path for database and unity
-                absolute_destination_video = _safe_destination(project_dir, base_video)
-                relative_destination_video = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_video.name
+                #absolute_destination_video = _safe_destination(project_dir, base_video)
+                #relative_destination_video = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_video.name
 
-                v.streams[-1].download(download_directory=str(absolute_destination_video.parent),filename=absolute_destination_video.name)
+                #v.streams[-1].download(download_directory=str(absolute_destination_video.parent),filename=absolute_destination_video.name)
+                try:
+                    with yt_dlp(ydl_video_opts) as ydl:
+                        ydl.download(iframeTag["src"])
+                        print("Downloading VIMEO video was a success!")
+                except Exception as e:
+                    print("There was an error downloading the vimeo file")
                 file_paths.append(str(relative_destination_video))
                 SUCCESS_DOWNLOADS.append({'url': link, 'stage': 'vimeo', 'dest': file_paths})
             except Exception as e:

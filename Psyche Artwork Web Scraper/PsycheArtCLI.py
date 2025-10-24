@@ -26,7 +26,7 @@ q: Quit""")
             #This is a hidden tester for debugging purposes, leave in for now
             testRunYTDLP()
             pass
-        elif in_str == 'q':
+        elif in_str == 'q' or 'Q':
             print("Goodbye!")
             exit(0)
         else:
