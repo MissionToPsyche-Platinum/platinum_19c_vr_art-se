@@ -37,7 +37,7 @@ def add_art_file():
 
             # get path of file to add
             new_file_path = input()
-            new_file_path = new_file_path.replace("\\",', ')
+            new_file_path = str(new_file_path).replace('\\',', ')
 
             # quit
             if new_file_path == "q":
