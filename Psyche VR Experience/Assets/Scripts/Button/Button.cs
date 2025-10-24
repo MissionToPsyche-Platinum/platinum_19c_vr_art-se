@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class Button : MonoBehaviour
@@ -6,14 +8,49 @@ public class Button : MonoBehaviour
     public Material unhovered;
     public Material hovering;
 
+    public Animator animator;
+
+    public event Action<Button> ButtonClickedEvent;
+
+    public bool canBePushed = true;
+
     public void Hovered()
     {
+        if (!canBePushed)
+            return;
+
         buttonRenderer.material = hovering;
-        Debug.Log("HOVERED");
     }
 
     public void Unhovered()
     {
+        if (!canBePushed)
+            return;
+
         buttonRenderer.material = unhovered;
+    }
+
+    public async void Pressed()
+    {
+        if (!canBePushed)
+            return;
+
+        Unhovered();
+        ButtonClickedEvent?.Invoke(this);
+
+        animator.Play("Push");
+
+        canBePushed = false;
+
+        while(animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
+        {
+            if (this == null)
+                return;
+
+            await Task.Delay(10);
+        }
+
+        animator.Play("Idle");
+        canBePushed = true;
     }
 }
