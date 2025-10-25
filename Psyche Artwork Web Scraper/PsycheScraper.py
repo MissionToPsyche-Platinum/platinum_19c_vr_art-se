@@ -1,6 +1,8 @@
 import os.path
 from datetime import datetime
 import re
+import sys
+import subprocess
 
 import bs4
 import requests
@@ -562,9 +564,32 @@ def detect_media_type(filepath: str) -> str:
         return "audio"
     return "image"
 
+#This verifies key packages exist on a users computer before running any of the scrapers functionalities.
+def verify_packages():
+    try:
+        ffmpeg_result = subprocess.run(['ffmpeg', '-version'], capture_output = True, text = True, check = True)
+        print(ffmpeg_result)
+    except subprocess.CalledProcessError as e:
+        print("FFMPEG verification check failed! ", e)
+    except FileNotFoundError as e:
+        print("FFMPEG is not installed or is not within the system PATH. Please see README for help!")
+        sys.exit(-1)
+    try:
+        yt_dlp_result = subprocess.run(['yt-dlp', '--version'], capture_output = True, text = True, check = True)
+        print(yt_dlp_result)
+    except subprocess.CalledProcessError as e:
+        print("yt_dlp verification check failed! ", e)
+    except FileNotFoundError as e:
+        print("yt_dlp is not installed or is out of date. Please see README for help!")
+        sys.exit(-1)
+
 
 def scrapePsyche():
 
+    #Call up to the package verification function to ensure that key packages are up to date
+    verify_packages()
+
+    #Grab the page URL for the scraper
     pageURL = "https://psyche.ssl.berkeley.edu/galleries/artwork/page/"
     pageNum = 1
     projectID = 0
@@ -612,7 +637,7 @@ def scrapePsyche():
         psychePage = requests.get(pageURL + str(pageNum))
         content = BeautifulSoup(psychePage.text, "html.parser")
 
-    # after scraping completes, print any failed downloads
+    # For debugging purposes, after scraping completes, print any failed downloads
     if FAILED_DOWNLOADS:
         print("\nThe following video downloads failed:")
         for failed in FAILED_DOWNLOADS:
@@ -623,6 +648,7 @@ def scrapePsyche():
     else:
         print("\nAll video downloads completed successfully.")
 
+    #For debugging purposes, this lists all the successful downloads
     if SUCCESS_DOWNLOADS:
         print("\nThe following video downloads succeeded:")
         for succeeded in SUCCESS_DOWNLOADS:
