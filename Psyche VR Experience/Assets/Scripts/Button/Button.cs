@@ -53,4 +53,9 @@ public class Button : MonoBehaviour
         animator.Play("Idle");
         canBePushed = true;
     }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        Pressed();
+    }
 }
