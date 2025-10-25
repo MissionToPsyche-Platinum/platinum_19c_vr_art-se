@@ -101,7 +101,7 @@ public class RoomModule : MonoBehaviour
     /// Deactivates the previous room model and activates the model given. Then, sets the roomType property to the new value.
     /// </summary>
     /// <param name="nRoomType">The new room shape to use</param>
-    private void SetRoomActive(RoomType nRoomType)
+    public void SetRoomActive(RoomType nRoomType)
     {
         roomModels[((int)roomType)].SetActive(false);
         roomModels[(int)nRoomType].SetActive(true);
