@@ -7,6 +7,7 @@ if __name__ == '__main__':
 2: Add an art file to an existing art project
 3: Remove an art file from an existing art project
 5: Modify a non-file attribute of an existing art project
+6: Delete an existing art project
 q: Quit""")
 
     while True:
@@ -24,6 +25,9 @@ q: Quit""")
         elif in_str == '5':
             modify_art_project()
             pass
+        elif in_str == '6':
+            delete_art_project()
+            pass
         elif in_str == 'q':
             print("Goodbye!")
             exit(0)
@@ -35,4 +39,5 @@ q: Quit""")
 2: Add an art file to an existing art project
 3: Remove an art file from an existing art project
 5: Modify a non-file attribute of an existing art project
+6: Delete an existing art project
 q: Quit""")

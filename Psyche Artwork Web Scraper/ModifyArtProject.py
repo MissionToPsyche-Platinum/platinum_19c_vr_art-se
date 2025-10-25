@@ -163,7 +163,7 @@ def modify_art_project():
         selection = ""
         while True:
             selection = input(f"Enter the number of the {table[:-1]} that you would you like to modify: ")
-            if not selection.isdigit() or int(selection) < 1 or int(selection) > len(selection):
+            if not selection.isdigit() or int(selection) < 1 or int(selection) > len(items):
                 print("That is not a valid number, please try again.")
             else:
                 break
@@ -229,3 +229,37 @@ def modify_art_project():
             upsert_project(db_id, title, description, date, genre, artist_id)
 
     print("Successfully modified!")
+
+def delete_art_project():
+    with connection() as conn:
+        # open cursor to make queries
+        cursor = conn.cursor()
+        cursor.execute("select title from projects")
+
+        # get list of art project artists/titles
+        items = list(cursor)
+        for i in range(0, len(items)):
+            print(f"{i + 1}. {items[i][0]}")
+
+        # get user's input on which art project to delete from
+        selection = ""
+        while True:
+            selection = input(f"Enter the number of the project that you would you like to modify: ")
+            if not selection.isdigit() or int(selection) < 1 or int(selection) > len(items):
+                print("That is not a valid number, please try again.")
+            else:
+                break
+        selection = int(selection) - 1
+
+        # get id of selected project/artist
+        cursor.execute(f"select project_id from projects where title = ?", (items[selection][0],))
+        db_id = cursor.fetchone()[0]
+
+        confirm = input("Are you sure you want to delete this project? (Type \"Yes, I am sure\" to confirm): ")
+        if confirm != "Yes, I am sure":
+            print("Cancelling deletion.")
+            return
+
+        cursor.execute("delete from projects where project_id = ?", (db_id,))
+
+    print("Successfully deleted!")
