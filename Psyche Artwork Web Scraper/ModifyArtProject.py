@@ -131,7 +131,7 @@ def modify_art_project():
     while True:
         in_str = input("""Would you like to modify an artist or an art project?
         1: Artist (Modify Name or Major)
-        2: Art Project (Modify Title, Description, Date, or Genre""")
+        2: Art Project (Modify Title, Description, Date, or Genre\n""")
 
         if in_str == "1":
             artist = True
@@ -175,12 +175,12 @@ def modify_art_project():
 
         if artist:
             while True:
-                cursor.execute("select name, major from artists where artist_id = ?", db_id)
+                cursor.execute("select name, major from artists where artist_id = ?", (db_id,))
                 name, major = cursor.fetchone()
 
                 in_str = input(f"""Would you like to modify the artist's name or major?
-                    1: Name (Currently {name}
-                    2: Major (Currently {major})""")
+                    1: Name (Currently {name})
+                    2: Major (Currently {major})\n""")
 
                 if in_str == "1":
                     name = input("Enter the new name of the artist: ")
@@ -195,14 +195,14 @@ def modify_art_project():
 
         else:
             while True:
-                cursor.execute("select title, description, date, genre_medium, artist_id from projects where project_id = ?", db_id)
+                cursor.execute("select title, description, date, genre_medium, artist_id from projects where project_id = ?", (db_id,))
                 title, description, date, genre, artist_id = cursor.fetchone()
 
                 in_str = input(f"""Would you like to modify the artist's name or major?
-                    1: Title (Currently {title}
+                    1: Title (Currently {title})
                     2: Description (Currently {description})
                     3: Date (Currently {date})
-                    4: Genre (Currently {genre})""")
+                    4: Genre (Currently {genre})\n""")
 
                 if in_str == "1":
                     title = input("Enter the new title of the project: ")

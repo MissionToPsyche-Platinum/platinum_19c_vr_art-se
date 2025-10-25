@@ -34,4 +34,5 @@ q: Quit""")
 1: Run the web scraper
 2: Add an art file to an existing art project
 3: Remove an art file from an existing art project
+5: Modify a non-file attribute of an existing art project
 q: Quit""")
