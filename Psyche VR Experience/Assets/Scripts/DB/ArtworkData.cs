@@ -13,5 +13,5 @@ public class ArtworkData : ScriptableObject
     [SerializeField] public String artworkDate;                 //MONTH - DAY - YEAR (As seen on Website)
     [SerializeField] public List<String> artworkURLs;           //urls for artwork
     [SerializeField] public int artworkCount;                   //number of pieces of artwork
-    [SerializeField] public int artworkID;                      //ID number of the artwork (This is for our use)
+    [SerializeField] public long artworkID;                      //ID number of the artwork (This is for our use)
 }

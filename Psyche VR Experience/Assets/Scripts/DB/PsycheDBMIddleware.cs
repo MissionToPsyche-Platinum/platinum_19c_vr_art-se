@@ -19,7 +19,7 @@ public static class PsycheDBMiddleware
         if (string.IsNullOrEmpty(projectRoot))
             throw new Exception("Could not resolve project root from Application.dataPath.");
 
-        var dbPath = Path.Combine(projectRoot, "Psyche VR Experience", "Assets", "Database", "psyche.db");
+        var dbPath = Path.Combine(projectRoot, "Assets", "Database", "psyche.db");
         return dbPath;
     }
 
@@ -35,7 +35,7 @@ public static class PsycheDBMiddleware
     //          NOTE:   at runtime, SO instances will be held in memory, so using them to
     //                  populate the prefab should be followed immediately by destruction
     //                  of the SO in question. pipe in the data, dump the container
-    public static bool TryLoadArtworkByProjectId(int projectId, ArtworkData target, string dbPathOverride = null)
+    public static bool TryLoadArtworkByProjectId(long projectId, ArtworkData target, string dbPathOverride = null)
     {
         if (target == null)
         {
@@ -76,7 +76,6 @@ public static class PsycheDBMiddleware
                 conn.Open();
 
                 // populate the artist and project table data into temporary variables
-                int rowCount;
                 string title = null, description = null, dateIso = null, genre = null;
                 string artistName = null, artistMajor = null;
 
@@ -126,7 +125,7 @@ public static class PsycheDBMiddleware
                 target.genre = genre ?? string.Empty;
 
                 target.artistName = artistName ?? string.Empty;
-                //target.artistMajor = artistMajor ?? string.Empty;
+                target.artistMajor = artistMajor ?? string.Empty;
 
                 // convert ISO (YYYY-MM-DD) to "MONTH - DAY - YEAR" as on the website (if possible(just fails if unity has an aneurism))
                 target.artworkDate = ConvertIsoToMonthDayYear(dateIso);
@@ -149,7 +148,7 @@ public static class PsycheDBMiddleware
 
     // will return an in-memory SO(ArtworkData) that is safe to pull the data from and delete immediately following. Can also be reused, potentially.
     // I have ideas for the multi-project retrieval here
-    public static ArtworkData LoadArtworkIntoNewSO(int projectId, string dbPathOverride = null)
+    public static ArtworkData LoadArtworkIntoNewSO(long projectId, string dbPathOverride = null)
     {
         var so = ScriptableObject.CreateInstance<ArtworkData>();
         if (!TryLoadArtworkByProjectId(projectId, so, dbPathOverride))
@@ -183,15 +182,15 @@ public static class PsycheDBMiddleware
 
     // will return all projectIds currently in the project for use in random selection
     // or for direct usage into LoadArtworkIntoNewSO/TryLoadArtworkByProjectId
-    public static List<int> GetAllProjectIds(string dbPathOverride = null)
+    public static List<long> GetAllProjectIds(string dbPathOverride = null)
     {
         var dbPath = dbPathOverride ?? GetDefaultDbPath();
         if (!File.Exists(dbPath))
         {
             Debug.LogError($"PsycheDbMiddleware: db not found at {dbPath}");
-            return new List<int>();
+            return new List<long>();
         }
-        var projectIds = new List<int>();
+        var projectIds = new List<long>();
         using (var conn = new SqliteConnection(BuildConnString(dbPath)))
         {
             conn.Open();
@@ -201,7 +200,7 @@ public static class PsycheDBMiddleware
                 while (reader.Read())
                 {
 
-                    projectIds.Add(Convert.ToInt32(reader["project_id"]));
+                    projectIds.Add(Convert.ToInt64(reader["project_id"]));
                 }
             }
         }
@@ -210,16 +209,16 @@ public static class PsycheDBMiddleware
 
     // will return all projectIds with a media filepath in the database. Any without will be excluded.
     // This will see more usage than GetAllProjectIds, considering it returns invalid projects 
-    public static List<int> GetProjectIdsWithMediaRows(string dbPathOverride = null)
+    public static List<long> GetProjectIdsWithMediaRows(string dbPathOverride = null)
     {
         var dbPath = dbPathOverride ?? GetDefaultDbPath();
         if (!File.Exists(dbPath))
         {
             Debug.LogError($"PsycheDbMiddleware: DB not found at {dbPath}");
-            return new List<int>();
+            return new List<long>();
         }
 
-        var ids = new List<int>();
+        var ids = new List<long>();
         using (var conn = new SqliteConnection(BuildConnString(dbPath)))
         {
             conn.Open();
@@ -227,7 +226,7 @@ public static class PsycheDBMiddleware
             using (var reader = cmd.ExecuteReader())
             {
                 while (reader.Read())
-                    ids.Add(Convert.ToInt32(reader["project_id"]));
+                    ids.Add(Convert.ToInt64(reader["project_id"]));
             }
         }
         return ids;
@@ -235,11 +234,11 @@ public static class PsycheDBMiddleware
 
     // randomized the project ids, selecting a range that is entered as an input, allowing us to adjust to that sweet spot.
     // Once we figure that out we can make a duplicate method that does a specific amount for exhibit mode and for full mode
-    public static List<int> GetRandomProjectIds(int count, string dbPathOverride = null)
+    public static List<long> GetRandomProjectIds(int count, string dbPathOverride = null)
     {
         var allIds = GetProjectIdsWithMediaRows(dbPathOverride);
         if (allIds.Count == 0) return allIds;
-        if (count == 0) return new List<int>();
+        if (count == 0) return new List<long>();
 
         var random = new System.Random();
         // using Fisher Yates shuffle to randomize list and then select the range of size count
@@ -284,8 +283,8 @@ public static class PsycheDBMiddleware
 
     public interface InterfaceArtworkFactory
     {
-        ArtworkData Create(int projectId);
-        List<ArtworkData> CreateMany(IEnumerable<int> projectIds);
+        ArtworkData Create(long projectId);
+        List<ArtworkData> CreateMany(IEnumerable<long> projectIds);
         List<ArtworkData> CreateRandom(int count);
     }
 
@@ -302,7 +301,7 @@ public static class PsycheDBMiddleware
         }
 
         //factory method to create a singular instance of a scriptable object with the project id.
-        public ArtworkData Create(int projectId)
+        public ArtworkData Create(long projectId)
         {
             var so = ScriptableObject.CreateInstance<ArtworkData>();
             if (!TryLoadArtworkByProjectId(projectId, so, _dbPathOverride))
@@ -314,7 +313,7 @@ public static class PsycheDBMiddleware
         }
 
         // factory method to return Scriptable objects for the passed in list of project ids
-        public List<ArtworkData> CreateMany(IEnumerable<int> ids)
+        public List<ArtworkData> CreateMany(IEnumerable<long> ids)
         {
             var list = new List<ArtworkData>();
             foreach (var id in ids)
