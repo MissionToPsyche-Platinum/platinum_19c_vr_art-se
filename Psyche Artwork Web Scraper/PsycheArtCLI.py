@@ -1,6 +1,7 @@
 import PsycheScraper
 from AddArtFile import add_art_file
 from DeleteArtFile import delete_art_file
+from PsycheTestRun import testRunYTDLP
 
 if __name__ == '__main__':
     print("""Welcome to the Psyche VR Museum CLI Interface!  What would you like to do?
@@ -21,7 +22,11 @@ q: Quit""")
         elif in_str == '3':
             delete_art_file()
             pass
-        elif in_str == 'q':
+        elif in_str =='4':
+            #This is a hidden tester for debugging purposes, leave in for now
+            testRunYTDLP()
+            pass
+        elif in_str == 'q' or 'Q':
             print("Goodbye!")
             exit(0)
         else:
