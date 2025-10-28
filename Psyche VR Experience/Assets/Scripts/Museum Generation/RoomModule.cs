@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO.IsolatedStorage;
 using System.Threading.Tasks;
 using UnityEngine;
 using static RoomModule;
@@ -65,12 +66,12 @@ public class RoomModule : MonoBehaviour
 
     ////boolean openings in each room are ordered: North, South, West, East
     Dictionary<RoomType, RoomInfo> roomInfos = new Dictionary<RoomType, RoomInfo> {
-        {RoomType.OneOpen, new RoomInfo(false, true, false, false, 1) },             
-        {RoomType.TwoOpenLShape, new RoomInfo(false, true, true, false, 1) },     
-        {RoomType.TwoOpenStraight,   new RoomInfo(true, true, false, false, 1) },     
+        {RoomType.OneOpen, new RoomInfo(false, true, false, false, 3) },             
+        {RoomType.TwoOpenLShape, new RoomInfo(false, true, true, false, 2) },     
+        {RoomType.TwoOpenStraight,   new RoomInfo(true, true, false, false, 2) },     
         {RoomType.ThreeOpen,   new RoomInfo(false, true, true, true, 1) },           
         {RoomType.FourOpen,   new RoomInfo(true, true, true, true, 0) },           
-        {RoomType.FlatOpen,   new RoomInfo(true, true, true, true, 0) }              
+        {RoomType.FlatOpen,   new RoomInfo(true, true, true, true, 0) }
     };
 
     //number of openings in each room
@@ -284,5 +285,13 @@ public class RoomModule : MonoBehaviour
         }
 
         SetRoomActive(room, dir);
+    }
+
+    public void SetArtDisplays()
+    {
+        for (int i = 0; i < this.roomInfos[this.roomType].numArt; i++)
+        {
+            // add art to each object using middleware :D
+        }
     }
 }
