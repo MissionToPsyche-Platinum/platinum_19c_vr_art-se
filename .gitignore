@@ -145,7 +145,13 @@ Psyche VR Experience/InitTestScene*.unity*
 
 # Art and Model related folders here
 Psyche VR Experience/Assets/Art/
+Psyche VR Experience/Assets/Artwork/
+Psyche VR Experience/Assets/Artwork.meta
 /[Aa]sets/Art/
+
+# Art database folders
+Psyche VR Experience/Assets/Database/
+Psyche VR Experience/Assets/Database.meta
 
 # ----------------------------------------------------------------------------------
 # Git ignore for Web Scraper 
