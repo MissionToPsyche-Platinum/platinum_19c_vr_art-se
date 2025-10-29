@@ -1,7 +1,6 @@
 import PsycheScraper
 from AddArtProject import *
-from AddArtFile import add_art_file
-from DeleteArtFile import delete_art_file
+from ModifyArtProject import *
 
 if __name__ == '__main__':
     print("""Welcome to the Psyche VR Museum CLI Interface!  What would you like to do?
@@ -9,6 +8,8 @@ if __name__ == '__main__':
 2: Add an art file to an existing art project
 3: Remove an art file from an existing art project
 4: Add a completely new art project
+5: Modify a non-file attribute of an existing art project or artist
+6: Delete an existing art project
 q: Quit""")
 
     while True:
@@ -27,6 +28,12 @@ q: Quit""")
             artInfo = getArtProjectInfo()
             addArtProject(artInfo)
             pass
+        elif in_str == '5':
+            modify_art_project()
+            pass
+        elif in_str == '6':
+            delete_art_project()
+            pass
         elif in_str == 'q':
             print("Goodbye!")
             exit(0)
@@ -38,4 +45,6 @@ q: Quit""")
 2: Add an art file to an existing art project
 3: Remove an art file from an existing art project
 4: Add a completely new art project
+5: Modify a non-file attribute of an existing art project or artist
+6: Delete an existing art project
 q: Quit""")
