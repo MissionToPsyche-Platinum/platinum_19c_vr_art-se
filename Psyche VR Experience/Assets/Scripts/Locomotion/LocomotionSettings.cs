@@ -2,7 +2,7 @@ using UnityEngine;
 
 public static class LocomotionSettings
 {
-    public enum LocomotionMode { TELEPORT }
+    public enum LocomotionMode { TELEPORT, CONTINUOUS }
 
     public static LocomotionMode LOCOMOTION_MODE
     {
