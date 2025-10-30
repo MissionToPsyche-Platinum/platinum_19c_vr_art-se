@@ -39,7 +39,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -300, y: 651.81165}
-  m_SizeDelta: {x: 100, y: 0}
+  m_SizeDelta: {x: 1.5, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &6625323394204312991
 CanvasRenderer:
@@ -128,7 +128,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1821801922540168}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ea5ab8ebf71d6ea449749a2f07904951, type: 3}
+  m_Script: {fileID: 11500000, guid: 93ad2ddba4be09f47b41035e6c9736b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   imageQuadRenderer: {fileID: 0}
@@ -136,7 +136,7 @@ MonoBehaviour:
   images: []
   currentImageIndex: 0
   scaleMode: 0
-  baseResolution: {x: 1920, y: 1080}
+  baseResolution: {x: 800, y: 420}
   nominalImageHeight: 1
   borderThickness: 0.05
   frameDepth: 0.05
@@ -206,7 +206,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Default Text
+  m_text: Default text
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -233,8 +233,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 0.25
+  m_fontSizeBase: 0.25
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
