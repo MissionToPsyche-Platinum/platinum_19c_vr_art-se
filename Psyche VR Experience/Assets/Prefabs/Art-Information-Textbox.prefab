@@ -133,6 +133,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   imageQuadRenderer: {fileID: 0}
   frameMaterial: {fileID: 0}
+  artDesc: {fileID: 3088972539050122851}
   images: []
   currentImageIndex: 0
   scaleMode: 0
