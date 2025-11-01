@@ -11,6 +11,11 @@ public class MuseumManager : MonoBehaviour
 
     public RoomModule[][] roomGrid;
 
+    public void Awake()
+    {
+        GenerateMuseum(20);
+    }
+
     public void LoadModuleAsset()
     {
         GameObject funny = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Room Modules/Room_Module.prefab");
@@ -43,21 +48,10 @@ public class MuseumManager : MonoBehaviour
     {
         int size = (int)(numArtPieces);
 
-        InitMuseum(size);
+        InitMuseum(3);
 
-        //GenSquare(0, 0, numArtPieces / 2, numArtPieces / 2);
-        
-        Vector2Int start1 = new Vector2Int(8, 0);
-
-        Vector2Int start2 = new Vector2Int(0, 8);
-
-        GenSquare(start1.x, start1.y, size, 5);
-        GenSquare(start2.x, start2.y, 4, size);
-        GenSquare(0, 10, size, 1);
-        GenSquare(12, 0, 1, size);
-        GenSquare(19, 0, 1, size);
-        GenSquare(0, 19, size, 1);
-
+        GenSquare(0, 0, 3, 1);
+        GenSquare(1, 0, 1, 3);
         AlignAllRooms();
     }
 

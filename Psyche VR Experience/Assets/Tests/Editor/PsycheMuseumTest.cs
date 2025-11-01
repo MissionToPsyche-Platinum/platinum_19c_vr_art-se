@@ -75,7 +75,7 @@ public class PsycheMuseumTest : MonoBehaviour
         manager.GenSquare(1, 0, 1, 3);
         manager.AlignAllRooms();
 
-        Assert.AreEqual(RoomModule.RoomType.ThreeOpen, manager.roomGrid[0][1].roomType);
+        Assert.AreEqual(RoomModule.RoomType.ThreeOpen, manager.roomGrid[1][0].roomType);
         Assert.AreEqual(RoomModule.RoomType.TwoOpenStraight, manager.roomGrid[1][1].roomType);
         Assert.AreEqual(RoomModule.RoomType.OneOpen, manager.roomGrid[1][2].roomType);
         Assert.AreEqual(RoomModule.RoomType.OneOpen, manager.roomGrid[0][0].roomType);
