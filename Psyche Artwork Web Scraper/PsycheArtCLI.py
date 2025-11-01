@@ -34,7 +34,7 @@ q: Quit""")
         elif in_str == '6':
             delete_art_project()
             pass
-        elif in_str == 'q':
+        elif in_str == 'q' or in_str == 'Q':
             print("Goodbye!")
             exit(0)
         else:
