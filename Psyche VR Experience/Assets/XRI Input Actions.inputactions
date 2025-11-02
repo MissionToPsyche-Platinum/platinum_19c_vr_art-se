@@ -3411,6 +3411,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "SwapCamera",
+                    "type": "Button",
+                    "id": "00b3c832-9843-47d3-88c8-e2622d42a323",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -3468,6 +3477,17 @@
                     "action": "Move",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "aa25a9d7-7487-4160-8a4b-68087a42e8f7",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SwapCamera",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }

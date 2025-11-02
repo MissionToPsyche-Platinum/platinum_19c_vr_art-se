@@ -11,6 +11,7 @@ public class MoveTestPlayer : MonoBehaviour
     protected InputAction moveAction;
     protected Rigidbody rb;
 
+    [SerializeField]
     protected Camera playerCamera;
     protected float speed = 5f;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -18,7 +19,7 @@ public class MoveTestPlayer : MonoBehaviour
     {
         Debug.Log("Hello There");
         rb = GetComponent<Rigidbody>();
-        playerCamera = GetComponentInChildren<Camera>();
+        //playerCamera = GetComponentInChildren<Camera>();
         if (rb != null)
         {
             rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
