@@ -47,7 +47,7 @@ public class TextBoxController : MonoBehaviour
 
     [Header("Scriptable Object(Artwork)")]
     [Tooltip("The scriptable object containing the piece's path and data. (This is not included in functionality nor in the API atm)")]
-    [SerializeField] Object scriptable = null;
+    [SerializeField] ArtworkData scriptable = null;
 
     // names for borders
     const string BORDER_PARENT = "Borders";
@@ -61,7 +61,15 @@ public class TextBoxController : MonoBehaviour
 
     private void Start()
     {
-        artDesc.text = "HELLO?";
+        scriptable = ScriptableObject.CreateInstance<ArtworkData>();
+        String descText = "Title: " + scriptable.artworkName + "\n" +
+                       "Artist's Name: " + scriptable.artistName + "\n" +
+                       "Date: " + scriptable.artworkDate + "\n" +
+                       "Artist's Major: " + scriptable.artistMajor + "\n" +
+                       "Art Genre/Medium: " + scriptable.genre + "\n" +
+                       "About the Work: " + scriptable.artworkDescription;
+        artDesc.text = descText;
+        artDesc.color = Color.black;
     }
 
     void OnValidate()
