@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1010254064570177547}
   - component: {fileID: 4078764943581485991}
+  - component: {fileID: -5913760947967832729}
   m_Layer: 0
   m_Name: EnvironmentManager
   m_TagString: Untagged
@@ -45,3 +46,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   rotationRate: 1
+--- !u!114 &-5913760947967832729
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1929560406302967027}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81aa1229e6499e24380b689eeae5948d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkyboxMaterialUtilities
+  materialPath: Assets/Visual_assets/DeepSpaceSkyboxPack/DiverseSpace/Material/DiverseSpaceMaterial.mat
+  texturesFolder: Assets/Visual_assets/DeepSpaceSkyboxPack/DiverseSpace/Textures
+  baseName: diversespace-
+  applyOnEnable: 1
+  autoApplyOnValidate: 1
