@@ -59,7 +59,7 @@ public class TextBoxController : MonoBehaviour
     // holds the empty object for us
     Transform bordersParent;
 
-    private void Start()
+    private void Awake()
     {
         scriptable = ScriptableObject.CreateInstance<ArtworkData>();
         String descText = "Title: " + scriptable.artworkName + "\n" +
