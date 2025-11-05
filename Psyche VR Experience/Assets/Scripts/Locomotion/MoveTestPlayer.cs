@@ -9,11 +9,13 @@ public class MoveTestPlayer : MonoBehaviour
 {
     protected PlayerInput playerInput;
     protected InputAction moveAction;
+    protected InputAction sprintAction;
+    protected bool toggledSprintAction = false;
     protected Rigidbody rb;
 
     [SerializeField]
     protected Camera playerCamera;
-    protected float speed = 5f;
+    protected float speed = 1.5f;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
@@ -34,6 +36,8 @@ public class MoveTestPlayer : MonoBehaviour
             Debug.Log("Found playerInput");
             var playerMap = playerInput.actions.FindActionMap("Mouse&Keyboard", true);
             moveAction = playerMap.FindAction("Move", true);
+            sprintAction = playerMap.FindAction("Sprint", true);
+            
             Debug.Log($"Found moveAction action in map : {moveAction.actionMap.name}");
             moveAction.Enable();
             if (moveAction != null)
@@ -63,8 +67,22 @@ public class MoveTestPlayer : MonoBehaviour
 
         //Vector3 move = (direction.y * camForward + direction.x * camRight) * 3.0f * Time.fixedDeltaTime;
         rb.MovePosition(rb.position + move);*/
-        
 
+        if (sprintAction.triggered) //If left shift is pressed, toggle the sprint
+        {
+            toggledSprintAction = !toggledSprintAction;
+            Debug.Log("Toggled Sprint! Value is now " + toggledSprintAction);
+        }
+
+        if (toggledSprintAction == true)
+        {
+            speed = 3.5f;
+        }
+        else
+        {
+            speed = 1.5f;
+        }
+        
         Vector2 direction = moveAction.ReadValue<Vector2>();
         // Turn left/right with A/D (x-axis)
         if (Mathf.Abs(direction.x) > 0.1f)
@@ -76,7 +94,5 @@ public class MoveTestPlayer : MonoBehaviour
         //Vector3 forwardMove = transform.forward * direction.y * speed * Time.deltaTime;
         Vector3 move = transform.forward * direction.y * speed * Time.fixedDeltaTime;
         rb.MovePosition(rb.position + move);
-
-
     }
 }
