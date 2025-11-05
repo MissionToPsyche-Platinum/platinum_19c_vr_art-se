@@ -244,7 +244,7 @@ public class RoomModule : MonoBehaviour
 
         if (rooms.Count == 0)
         {
-            return RoomType.SIZE;
+            return RoomType.FourOpen;
         }
 
         if (numOpenings == 2)

@@ -1,4 +1,5 @@
 using System.Drawing;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.VersionControl;
 using UnityEngine;
@@ -11,15 +12,91 @@ public class MuseumManager : MonoBehaviour
 
     public RoomModule[][] roomGrid;
 
+    //make sure this is no less than 9 probably
+    const int chunkSize = 11;
+    const int chunkMid = chunkSize / 2 + 1;
+
+    struct SquareRoom
+    {
+        public int x, y, width, height;
+        public bool add;
+
+        public SquareRoom(int x, int y, int width, int height, bool add = true)
+        {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+            this.add = add;
+        } 
+    }
+
+    class RoomPattern
+    {
+        //will be in the format:
+        //{
+        //  {x_pos, y_pos, x_width, y_width, add_or_remove[1->add, 0->remove]}
+        //}
+        //
+        //intended to be fed to GenSquare
+        public SquareRoom[] squares;
+
+        public RoomPattern(SquareRoom[] squares)
+        {
+            this.squares = squares;
+        }
+    }
+
+    RoomPattern[] patterns = new RoomPattern[]
+    {
+        new RoomPattern(new SquareRoom[]
+        {
+            new SquareRoom(2, 2, chunkSize - 4, chunkSize - 4),
+            new SquareRoom(chunkMid - 2, chunkMid - 2, 3, 3, false)
+        }),
+
+        new RoomPattern(new SquareRoom[]
+        {
+            new SquareRoom(2, chunkMid, chunkSize - 2, 1),
+            new SquareRoom(chunkMid, chunkMid - 1, 1, 1)
+        }),
+
+        new RoomPattern(new SquareRoom[]
+        {
+            new SquareRoom(-2, 1, chunkSize + 4, chunkSize - 2),
+            new SquareRoom(chunkSize / 3, chunkMid - 1, 2, 2, false)
+        }),
+
+        new RoomPattern(new SquareRoom[]
+        {
+            new SquareRoom(3, 3, chunkSize - 3, chunkSize - 3)
+        })
+    };
+
     public void Awake()
     {
         GenerateMuseum(20);
     }
-
-    public void LoadModuleAsset()
+    void GenerateMuseum(int numArtPieces)
     {
-        GameObject funny = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Room Modules/Room_Module.prefab");
-        roomModulePrefab = funny.GetComponent<RoomModule>();
+        int size = (int)(numArtPieces);
+        int numChunks = 3;
+        InitMuseum(chunkSize * numChunks);
+
+        GenSquare(0, chunkMid, chunkSize * numChunks, 1);
+        GenSquare(0, chunkMid, chunkSize * numChunks, 1);
+
+        for(int x = 0; x < numChunks; x++)
+        {
+            GenSquare(chunkMid + x * chunkSize, chunkMid, 1, chunkSize * numChunks);
+            for(int y = 0; y < numChunks; y++)
+            {
+                GenSquare(0, chunkMid + y * chunkSize, chunkSize * numChunks, 1);
+                GenerateRandomRoomPattern(x, y);
+            }
+        }
+
+        AlignAllRooms();
     }
 
     public void InitMuseum(int size)
@@ -44,15 +121,29 @@ public class MuseumManager : MonoBehaviour
         }
     }
 
-    void GenerateMuseum(int numArtPieces)
+    public void GenerateRandomRoomPattern(int chunkX, int chunkY)
     {
-        int size = (int)(numArtPieces);
+        int startX = chunkX * chunkSize;
+        int startY = chunkY * chunkSize;
 
-        InitMuseum(3);
+        int roomIndex = Random.Range(0, patterns.Length);
 
-        GenSquare(0, 0, 3, 1);
-        GenSquare(1, 0, 1, 3);
-        AlignAllRooms();
+        RoomPattern pattern = patterns[roomIndex];
+
+        //GenRoom(startX, startY);
+        //GenRoom(startX + chunkSize - 1, startY + chunkSize - 1);
+
+        for (int i = 0; i < pattern.squares.Length; i++)
+        {
+            SquareRoom square = pattern.squares[i];
+            GenSquare(square.x + startX, square.y + startY, square.width, square.height, square.add);
+        }
+    }
+
+    public void LoadModuleAsset()
+    {
+        GameObject funny = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Room Modules/Room_Module.prefab");
+        roomModulePrefab = funny.GetComponent<RoomModule>();
     }
 
     public bool InBounds(int x, int y, int size)
@@ -60,23 +151,29 @@ public class MuseumManager : MonoBehaviour
         return x >= 0 && x < size && y >= 0 && y < size;
     }
 
-    public void GenSquare(int xTop, int yTop, int xSize, int ySize)
+    public void GenSquare(int xTop, int yTop, int xSize, int ySize, bool add = true)
     {
         for(int x = xTop; x < xTop + xSize; x++)
         {
             for (int y = yTop; y < yTop + ySize; y++)
             {
                 if (!InBounds(x, y, roomGrid.Length))
-                    return;
+                    continue;
 
-                GenRoom(x, y);
+                if(add)
+                    GenRoom(x, y);
+                else if (roomGrid[x][y] != null)
+                {
+                    Destroy(roomGrid[x][y].gameObject);
+                    roomGrid[x][y] = null;
+                }
             }
         }
     }
 
     public void GenRoom(int x, int y)
     {
-        if (roomGrid[x][y] != null)
+        if (!InBounds(x, y, roomGrid.Length) || roomGrid[x][y] != null)
             return;
 
         if(roomModulePrefab == null)
