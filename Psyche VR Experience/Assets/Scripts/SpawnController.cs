@@ -92,7 +92,7 @@ public class SpawnController : MonoBehaviour
                 cameraArray[currentPerspective].enabled = true;
                 characterArray[currentPerspective].SetActive(true);
                 characterArray[currentPerspective].transform.position = currentPosition;
-            } 
+            }
             else//Swap back to VR if headset is detected
             {
                 Debug.Log("Resetting to VR");
@@ -103,6 +103,10 @@ public class SpawnController : MonoBehaviour
             }
 
         }
-
+    }
+    
+    public int GetCurrentPerspective()
+    {
+        return currentPerspective;
     }
 }
