@@ -287,6 +287,48 @@ public class RoomModule : MonoBehaviour
         SetRoomActive(room, dir);
     }
 
+    /// <summary>
+    /// finds the active room model variant and returns it
+    /// prefers roomModels[(int)roomType], but safely falls back to any active model.
+    /// </summary>
+    public GameObject GetActiveModelRoot()
+    {
+        // roomModels[(int)roomType] is the one we actively set, but also check activeSelf
+        var go = roomModels[(int)roomType];
+        if (go != null && go.activeSelf) return go;
+
+        // find any active in case something changed externally(shouldn't happen in any normal circumstance)
+        foreach (var m in roomModels)
+            if (m != null && m.activeSelf) return m;
+
+        return null;
+    }
+    
+    /// <summary>
+    /// adds the active room's FrameController components(not the gameobject containing the framecontroller)
+    /// </summary>
+    /// <param name="outList">Destination list (is not to be cleared, is cumulative).</param>
+    /// <param name="includeInactive">Include components on inactive objects.(generally false)</param>
+    public int CollectActiveFrameControllers(List<FrameController> outList, bool includeInactive = false)
+    {
+        if (outList == null) return 0;
+
+        var activeRoot = GetActiveModelRoot();
+        if (!activeRoot) return 0;
+
+        int before = outList.Count;
+
+        var frames = activeRoot.GetComponentsInChildren<FrameController>(includeInactive: true);
+        foreach (var fc in frames)
+        {
+            if (!fc) continue;
+            if (!includeInactive && !fc.gameObject.activeInHierarchy) continue;
+            outList.Add(fc);
+        }
+
+        return outList.Count - before;
+    }
+
     public void SetArtDisplays()
     {
         for (int i = 0; i < this.roomInfos[this.roomType].numArt; i++)
