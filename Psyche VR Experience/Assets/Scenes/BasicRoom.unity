@@ -1504,7 +1504,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1452487578}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.14370243, y: 0.66456944, z: -0.13261226, w: -0.72118735}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 6.823, y: 1, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1523,6 +1523,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9eab9ce019d5a2041a14c182f3b46f6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MoveTestPlayer
+  spawnController: {fileID: 1847065718}
   playerCamera: {fileID: 1452487579}
 --- !u!114 &1452487584
 MonoBehaviour:
@@ -1586,8 +1587,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1594512277}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.027269054, y: 0.70911956, z: 0.027433384, w: 0.70402646}
-  m_LocalPosition: {x: -2, y: 1, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.27720022, y: 1.43, z: -2.771}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1731,6 +1732,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9eab9ce019d5a2041a14c182f3b46f6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MoveTestPlayer
+  spawnController: {fileID: 1847065718}
   playerCamera: {fileID: 1594512281}
 --- !u!54 &1625227904
 Rigidbody:
@@ -1909,7 +1911,6 @@ GameObject:
   - component: {fileID: 1847065719}
   - component: {fileID: 1847065718}
   - component: {fileID: 1847065717}
-  - component: {fileID: 1847065721}
   - component: {fileID: 1847065720}
   m_Layer: 0
   m_Name: SpawnPoint Controller
@@ -2013,19 +2014,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &1847065721
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1847065716}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9eab9ce019d5a2041a14c182f3b46f6a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MoveTestPlayer
-  playerCamera: {fileID: 0}
 --- !u!1 &1868872888
 GameObject:
   m_ObjectHideFlags: 0
