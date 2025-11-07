@@ -46,8 +46,8 @@ public class MuseumManager : MonoBehaviour
     {
         new RoomPattern(new SquareRoom[]
         {
-            new SquareRoom(2, 2, chunkSize - 4, chunkSize - 4),
-            new SquareRoom(chunkMid - 2, chunkMid - 2, 3, 3, false)
+            new SquareRoom(3, 3, chunkSize - 4, chunkSize - 4),
+            new SquareRoom(chunkMid - 1, chunkMid - 1, 3, 3, false)
         }),
 
         new RoomPattern(new SquareRoom[]
@@ -70,12 +70,12 @@ public class MuseumManager : MonoBehaviour
 
     public void Awake()
     {
-        GenerateMuseum(20);
+        GenerateMuseum(400);
     }
     void GenerateMuseum(int numArtPieces)
     {
         int size = (int)(numArtPieces);
-        int numChunks = 9;
+        int numChunks = (int)((float)(numArtPieces / 100) * 2);
         InitMuseum(chunkSize * numChunks);
 
         Vector2Int startPos = new Vector2Int(numChunks/2, 0);
@@ -85,15 +85,11 @@ public class MuseumManager : MonoBehaviour
 
         RecurseChunks(startPos, ref chunksTraversed);
 
-        //for(int x = 0; x < numChunks; x++)
-        //{
-        //    for(int y = 0; y < numChunks; y++)
-        //    {
-        //        GenerateRandomRoomPattern(x, y);
-        //    }
-        //}
-
         AlignAllRooms();
+
+        //Debug.Log("Count: " + CountArtSpots());
+
+        AssignArt(numArtPieces);
     }
 
     public void InitMuseum(int size)
@@ -144,7 +140,7 @@ public class MuseumManager : MonoBehaviour
         List<Vector2Int> directions = new List<Vector2Int>() { new Vector2Int(1, 0), new Vector2Int(-1, 0), new Vector2Int(0, 1), new Vector2Int(0, -1) };
         List<Vector2Int> checkedDirections = new List<Vector2Int>();
 
-        int numRooms = Random.Range(2, 4);
+        int numRooms = 4;
         int numRoomsMarked = 0;
 
         //mark all of the directions as traversed and remove any previously traversed
@@ -157,7 +153,6 @@ public class MuseumManager : MonoBehaviour
 
             int directionIndex = Random.Range(0, directions.Count);
 
-            Debug.Log("DIRECTION INDEX: " + directionIndex + " VS COUNT: " + directions.Count);
             Vector2Int dir = directions[directionIndex];
 
             Vector2Int nextPos = startPos + dir;
@@ -182,7 +177,7 @@ public class MuseumManager : MonoBehaviour
             Vector2Int nextPos = startPos + dir;
 
             //if we haven't visited this chunk yet, mark it so and recurse on it
-            if(InBounds(nextPos.x, nextPos.y, chunksTraversed.Length))// && !chunksTraversed[nextPos.x][nextPos.y])
+            if (InBounds(nextPos.x, nextPos.y, chunksTraversed.Length))// && !chunksTraversed[nextPos.x][nextPos.y])
             {
                 chunksTraversed[nextPos.x][nextPos.y] = true;
 
@@ -203,6 +198,14 @@ public class MuseumManager : MonoBehaviour
 
                 //generate path towards original room from mid
                 current = startRoomPos - dir;
+
+                int tolerance = 3;
+                while (InBounds(current.x, current.y, roomGrid.Length) && roomGrid[current.x][current.y] != null && tolerance > 0)
+                {
+                    current -= dir;
+                    tolerance--;
+                }
+
                 while (InBounds(current.x, current.y, roomGrid.Length) && roomGrid[current.x][current.y] == null)
                 {
                     GenRoom(current.x, current.y);
@@ -210,8 +213,79 @@ public class MuseumManager : MonoBehaviour
                 }
             }
         }
+    }
 
-        
+    public int CountArtSpots()
+    {
+        int total = 0;
+
+        for (int x = 0; x < roomGrid.Length; x++)
+        {
+            for (int y = 0; y < roomGrid[x].Length; y++)
+            {
+                if (roomGrid[x][y] != null)
+                {
+                    total += roomGrid[x][y].GetNumArtDisplays();
+                }
+            }
+        }
+
+        return total;
+    }
+
+    public void AssignArt(int numArtPieces)
+    {
+        int numSpots = CountArtSpots();
+        int spotsFilled = 0;
+
+        int numSpaces = (numSpots / numArtPieces) - 2;
+        int n = 0;
+
+        if(numSpaces == 0)
+        {
+            numSpaces = 1;
+        }
+
+        for (int x = 0; x < roomGrid.Length; x++)
+        {
+            for (int y = 0; y < roomGrid[x].Length; y++)
+            {
+                if (roomGrid[x][y] != null)
+                {
+                    if (spotsFilled >= numArtPieces)
+                    {
+                        roomGrid[x][y].SetArtDisplays(0);
+                        continue;
+                    }
+
+                    int numSet = roomGrid[x][y].GetNumArtDisplays();
+
+                    if (numSet >= 1)
+                    {
+                        if (numSpots - spotsFilled > numArtPieces * 2)
+                        {
+                            if (n != 0)
+                                numSet = 0;
+                            else 
+                                numSet = 1;
+
+                                n++;
+                            n %= numSpaces;
+                        }
+                        else if(spotsFilled + numSet > numArtPieces)
+                        {
+                            numSet = numArtPieces - spotsFilled;
+                        }
+                    }
+
+                    roomGrid[x][y].SetArtDisplays(numSet);
+
+                    spotsFilled += numSet;
+                }
+            }
+        }
+
+        //Debug.Log("SpotsFilled: " + spotsFilled + " NumArtPieces: " + numArtPieces);
     }
 
     public void LoadModuleAsset()
