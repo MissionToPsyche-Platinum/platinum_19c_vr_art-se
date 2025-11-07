@@ -22,6 +22,18 @@ public class LocomotionSettingsManager : MonoBehaviour
         if (menuButton.ReadValue() == 1) { OpenOrCloseMenu(); }
     }
 
+    public void ToggleLocomotion()
+    {
+        if (LocomotionSettings.LOCOMOTION_MODE == LocomotionSettings.LocomotionMode.TELEPORT)
+        {
+            LocomotionSettings.LOCOMOTION_MODE = LocomotionSettings.LocomotionMode.CONTINUOUS;
+        }
+        else
+        {
+            LocomotionSettings.LOCOMOTION_MODE = LocomotionSettings.LocomotionMode.TELEPORT;
+        }
+    }
+
     private void OpenOrCloseMenu()
     {
         LocomotionSettingsMenu.SetActive(!menuOpen);
