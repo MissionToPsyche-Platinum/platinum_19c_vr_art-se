@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MuseumManager : MonoBehaviour
@@ -8,10 +9,22 @@ public class MuseumManager : MonoBehaviour
 
     RoomModule[][] roomGrid;
 
+    private readonly List<Transform> activeDisplayTransforms = new(); // active image frame transforms (image frames of the active variant)
+    private readonly List<FrameController> activeFrameControllers = new(); // active image frame framecontroller components (the actual art display scripts)
+
+    public IReadOnlyList<Transform> ActiveDisplayTransforms => activeDisplayTransforms;
+    public IReadOnlyList<FrameController> ActiveFrameControllers => activeFrameControllers;
+
+    [Tooltip("Should the scan also gather inactive displays?")]
+    [SerializeField] bool includeInactiveDisplays = false;         // usually false: only visible frames
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         GenerateMuseum(20);
+
+        RefreshActiveDisplays();
+
     }
 
     void GenerateMuseum(int numArtPieces)
@@ -104,5 +117,33 @@ public class MuseumManager : MonoBehaviour
         } 
 
         room.SetOpenings(openNorth, openSouth, openWest, openEast);
+    }
+
+    /// rebuilds the lists(caches) of active display Transforms and FrameController components
+    /// rebuilds the lists(caches) of active display Transforms and FrameController components
+    /// <param name="includeInactive"> include inactive room variant image frames?(debugging/testing only)</param>
+    public void RefreshActiveDisplays(bool includeInactive = false)
+    {
+        //activeDisplayTransforms.Clear();
+        activeFrameControllers.Clear();
+
+        if (roomGrid == null || roomGrid.Length == 0) return;
+
+        int size = roomGrid.Length;
+        for (int x = 0; x < size; x++)
+        {
+            var col = roomGrid[x];
+            if (col == null) continue;
+
+            for (int y = 0; y < size; y++)
+            {
+                var room = col[y];
+                if (room == null) continue;
+
+                // uses the room module helpers to get transforms and the frame controller scripts
+                room.CollectActiveDisplayTransforms(activeDisplayTransforms, includeInactive);
+                room.CollectActiveFrameControllers(activeFrameControllers, includeInactive);
+            }
+        }
     }
 }
