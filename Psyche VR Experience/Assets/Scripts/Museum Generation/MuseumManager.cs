@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Drawing;
 using Unity.VisualScripting;
 using UnityEditor;
@@ -33,12 +34,6 @@ public class MuseumManager : MonoBehaviour
 
     class RoomPattern
     {
-        //will be in the format:
-        //{
-        //  {x_pos, y_pos, x_width, y_width, add_or_remove[1->add, 0->remove]}
-        //}
-        //
-        //intended to be fed to GenSquare
         public SquareRoom[] squares;
 
         public RoomPattern(SquareRoom[] squares)
@@ -80,21 +75,23 @@ public class MuseumManager : MonoBehaviour
     void GenerateMuseum(int numArtPieces)
     {
         int size = (int)(numArtPieces);
-        int numChunks = 3;
+        int numChunks = 9;
         InitMuseum(chunkSize * numChunks);
 
-        GenSquare(0, chunkMid, chunkSize * numChunks, 1);
-        GenSquare(0, chunkMid, chunkSize * numChunks, 1);
+        Vector2Int startPos = new Vector2Int(numChunks/2, 0);
+        bool[][] chunksTraversed = new bool[numChunks][];
 
-        for(int x = 0; x < numChunks; x++)
-        {
-            GenSquare(chunkMid + x * chunkSize, chunkMid, 1, chunkSize * numChunks);
-            for(int y = 0; y < numChunks; y++)
-            {
-                GenSquare(0, chunkMid + y * chunkSize, chunkSize * numChunks, 1);
-                GenerateRandomRoomPattern(x, y);
-            }
-        }
+        for(int i = 0; i < chunksTraversed.Length; i++) { chunksTraversed[i] = new bool[numChunks]; }
+
+        RecurseChunks(startPos, ref chunksTraversed);
+
+        //for(int x = 0; x < numChunks; x++)
+        //{
+        //    for(int y = 0; y < numChunks; y++)
+        //    {
+        //        GenerateRandomRoomPattern(x, y);
+        //    }
+        //}
 
         AlignAllRooms();
     }
@@ -137,6 +134,53 @@ public class MuseumManager : MonoBehaviour
         {
             SquareRoom square = pattern.squares[i];
             GenSquare(square.x + startX, square.y + startY, square.width, square.height, square.add);
+        }
+    }
+
+    void RecurseChunks(Vector2Int startPos, ref bool[][] chunksTraversed)
+    {
+        GenerateRandomRoomPattern(startPos.x, startPos.y);
+
+        List<Vector2Int> directions = new List<Vector2Int>() { new Vector2Int(1, 0), new Vector2Int(-1, 0), new Vector2Int(0, 1), new Vector2Int(0, -1) };
+
+        int numRooms = Random.Range(2, 4);
+        for (int i = 0; i < numRooms; i++)
+        {
+            int directionIndex = Random.Range(0, directions.Count); 
+
+            Vector2Int dir = directions[directionIndex];
+            directions.RemoveAt(directionIndex);
+
+            Vector2Int nextPos = startPos + dir;
+
+            //if we haven't visited this chunk yet, mark it so and recurse on it
+            if(InBounds(nextPos.x, nextPos.y, chunksTraversed.Length) && !chunksTraversed[nextPos.x][nextPos.y])
+            {
+                chunksTraversed[nextPos.x][nextPos.y] = true;
+
+                RecurseChunks(nextPos, ref chunksTraversed);
+
+                //connect the two chunk
+
+                //get position on middle of boundary
+                Vector2Int startRoomPos = (startPos * chunkSize) + new Vector2Int(chunkMid, chunkMid) + chunkMid * dir;
+
+                //generate path towards room from mid
+                Vector2Int current = startRoomPos;
+                while (InBounds(current.x, current.y, roomGrid.Length) && roomGrid[current.x][current.y] == null)
+                {
+                    GenRoom(current.x, current.y);
+                    current += dir;
+                }
+
+                //generate path towards original room from mid
+                current = startRoomPos - dir;
+                while (InBounds(current.x, current.y, roomGrid.Length) && roomGrid[current.x][current.y] == null)
+                {
+                    GenRoom(current.x, current.y);
+                    current -= dir;
+                }
+            }
         }
     }
 
