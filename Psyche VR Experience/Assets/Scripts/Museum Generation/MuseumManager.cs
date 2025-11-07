@@ -142,19 +142,47 @@ public class MuseumManager : MonoBehaviour
         GenerateRandomRoomPattern(startPos.x, startPos.y);
 
         List<Vector2Int> directions = new List<Vector2Int>() { new Vector2Int(1, 0), new Vector2Int(-1, 0), new Vector2Int(0, 1), new Vector2Int(0, -1) };
+        List<Vector2Int> checkedDirections = new List<Vector2Int>();
 
         int numRooms = Random.Range(2, 4);
-        for (int i = 0; i < numRooms; i++)
-        {
-            int directionIndex = Random.Range(0, directions.Count); 
+        int numRoomsMarked = 0;
 
+        //mark all of the directions as traversed and remove any previously traversed
+        for (int i = 0; i < 4; i++)
+        {
+            if (directions.Count == 0)
+            {
+                break;
+            }
+
+            int directionIndex = Random.Range(0, directions.Count);
+
+            Debug.Log("DIRECTION INDEX: " + directionIndex + " VS COUNT: " + directions.Count);
             Vector2Int dir = directions[directionIndex];
+
+            Vector2Int nextPos = startPos + dir;
+
+            if (InBounds(nextPos.x, nextPos.y, chunksTraversed.Length) && !chunksTraversed[nextPos.x][nextPos.y])
+            {
+                chunksTraversed[nextPos.x][nextPos.y] = true;
+
+                if(numRoomsMarked < numRooms)
+                    checkedDirections.Add(dir);
+
+                numRoomsMarked++;
+            }
+
             directions.RemoveAt(directionIndex);
+        }
+
+        for (int i = 0; i < checkedDirections.Count; i++)
+        {
+            Vector2Int dir = checkedDirections[i];
 
             Vector2Int nextPos = startPos + dir;
 
             //if we haven't visited this chunk yet, mark it so and recurse on it
-            if(InBounds(nextPos.x, nextPos.y, chunksTraversed.Length) && !chunksTraversed[nextPos.x][nextPos.y])
+            if(InBounds(nextPos.x, nextPos.y, chunksTraversed.Length))// && !chunksTraversed[nextPos.x][nextPos.y])
             {
                 chunksTraversed[nextPos.x][nextPos.y] = true;
 
@@ -182,6 +210,8 @@ public class MuseumManager : MonoBehaviour
                 }
             }
         }
+
+        
     }
 
     public void LoadModuleAsset()
