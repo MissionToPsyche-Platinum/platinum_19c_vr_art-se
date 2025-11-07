@@ -21,6 +21,9 @@ public class MoveTestPlayer : MonoBehaviour
 
     [SerializeField]
     protected Camera playerCamera;
+
+    [SerializeField]
+    protected float interactRange = 4f;
     protected float speed = 1.5f;
     protected int currentPerspective;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -62,7 +65,7 @@ public class MoveTestPlayer : MonoBehaviour
     {
 
         CurrentPerspectiveListener();
-        Debug.Log(currentPerspective);
+        //Debug.Log(currentPerspective);
         if (currentPerspective == 1)
         {
             MovePlayer();
@@ -71,7 +74,10 @@ public class MoveTestPlayer : MonoBehaviour
         {
             MoveFreeCamera();
         }
-
+        if (interactAction.triggered)
+        {
+            PlayerInteract();
+        }
         
     }
 
@@ -142,25 +148,26 @@ public class MoveTestPlayer : MonoBehaviour
         transform.position += move;
     }
     
-    void Interact() //TODO Link this code up with the art system.
+    void PlayerInteract() //TODO Link this code up with the art system.
     { 
     //Currently this code throws out a ray, and tries to interact with whatever it hits. However, we need to set art pieces to
-    //have a special trigger on them (IInteractable).
-        /*if(interactAction.triggered)
+    //have a special trigger on them (Interactable).
+        
+        if(interactAction.triggered)
         {
-            Debug.Log("You attempted to interact.");
-             Ray ray = new Ray(transform.position, transform.forward);
+            Debug.Log("You attempted to interact with an object.");
+            Ray ray = new Ray(transform.position, transform.forward);
             RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit, interactDistance))
+            //Debug.DrawRay(ray.origin, ray.direction * interactRange, Color.green, 0.1f);
+            if (Physics.Raycast(ray, out hit, interactRange))
             {
-                IInteractable interactable = hit.collider.GetComponent<IInteractable>();
+                Interactable interactable = hit.collider.GetComponent<Interactable>();
                 if (interactable != null)
                 {
-                interactable.Interact();
+                    interactable.Interact();
                 }
             }
-        }*/
+        }
     }
     
     int CurrentPerspectiveListener()
