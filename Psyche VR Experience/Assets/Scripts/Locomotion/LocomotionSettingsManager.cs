@@ -6,6 +6,9 @@ public class LocomotionSettingsManager : MonoBehaviour
     [SerializeField]
     XRInputButtonReader menuButton;
 
+    [SerializeField]
+    XRInputButtonReader menuSelect;
+
     public GameObject LocomotionSettingsMenu;
 
     private bool menuOpen = false;
@@ -20,6 +23,7 @@ public class LocomotionSettingsManager : MonoBehaviour
     void Update()
     {
         if (menuButton.ReadValue() == 1) { OpenOrCloseMenu(); }
+        if (menuOpen && menuSelect.ReadValue() == 1) { ToggleLocomotion(); }
     }
 
     public void ToggleLocomotion()
