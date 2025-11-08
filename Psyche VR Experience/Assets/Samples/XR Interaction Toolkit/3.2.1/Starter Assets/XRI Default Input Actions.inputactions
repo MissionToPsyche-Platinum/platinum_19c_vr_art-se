@@ -2439,6 +2439,17 @@
                     "action": "Menu Select",
                     "isComposite": false,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5567f56d-34d5-41b0-9cec-bbf6f1307135",
+                    "path": "<XRController>{RightHand}/{PrimaryButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Menu Select",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         },

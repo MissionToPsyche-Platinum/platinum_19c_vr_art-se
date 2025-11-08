@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Readers;
 
 public class LocomotionSettingsManager : MonoBehaviour
@@ -10,6 +11,7 @@ public class LocomotionSettingsManager : MonoBehaviour
     XRInputButtonReader menuSelect;
 
     public GameObject LocomotionSettingsMenu;
+    public Toggle LocomotionToggle;
 
     private bool menuOpen = false;
 
@@ -25,7 +27,10 @@ public class LocomotionSettingsManager : MonoBehaviour
         if (menuButton.ReadWasPerformedThisFrame()) {
             OpenOrCloseMenu(); 
         }
-        if (menuOpen && menuSelect.ReadValue() == 1) { ToggleLocomotion(); }
+        if (menuOpen && menuSelect.ReadWasPerformedThisFrame()) {
+            bool curr = LocomotionToggle.isOn;
+            LocomotionToggle.isOn = !curr;
+        }
     }
 
     public void ToggleLocomotion()
