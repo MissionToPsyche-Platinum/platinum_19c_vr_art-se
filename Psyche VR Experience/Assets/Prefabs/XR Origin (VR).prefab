@@ -1220,8 +1220,9 @@ GameObject:
   m_Component:
   - component: {fileID: 4841087437972012586}
   - component: {fileID: 1449260775852610149}
+  - component: {fileID: 4637115727723734982}
   m_Layer: 3
-  m_Name: Teleport
+  m_Name: Locomotion Handler
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1302,6 +1303,35 @@ MonoBehaviour:
     m_ManualQueueValue: 0
     m_ManualQueueTargetFrame: 0
   teleportVisual: {fileID: 4723576533911936774}
+--- !u!114 &4637115727723734982
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6709354585857568646}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59f705d1dac80d04db9f6b32cce251ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContinuousLocomotion
+  rig: {fileID: 352839523240806990}
+  cameraTransform: {fileID: 1643452098413327134}
+  moveSpeed: 2
+  inputDir:
+    m_InputSourceMode: 2
+    m_InputAction:
+      m_Name: 
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: c43ab26e-03c7-4562-887c-792388935938
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_InputActionReference: {fileID: 6868177321947492843, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+    m_ObjectReferenceObject: {fileID: 0}
+    m_ManualValue: {x: 0, y: 0}
 --- !u!1 &6826867904581329889
 GameObject:
   m_ObjectHideFlags: 0

@@ -1346,6 +1346,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Continuous Mode",
+                    "type": "Value",
+                    "id": "9ad5c7e6-25ad-4f39-949e-d9b939d5634e",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -1412,6 +1421,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Snap Turn",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d327e938-aa7c-4001-bf1f-fa57f37eb7f3",
+                    "path": "<XRController>{LeftHand}/{Primary2DAxis}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Continuous Mode",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
