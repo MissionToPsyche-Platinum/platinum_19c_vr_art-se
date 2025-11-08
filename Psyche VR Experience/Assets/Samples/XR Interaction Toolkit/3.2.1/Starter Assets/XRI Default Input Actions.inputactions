@@ -879,6 +879,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "Menu Open",
+                    "type": "Button",
+                    "id": "d36d0104-cfb1-4ffc-968d-c4f24df3b5be",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Select Value",
                     "type": "Value",
                     "id": "e6005f29-e4c1-4f3b-8bf7-3a28bab5ca9c",
@@ -1042,6 +1051,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Select",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1cbe975b-2696-4afc-b599-17a4ed86f7de",
+                    "path": "<XRController>{LeftHand}/{MenuButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Menu Open",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -2091,15 +2111,6 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Menu Open",
-                    "type": "Button",
-                    "id": "5650adbb-b82f-4eac-b367-f0cf6c258e71",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "Menu Select",
                     "type": "Button",
                     "id": "18226fbd-3397-4ce3-8dfa-3c3ca1b73965",
@@ -2415,17 +2426,6 @@
                     "processors": "ScaleVector2(x=0),StickDeadzone",
                     "groups": "",
                     "action": "Translate Manipulation",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "f4a746f7-3e44-4461-aebb-093fe6826c83",
-                    "path": "<XRController>{RightHand}/{MenuButton}",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Menu Open",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

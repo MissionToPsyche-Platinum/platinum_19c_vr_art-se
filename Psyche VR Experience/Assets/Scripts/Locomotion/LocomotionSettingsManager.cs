@@ -22,7 +22,9 @@ public class LocomotionSettingsManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (menuButton.ReadValue() == 1) { OpenOrCloseMenu(); }
+        if (menuButton.ReadWasPerformedThisFrame()) {
+            OpenOrCloseMenu(); 
+        }
         if (menuOpen && menuSelect.ReadValue() == 1) { ToggleLocomotion(); }
     }
 

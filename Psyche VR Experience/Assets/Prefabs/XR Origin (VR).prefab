@@ -370,7 +370,7 @@ GameObject:
   m_Component:
   - component: {fileID: 549819181234573624}
   - component: {fileID: 1519499276025246447}
-  m_Layer: 5
+  m_Layer: 3
   m_Name: Locomotion Toggle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -559,7 +559,7 @@ GameObject:
   - component: {fileID: 7142714166717277874}
   - component: {fileID: 5974567808201340555}
   - component: {fileID: 3870207768252202375}
-  m_Layer: 5
+  m_Layer: 3
   m_Name: Locomotion Settings
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -992,7 +992,7 @@ GameObject:
   - component: {fileID: 8657233633615483475}
   - component: {fileID: 85755323142204314}
   - component: {fileID: 5216427854188011435}
-  m_Layer: 5
+  m_Layer: 3
   m_Name: Checkmark
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1067,7 +1067,7 @@ GameObject:
   - component: {fileID: 5488539657618428564}
   - component: {fileID: 7936757946429011857}
   - component: {fileID: 2646897037732083173}
-  m_Layer: 5
+  m_Layer: 3
   m_Name: Label
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1146,7 +1146,7 @@ GameObject:
   - component: {fileID: 816757759118736690}
   - component: {fileID: 4940761384462894138}
   - component: {fileID: 7977381926703469329}
-  m_Layer: 5
+  m_Layer: 3
   m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1920,6 +1920,36 @@ MonoBehaviour:
     m_ManualQueueWasCompletedThisFrame: 0
     m_ManualQueueValue: 0
     m_ManualQueueTargetFrame: 0
+  menuSelect:
+    m_InputSourceMode: 2
+    m_InputActionPerformed:
+      m_Name: 
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: cd5a070d-7e94-425e-bb2a-69d0d03ed36d
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_InputActionValue:
+      m_Name: 
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: 729ea25d-e7d4-4aeb-bcd8-1c939689d487
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_InputActionReferencePerformed: {fileID: 0}
+    m_InputActionReferenceValue: {fileID: 0}
+    m_ObjectReferenceObject: {fileID: 0}
+    m_ManualPerformed: 0
+    m_ManualValue: 0
+    m_ManualQueuePerformed: 0
+    m_ManualQueueWasPerformedThisFrame: 0
+    m_ManualQueueWasCompletedThisFrame: 0
+    m_ManualQueueValue: 0
+    m_ManualQueueTargetFrame: 0
   LocomotionSettingsMenu: {fileID: 3562136429363707729}
 --- !u!1 &8645557277700791410
 GameObject:
@@ -2111,7 +2141,7 @@ GameObject:
   - component: {fileID: 8641273038675663315}
   - component: {fileID: 8292919213814571526}
   - component: {fileID: 8822098536158662591}
-  m_Layer: 5
+  m_Layer: 3
   m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}

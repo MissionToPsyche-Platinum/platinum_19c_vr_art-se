@@ -918,6 +918,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1254130662756890240, guid: 85438223dd7ea324c90e34e5e2af9c46, type: 3}
+      propertyPath: menuButton.m_InputActionReferenceValue
+      value: 
+      objectReference: {fileID: -5161807002912912183, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+    - target: {fileID: 1254130662756890240, guid: 85438223dd7ea324c90e34e5e2af9c46, type: 3}
+      propertyPath: menuSelect.m_InputActionReferenceValue
+      value: 
+      objectReference: {fileID: -3260126714850950918, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+    - target: {fileID: 1254130662756890240, guid: 85438223dd7ea324c90e34e5e2af9c46, type: 3}
+      propertyPath: menuButton.m_InputActionReferencePerformed
+      value: 
+      objectReference: {fileID: -5161807002912912183, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+    - target: {fileID: 1254130662756890240, guid: 85438223dd7ea324c90e34e5e2af9c46, type: 3}
+      propertyPath: menuSelect.m_InputActionReferencePerformed
+      value: 
+      objectReference: {fileID: -3260126714850950918, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+    - target: {fileID: 3562136429363707729, guid: 85438223dd7ea324c90e34e5e2af9c46, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3618679737214569059, guid: 85438223dd7ea324c90e34e5e2af9c46, type: 3}
       propertyPath: m_Name
       value: XR Origin (VR)
