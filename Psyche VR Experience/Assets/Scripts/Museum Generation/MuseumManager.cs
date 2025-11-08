@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class MuseumManager : MonoBehaviour
@@ -17,6 +18,11 @@ public class MuseumManager : MonoBehaviour
 
     [Tooltip("Should the scan also gather inactive displays?")]
     [SerializeField] bool includeInactiveDisplays = false;         // usually false: only visible frames
+    
+    [SerializeField] string dbPathOverride = null;
+    
+    [Tooltip("Automatically populate frames on Start after building the museum?")]
+    [SerializeField] bool autoPopulateOnStart = true;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -24,6 +30,9 @@ public class MuseumManager : MonoBehaviour
         GenerateMuseum(20);
 
         RefreshActiveDisplays();
+
+        if (autoPopulateOnStart)
+            PopulateDisplays(ActiveFrameControllers.Count);
 
     }
 
@@ -124,7 +133,7 @@ public class MuseumManager : MonoBehaviour
     /// <param name="includeInactive"> include inactive room variant image frames?(debugging/testing only)</param>
     public void RefreshActiveDisplays(bool includeInactive = false)
     {
-        //activeDisplayTransforms.Clear();
+        activeDisplayTransforms.Clear();
         activeFrameControllers.Clear();
 
         if (roomGrid == null || roomGrid.Length == 0) return;
@@ -145,5 +154,52 @@ public class MuseumManager : MonoBehaviour
                 room.CollectActiveFrameControllers(activeFrameControllers, includeInactive);
             }
         }
+    }
+
+    // Requests ScriptableObjects and assigns one-to-one to currently active frames.
+    // No overflow/repeat; stops at the shorter of the two lists.
+    public void PopulateDisplays(int numDisplays)
+    {
+        // ensure list caches are current
+        RefreshActiveDisplays(includeInactiveDisplays);
+
+        var frames = ActiveFrameControllers.ToList();
+        if (frames.Count == 0)
+        {
+            Debug.LogWarning("[MuseumManager] PopulateDisplays: No active FrameControllers found.");
+            return;
+        }
+
+        // making sure to request no more than we can display
+        int requestCount = Mathf.Clamp(numDisplays, 0, frames.Count);
+        if (requestCount == 0)
+        {
+            Debug.Log("[MuseumManager] PopulateDisplays: requestCount is 0; nothing to do.");
+            return;
+        }
+
+        List<ArtworkData> items = PsycheDBMiddleware.CreateRandomProjectSObjects(requestCount, dbPathOverride);
+        if (items == null || items.Count == 0)
+        {
+            Debug.LogWarning("[MuseumManager] PopulateDisplays: Middleware returned no ArtworkData.");
+            return;
+        }
+
+        int pairCount = Mathf.Min(frames.Count, items.Count);
+        for (int i = 0; i < pairCount; i++)
+        {
+            var fc = frames[i];
+            var data = items[i];
+            if (!fc || !data) continue;
+
+            // @TODO
+            // add fucntion to FrameController to assign SO and a function or two to the artwork data to apply itself to the frame;
+            // next sprint we will need to work on getting the videos to render as 2d textures. Shouldn't be too bad.
+            // the SO will apply itself to the frame (via FrameController.SetArtwork -> ArtworkData.ApplyToFrame)
+            //
+            //fc.SetArtworkData(data, autoApply: true, startIndex: 0);
+        }
+
+        Debug.Log($"[MuseumManager] Assigned {pairCount} artwork ScriptableObjects to {frames.Count} frames.");
     }
 }
