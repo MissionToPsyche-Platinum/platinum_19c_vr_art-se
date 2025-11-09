@@ -20,7 +20,6 @@ public class FrameController : MonoBehaviour
     [SerializeField] int currentImageIndex = 0;
 
     [Header("Aspect & Sizing")]
-
     [Tooltip("How overall frame scale is derived from resolution vs Base Resolution.")]
     [SerializeField] ScaleMode scaleMode = ScaleMode.LongerSide;
 
@@ -50,6 +49,14 @@ public class FrameController : MonoBehaviour
 
     // holds the empty object for us
     Transform bordersParent;
+
+    // per-renderer property block for per-instance textures
+    MaterialPropertyBlock _mpb;
+
+    void Awake()
+    {
+        if (_mpb == null) _mpb = new MaterialPropertyBlock();
+    }
 
     void OnValidate()
     {
@@ -82,6 +89,20 @@ public class FrameController : MonoBehaviour
     }
 
     /*  PUBLIC API  */
+    public void SetArtwork(ArtworkData data)
+    {
+        if (data == null) return;
+
+        List<Texture2D> textures = data.LoadTextures();
+        if (textures.Count > 0)
+        {
+            images = textures; 
+            currentImageIndex = 0;
+            ApplyAll();
+        }
+
+        // @TODO assign UI text fields
+    }
 
     public void SetImageIndex(int index)
     {
@@ -104,36 +125,30 @@ public class FrameController : MonoBehaviour
         ApplyAll();
     }
 
-    /* @TODO 10/2/25 zkbarlow
-     * 
-     * I would like to add auto-scrolling for some sort of play button.
-     * Allows the viewer to push one button and then watch the images 
-     * change one by one.*/
-
-
     /*  CORE FUNCTIONALITY  */
-
     void ApplyAll()
     {
         if (!imageQuadRenderer) return;
 
         var tex = (images != null && images.Count > 0) ? images[Mathf.Clamp(currentImageIndex, 0, images.Count - 1)] : null;
 
-        // apply the texture to the quad material
-        var mat = imageQuadRenderer.sharedMaterial;
-        if (mat == null)
+        // set texture via MaterialPropertyBlock (per-renderer), not sharedMaterial as it was
+        imageQuadRenderer.GetPropertyBlock(_mpb);
+
+        // Try both common property names to be robust across shaders (URP Lit vs legacy)
+        if (tex != null)
         {
-            // failsafe if no default material(unity forum told me to)
-#if UNITY_EDITOR
-            var shader = Shader.Find("Sprite-Unlit-Default");
-            if (shader)
-            {
-                mat = new Material(shader);
-                imageQuadRenderer.sharedMaterial = mat;
-            }
-#endif
+            _mpb.SetTexture("_BaseMap", tex);
+            _mpb.SetTexture("_MainTex", tex);
         }
-        if (mat && tex) mat.mainTexture = tex;
+        else
+        {
+            // clear if no texture
+            _mpb.SetTexture("_BaseMap", null);
+            _mpb.SetTexture("_MainTex", null);
+        }
+
+        imageQuadRenderer.SetPropertyBlock(_mpb);
 
         // compute the aspect ratio and then set image quad local scale
         Vector2Int resolution = tex ? new Vector2Int(tex.width, tex.height) : baseResolution;
@@ -155,7 +170,6 @@ public class FrameController : MonoBehaviour
 
     float ComputeResolutionScale(Vector2Int resolution, Vector2Int baseResolution, ScaleMode scaleMode)
     {
-        // longer-side ratio or area ratio (sqrt of pixel area ratio)
         switch (scaleMode)
         {
             case ScaleMode.PixelArea:
@@ -207,13 +221,8 @@ public class FrameController : MonoBehaviour
         }
     }
 
-    /*
-     * Updates the borders based on image height and width
-     */
     void UpdateBorders(float imgWidth, float imgHeight)
     {
-        // inner “window” is the image plane edges; frame sits around it with borderThickness and a bit of depth.
-        // 4 strips to be used as frame edges
         var topEdge = bordersParent.Find(TOP);
         var bottomEdge = bordersParent.Find(BOTTOM);
         var leftEdge = bordersParent.Find(LEFT);
@@ -222,8 +231,6 @@ public class FrameController : MonoBehaviour
         float thickness = borderThickness;
         float depth = frameDepth;
 
-
-        // horizontal edges (top/bottom): width spans image width + 2*borderThickness, thickness is borderThickness
         float outerWidth = imgWidth + 2f * thickness;
         float edgeH = thickness;
         float edgeZ = depth;
@@ -239,7 +246,6 @@ public class FrameController : MonoBehaviour
             bottomEdge.localScale = new Vector3(outerWidth, edgeH, edgeZ);
         }
 
-        // vertical edges (left/right): height spans image height, thickness is borderThickness
         float edgeW = thickness;
         float outerH = imgHeight + 2f * thickness;
 
@@ -254,7 +260,6 @@ public class FrameController : MonoBehaviour
             rightEdge.localScale = new Vector3(edgeW, outerH, edgeZ);
         }
 
-        // puts ImageQuad slightly behind the frame face so borders are visible as raised edges(makes the borders look like a frame)
         if (imageQuadRenderer)
         {
             var qt = imageQuadRenderer.transform;

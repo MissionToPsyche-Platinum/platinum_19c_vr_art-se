@@ -192,12 +192,8 @@ public class MuseumManager : MonoBehaviour
             var data = items[i];
             if (!fc || !data) continue;
 
-            // @TODO
-            // add fucntion to FrameController to assign SO and a function or two to the artwork data to apply itself to the frame;
-            // next sprint we will need to work on getting the videos to render as 2d textures. Shouldn't be too bad.
-            // the SO will apply itself to the frame (via FrameController.SetArtwork -> ArtworkData.ApplyToFrame)
-            //
-            //fc.SetArtworkData(data, autoApply: true, startIndex: 0);
+            
+            fc.SetArtwork(data);
         }
 
         Debug.Log($"[MuseumManager] Assigned {pairCount} artwork ScriptableObjects to {frames.Count} frames.");

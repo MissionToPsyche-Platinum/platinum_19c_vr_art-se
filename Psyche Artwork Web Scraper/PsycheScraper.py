@@ -736,4 +736,7 @@ def scrapePsyche(verbose=False):
             print(f" - [{stage}] {url}")
     else:
         print("\n There were no successful video downloads...")
+
+        
+init_db()
 scrapePsyche(verbose=True)
