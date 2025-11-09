@@ -16,10 +16,10 @@ public class MoveTestPlayer : MonoBehaviour
     protected bool toggledSprintAction = false;
     protected Rigidbody rb;
 
-    [SerializeField]
+    [SerializeField][Tooltip ("Add the SpawnPoint Controller object here")]
     protected SpawnController spawnController;
 
-    [SerializeField]
+    [SerializeField][Tooltip("Add the Player Camera object here")]
     protected Camera playerCamera;
 
     [SerializeField]
@@ -34,7 +34,7 @@ public class MoveTestPlayer : MonoBehaviour
         //playerCamera = GetComponentInChildren<Camera>();
         if (rb != null)
         {
-            rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+            rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
         }
     }
     void Start()
