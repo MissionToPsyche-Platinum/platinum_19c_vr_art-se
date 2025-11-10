@@ -101,6 +101,11 @@ public class FrameController : MonoBehaviour
             ApplyAll();
         }
 
+        //rotate the image quad 180(images are all backwards)
+        if (imageQuadRenderer != null)
+        {
+            imageQuadRenderer.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+        }
         // @TODO assign UI text fields
     }
 

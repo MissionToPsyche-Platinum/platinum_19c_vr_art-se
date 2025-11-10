@@ -1,9 +1,8 @@
-using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
-using UnityEditor.VersionControl;
 using UnityEngine;
+
 
 public class MuseumManager : MonoBehaviour
 {
@@ -27,7 +26,7 @@ public class MuseumManager : MonoBehaviour
     [Tooltip("Automatically populate frames on Start after building the museum?")]
     [SerializeField] bool autoPopulateOnStart = true;
 
-    public void Awake()
+    public void Start()
     {
         GenerateMuseum(20);
 
