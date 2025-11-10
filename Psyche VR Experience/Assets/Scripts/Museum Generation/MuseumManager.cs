@@ -88,7 +88,7 @@ public class MuseumManager : MonoBehaviour
 
     public void Awake()
     {
-        GenerateMuseum(400);
+        GenerateMuseum(50);
         RefreshActiveDisplays();
 
         if (autoPopulateOnStart)
@@ -98,7 +98,8 @@ public class MuseumManager : MonoBehaviour
     void GenerateMuseum(int numArtPieces)
     {
         int size = (int)(numArtPieces);
-        int numChunks = (int)((float)(numArtPieces / 100) * 2);
+        int numChunks = 2; //TODO: Figure out the math for this
+        Debug.Log("Chunk Num: " + numChunks);
         InitMuseum(chunkSize * numChunks);
 
         Vector2Int startPos = new Vector2Int(numChunks/2, 0);
