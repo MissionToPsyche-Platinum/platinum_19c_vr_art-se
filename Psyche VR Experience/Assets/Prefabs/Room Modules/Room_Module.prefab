@@ -146,6 +146,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7029948723529949830, guid: 18da037b643d6994aa367dff7c7364ad, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 18da037b643d6994aa367dff7c7364ad, type: 3}
       propertyPath: m_Name
       value: room_one_open
@@ -304,6 +308,10 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: b07b2bc11e2ddaf42811f706e74d4ead, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7029948723529949830, guid: b07b2bc11e2ddaf42811f706e74d4ead, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: b07b2bc11e2ddaf42811f706e74d4ead, type: 3}
       propertyPath: m_Name
@@ -645,6 +653,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7029948723529949830, guid: c30397b615635e24ab27cc710383459a, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: c30397b615635e24ab27cc710383459a, type: 3}
       propertyPath: m_Name
       value: room 2 L no_pillar
@@ -800,6 +812,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7029948723529949830, guid: 0bb92df08120c5d44b8f94257c86e918, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0bb92df08120c5d44b8f94257c86e918, type: 3}
       propertyPath: m_Name
       value: room_three_open
@@ -950,6 +966,10 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 9eaf90a7a7ff7d4478657cbb9cf6f889, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7029948723529949830, guid: 9eaf90a7a7ff7d4478657cbb9cf6f889, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 9eaf90a7a7ff7d4478657cbb9cf6f889, type: 3}
       propertyPath: m_Name
@@ -1103,6 +1123,10 @@ PrefabInstance:
       value: room_flat_open
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 2a051d388677a644da1e40e01839aa50, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 2a051d388677a644da1e40e01839aa50, type: 3}
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
@@ -1209,6 +1233,10 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 4dbed68d5e93ce446b000674954b16ec, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7029948723529949830, guid: 4dbed68d5e93ce446b000674954b16ec, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 4dbed68d5e93ce446b000674954b16ec, type: 3}
       propertyPath: m_Name
@@ -1699,6 +1727,10 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 999cdcf985ce1f54cbdea1a540592f7f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7029948723529949830, guid: 999cdcf985ce1f54cbdea1a540592f7f, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 999cdcf985ce1f54cbdea1a540592f7f, type: 3}
       propertyPath: m_Name
