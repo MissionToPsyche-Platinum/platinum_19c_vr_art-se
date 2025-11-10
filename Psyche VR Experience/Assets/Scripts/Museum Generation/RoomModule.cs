@@ -22,6 +22,7 @@ public class RoomModule : MonoBehaviour
     public RoomType roomType = RoomType.OneOpen;
 
     public GameObject[] roomModels;
+    public ArtDisplayList[] artDisplayLists;
 
     //North is -Z, South is +Z, West is +X, East is -X
     public bool openNorth, openSouth, openWest, openEast;
@@ -84,7 +85,7 @@ public class RoomModule : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
-        SetupActiveRoom();
+        //SetupActiveRoom();
     }
 
     /// <summary>
@@ -98,7 +99,7 @@ public class RoomModule : MonoBehaviour
             roomModel.SetActive(false);
         }
 
-        roomModels[(int)roomType].SetActive(true);
+        roomModels[(int)roomType].gameObject.SetActive(true);
         UpdateRoomOpenings();
     }
 
@@ -125,9 +126,8 @@ public class RoomModule : MonoBehaviour
         {
             SetOrientation(roomOrientation, false);
         }
-
-        roomModels[((int)roomType)].SetActive(false);
-        roomModels[(int)nRoomType].SetActive(true);
+        roomModels[((int)roomType)].gameObject.SetActive(false);
+        roomModels[(int)nRoomType].gameObject.SetActive(true);
         roomType = nRoomType;
         UpdateRoomOpenings();
     }
@@ -244,7 +244,7 @@ public class RoomModule : MonoBehaviour
 
         if (rooms.Count == 0)
         {
-            return RoomType.SIZE;
+            return RoomType.FourOpen;
         }
 
         if (numOpenings == 2)
@@ -291,11 +291,35 @@ public class RoomModule : MonoBehaviour
         SetRoomActive(room, dir);
     }
 
-    public void SetArtDisplays()
+    public int GetNumArtDisplays()
     {
-        for (int i = 0; i < this.roomInfos[this.roomType].numArt; i++)
+        return this.roomInfos[this.roomType].numArt;
+    }
+
+    /// <summary>
+    /// Set each art display in the room module to some random artwork
+    /// </summary>
+    /// <returns>Number of art displays set.</returns>
+    public int SetArtDisplays(int numSet)
+    {
+        for (int i = 0; i < artDisplayLists[(int)roomType].artFrames.Length; i++)
         {
-            // add art to each object using middleware :D
+            if(i < numSet)
+            {
+                GameObject frameObject = artDisplayLists[(int)roomType].artFrames[i];
+                FrameController frame = frameObject.GetComponent<FrameController>();
+
+                //TODO: integrate this with middleware
+            }
+            else if(artDisplayLists[(int)roomType].artFrames.Length > i)
+            {
+                GameObject frameObject = artDisplayLists[(int)roomType].artFrames[i];
+
+                if(frameObject != null)
+                    frameObject.gameObject.SetActive(false);
+            }
         }
+
+        return this.roomInfos[this.roomType].numArt;
     }
 }
