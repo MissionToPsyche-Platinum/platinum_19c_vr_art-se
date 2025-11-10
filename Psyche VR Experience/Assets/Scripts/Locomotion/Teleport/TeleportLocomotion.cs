@@ -30,6 +30,12 @@ public class TeleportLocomotion : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // we don't need to worry about it if the setting is not enabled
+        if (LocomotionSettings.LOCOMOTION_MODE != LocomotionSettings.LocomotionMode.TELEPORT)
+        {
+            return;
+        }
+
         if (teleInput == null || cancelInput == null || rig == null)
         {
             Debug.LogWarning("TELEPORT LOCOMOTION ERROR: Check the input values and rig fields! They are not set properly!");

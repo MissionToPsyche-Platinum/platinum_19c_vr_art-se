@@ -1,6 +1,9 @@
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEditor;
+using UnityEditor.VersionControl;
 using UnityEngine;
 
 
@@ -26,21 +29,90 @@ public class MuseumManager : MonoBehaviour
     [Tooltip("Automatically populate frames on Start after building the museum?")]
     [SerializeField] bool autoPopulateOnStart = true;
 
+    //make sure this is no less than 9 probably
+        const int chunkSize = 11;
+        const int chunkMid = chunkSize / 2 + 1;
+
+        struct SquareRoom
+        {
+            public int x, y, width, height;
+            public bool add;
+
+            public SquareRoom(int x, int y, int width, int height, bool add = true)
+            {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.add = add;
+            }
+        }
+
+        class RoomPattern
+        {
+            public SquareRoom[] squares;
+
+            public RoomPattern(SquareRoom[] squares)
+            {
+                this.squares = squares;
+            }
+        }
+
+        RoomPattern[] patterns = new RoomPattern[]
+        {
+            new RoomPattern(new SquareRoom[]
+            {
+                new SquareRoom(3, 3, chunkSize - 4, chunkSize - 4),
+                new SquareRoom(chunkMid - 1, chunkMid - 1, 3, 3, false)
+            }),
+
+            new RoomPattern(new SquareRoom[]
+            {
+                new SquareRoom(2, chunkMid, chunkSize - 2, 1),
+                new SquareRoom(chunkMid, chunkMid - 1, 1, 1)
+            }),
+
+            new RoomPattern(new SquareRoom[]
+            {
+                new SquareRoom(-2, 1, chunkSize + 4, chunkSize - 2),
+                new SquareRoom(chunkSize / 3, chunkMid - 1, 2, 2, false)
+            }),
+
+            new RoomPattern(new SquareRoom[]
+            {
+                new SquareRoom(3, 3, chunkSize - 3, chunkSize - 3)
+            })
+        };
+
+
+
     public void Awake()
     {
-        GenerateMuseum(20);
-
+        GenerateMuseum(400);
         RefreshActiveDisplays();
 
         if (autoPopulateOnStart)
             PopulateDisplays(ActiveFrameControllers.Count);
 
     }
-
-    public void LoadModuleAsset()
+    void GenerateMuseum(int numArtPieces)
     {
-        GameObject funny = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Room Modules/Room_Module.prefab");
-        roomModulePrefab = funny.GetComponent<RoomModule>();
+        int size = (int)(numArtPieces);
+        int numChunks = (int)((float)(numArtPieces / 100) * 2);
+        InitMuseum(chunkSize * numChunks);
+
+        Vector2Int startPos = new Vector2Int(numChunks/2, 0);
+        bool[][] chunksTraversed = new bool[numChunks][];
+
+        for(int i = 0; i < chunksTraversed.Length; i++) { chunksTraversed[i] = new bool[numChunks]; }
+
+        RecurseChunks(startPos, ref chunksTraversed);
+
+        AlignAllRooms();
+
+        //Debug.Log("Count: " + CountArtSpots());
+
+        AssignArt(numArtPieces);
     }
 
     public void InitMuseum(int size)
@@ -65,15 +137,184 @@ public class MuseumManager : MonoBehaviour
         }
     }
 
-    void GenerateMuseum(int numArtPieces)
+    public void GenerateRandomRoomPattern(int chunkX, int chunkY)
     {
-        int size = (int)(numArtPieces);
+        int startX = chunkX * chunkSize;
+        int startY = chunkY * chunkSize;
 
-        InitMuseum(3);
+        int roomIndex = Random.Range(0, patterns.Length);
 
-        GenSquare(0, 0, 3, 1);
-        GenSquare(1, 0, 1, 3);
-        AlignAllRooms();
+        RoomPattern pattern = patterns[roomIndex];
+
+        //GenRoom(startX, startY);
+        //GenRoom(startX + chunkSize - 1, startY + chunkSize - 1);
+
+        for (int i = 0; i < pattern.squares.Length; i++)
+        {
+            SquareRoom square = pattern.squares[i];
+            GenSquare(square.x + startX, square.y + startY, square.width, square.height, square.add);
+        }
+    }
+
+    void RecurseChunks(Vector2Int startPos, ref bool[][] chunksTraversed)
+    {
+        GenerateRandomRoomPattern(startPos.x, startPos.y);
+
+        List<Vector2Int> directions = new List<Vector2Int>() { new Vector2Int(1, 0), new Vector2Int(-1, 0), new Vector2Int(0, 1), new Vector2Int(0, -1) };
+        List<Vector2Int> checkedDirections = new List<Vector2Int>();
+
+        int numRooms = 4;
+        int numRoomsMarked = 0;
+
+        //mark all of the directions as traversed and remove any previously traversed
+        for (int i = 0; i < 4; i++)
+        {
+            if (directions.Count == 0)
+            {
+                break;
+            }
+
+            int directionIndex = Random.Range(0, directions.Count);
+
+            Vector2Int dir = directions[directionIndex];
+
+            Vector2Int nextPos = startPos + dir;
+
+            if (InBounds(nextPos.x, nextPos.y, chunksTraversed.Length) && !chunksTraversed[nextPos.x][nextPos.y])
+            {
+                chunksTraversed[nextPos.x][nextPos.y] = true;
+
+                if(numRoomsMarked < numRooms)
+                    checkedDirections.Add(dir);
+
+                numRoomsMarked++;
+            }
+
+            directions.RemoveAt(directionIndex);
+        }
+
+        for (int i = 0; i < checkedDirections.Count; i++)
+        {
+            Vector2Int dir = checkedDirections[i];
+
+            Vector2Int nextPos = startPos + dir;
+
+            //if we haven't visited this chunk yet, mark it so and recurse on it
+            if (InBounds(nextPos.x, nextPos.y, chunksTraversed.Length))// && !chunksTraversed[nextPos.x][nextPos.y])
+            {
+                chunksTraversed[nextPos.x][nextPos.y] = true;
+
+                RecurseChunks(nextPos, ref chunksTraversed);
+
+                //connect the two chunk
+
+                //get position on middle of boundary
+                Vector2Int startRoomPos = (startPos * chunkSize) + new Vector2Int(chunkMid, chunkMid) + chunkMid * dir;
+
+                //generate path towards room from mid
+                Vector2Int current = startRoomPos;
+                while (InBounds(current.x, current.y, roomGrid.Length) && roomGrid[current.x][current.y] == null)
+                {
+                    GenRoom(current.x, current.y);
+                    current += dir;
+                }
+
+                //generate path towards original room from mid
+                current = startRoomPos - dir;
+
+                int tolerance = 3;
+                while (InBounds(current.x, current.y, roomGrid.Length) && roomGrid[current.x][current.y] != null && tolerance > 0)
+                {
+                    current -= dir;
+                    tolerance--;
+                }
+
+                while (InBounds(current.x, current.y, roomGrid.Length) && roomGrid[current.x][current.y] == null)
+                {
+                    GenRoom(current.x, current.y);
+                    current -= dir;
+                }
+            }
+        }
+    }
+
+    public int CountArtSpots()
+    {
+        int total = 0;
+
+        for (int x = 0; x < roomGrid.Length; x++)
+        {
+            for (int y = 0; y < roomGrid[x].Length; y++)
+            {
+                if (roomGrid[x][y] != null)
+                {
+                    total += roomGrid[x][y].GetNumArtDisplays();
+                }
+            }
+        }
+
+        return total;
+    }
+
+    public void AssignArt(int numArtPieces)
+    {
+        int numSpots = CountArtSpots();
+        int spotsFilled = 0;
+
+        int numSpaces = (numSpots / numArtPieces) - 2;
+        int n = 0;
+
+        if(numSpaces == 0)
+        {
+            numSpaces = 1;
+        }
+
+        for (int x = 0; x < roomGrid.Length; x++)
+        {
+            for (int y = 0; y < roomGrid[x].Length; y++)
+            {
+                if (roomGrid[x][y] != null)
+                {
+                    if (spotsFilled >= numArtPieces)
+                    {
+                        roomGrid[x][y].SetArtDisplays(0);
+                        continue;
+                    }
+
+                    int numSet = roomGrid[x][y].GetNumArtDisplays();
+
+                    if (numSet >= 1)
+                    {
+                        if (numSpots - spotsFilled > numArtPieces * 2)
+                        {
+                            if (n != 0)
+                                numSet = 0;
+                            else
+                                numSet = 1;
+
+                                n++;
+                            n %= numSpaces;
+                        }
+                        else if(spotsFilled + numSet > numArtPieces)
+                        {
+                            numSet = numArtPieces - spotsFilled;
+                        }
+                    }
+
+                    roomGrid[x][y].SetArtDisplays(numSet);
+
+                    spotsFilled += numSet;
+                }
+            }
+        }
+
+        //Debug.Log("SpotsFilled: " + spotsFilled + " NumArtPieces: " + numArtPieces);
+    }
+
+    public void LoadModuleAsset()
+    {
+        GameObject funny = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Room Modules/Room_Module.prefab");
+        roomModulePrefab = funny.GetComponent<RoomModule>();
     }
 
     public bool InBounds(int x, int y, int size)
@@ -81,23 +322,29 @@ public class MuseumManager : MonoBehaviour
         return x >= 0 && x < size && y >= 0 && y < size;
     }
 
-    public void GenSquare(int xTop, int yTop, int xSize, int ySize)
+    public void GenSquare(int xTop, int yTop, int xSize, int ySize, bool add = true)
     {
         for(int x = xTop; x < xTop + xSize; x++)
         {
             for (int y = yTop; y < yTop + ySize; y++)
             {
                 if (!InBounds(x, y, roomGrid.Length))
-                    return;
+                    continue;
 
-                GenRoom(x, y);
+                if(add)
+                    GenRoom(x, y);
+                else if (roomGrid[x][y] != null)
+                {
+                    Destroy(roomGrid[x][y].gameObject);
+                    roomGrid[x][y] = null;
+                }
             }
         }
     }
 
     public void GenRoom(int x, int y)
     {
-        if (roomGrid[x][y] != null)
+        if (!InBounds(x, y, roomGrid.Length) || roomGrid[x][y] != null)
             return;
 
         if(roomModulePrefab == null)
@@ -134,7 +381,7 @@ public class MuseumManager : MonoBehaviour
 
         if (openNorth)
             numOpenings++;
-        if (openSouth)
+        if (openSouth) 
             numOpenings++;
         if (openWest)
             numOpenings++;
@@ -148,7 +395,7 @@ public class MuseumManager : MonoBehaviour
             int xOffset = openWest ? 1 : -1;
 
             bool range = InRange(x + xOffset, y + yOffset, roomGrid.Length);
-
+           
             //if we're in range and there's a room on the corner, we omit the beams
             if(range && roomGrid[x + xOffset][y + yOffset] != null)
             {
