@@ -43,7 +43,7 @@ public static class PsycheDBMiddleware
             return false;
         }
 
-        string dbPath = dbPathOverride ?? GetDefaultDbPath();
+        string dbPath = GetDefaultDbPath();
         if (!File.Exists(dbPath))
         {
             Debug.LogError($"PsycheDbMiddleware: DB not found at {dbPath}");

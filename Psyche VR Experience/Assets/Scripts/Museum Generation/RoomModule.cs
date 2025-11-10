@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO.IsolatedStorage;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using static RoomModule;
@@ -14,12 +15,15 @@ public class RoomModule : MonoBehaviour
         ThreeOpen,
         FourOpen,
         FlatOpen,
+        TwoOpenLShapeFlat,
+        ThreeOpenFlat,
         SIZE
     }
 
     public RoomType roomType = RoomType.OneOpen;
 
     public GameObject[] roomModels;
+    public ArtDisplayList[] artDisplayLists;
 
     //North is -Z, South is +Z, West is +X, East is -X
     public bool openNorth, openSouth, openWest, openEast;
@@ -71,7 +75,9 @@ public class RoomModule : MonoBehaviour
         {RoomType.TwoOpenStraight,   new RoomInfo(true, true, false, false, 2) },     
         {RoomType.ThreeOpen,   new RoomInfo(false, true, true, true, 1) },           
         {RoomType.FourOpen,   new RoomInfo(true, true, true, true, 0) },           
-        {RoomType.FlatOpen,   new RoomInfo(true, true, true, true, 0) }
+        {RoomType.FlatOpen,   new RoomInfo(true, true, true, true, 0) },
+        {RoomType.TwoOpenLShapeFlat, new RoomInfo(false, true, true, false, 2) },
+        {RoomType.ThreeOpenFlat,   new RoomInfo(false, true, true, true, 1) }
     };
 
     //number of openings in each room
@@ -80,7 +86,7 @@ public class RoomModule : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
-        SetupActiveRoom();
+        //SetupActiveRoom();
     }
 
     /// <summary>
@@ -94,7 +100,7 @@ public class RoomModule : MonoBehaviour
             roomModel.SetActive(false);
         }
 
-        roomModels[(int)roomType].SetActive(true);
+        roomModels[(int)roomType].gameObject.SetActive(true);
         UpdateRoomOpenings();
     }
 
@@ -121,9 +127,8 @@ public class RoomModule : MonoBehaviour
         {
             SetOrientation(roomOrientation, false);
         }
-
-        roomModels[((int)roomType)].SetActive(false);
-        roomModels[(int)nRoomType].SetActive(true);
+        roomModels[((int)roomType)].gameObject.SetActive(false);
+        roomModels[(int)nRoomType].gameObject.SetActive(true);
         roomType = nRoomType;
         UpdateRoomOpenings();
     }
@@ -240,7 +245,7 @@ public class RoomModule : MonoBehaviour
 
         if (rooms.Count == 0)
         {
-            return RoomType.SIZE;
+            return RoomType.FourOpen;
         }
 
         if (numOpenings == 2)
@@ -287,11 +292,100 @@ public class RoomModule : MonoBehaviour
         SetRoomActive(room, dir);
     }
 
-    public void SetArtDisplays()
+    public int GetNumArtDisplays()
     {
-        for (int i = 0; i < this.roomInfos[this.roomType].numArt; i++)
-        {
-            // add art to each object using middleware :D
-        }
+        return this.roomInfos[this.roomType].numArt;
     }
+
+    /// <summary>
+    /// Set each art display in the room module to some random artwork
+    /// </summary>
+    /// <returns>Number of art displays set.</returns>
+    public int SetArtDisplays(int numSet)
+    {
+        for (int i = 0; i < artDisplayLists[(int)roomType].artFrames.Length; i++)
+        {
+            if(i < numSet)
+            {
+                GameObject frameObject = artDisplayLists[(int)roomType].artFrames[i];
+                FrameController frame = frameObject.GetComponent<FrameController>();
+
+                //TODO: integrate this with middleware
+            }
+            else if(artDisplayLists[(int)roomType].artFrames.Length > i)
+            {
+                GameObject frameObject = artDisplayLists[(int)roomType].artFrames[i];
+
+                if(frameObject != null)
+                    frameObject.gameObject.SetActive(false);
+            }
+        }
+
+        return this.roomInfos[this.roomType].numArt;
+    }
+    /// finds the active room model variant and returns it
+        /// prefers roomModels[(int)roomType], but safely falls back to any active model.
+        public GameObject GetActiveModelRoot()
+        {
+            // roomModels[(int)roomType] is the one we actively set, but also check activeSelf
+            var go = roomModels[(int)roomType];
+            if (go != null && go.activeSelf) return go;
+
+            // find any active in case something changed externally(shouldn't happen in any normal circumstance)
+            foreach (var m in roomModels)
+                if (m != null && m.activeSelf) return m;
+
+            return null;
+        }
+
+        /// adds the active room's FrameController components(not the gameobject containing the framecontroller)
+        /// <param name="outList">Destination list (is not to be cleared, is cumulative).</param>
+        /// <param name="includeInactive">Include components on inactive objects.(generally false, used for testing/debugging)</param>
+        public int CollectActiveFrameControllers(List<FrameController> outList, bool includeInactive = false)
+        {
+            if (outList == null) return 0;
+
+            var activeRoot = GetActiveModelRoot();
+            if (!activeRoot) return 0;
+
+            int before = outList.Count;
+
+            var frames = activeRoot.GetComponentsInChildren<FrameController>(includeInactive: true);
+            foreach (var fc in frames)
+            {
+                if (!fc) continue;
+                if (!includeInactive && !fc.gameObject.activeInHierarchy) continue;
+                outList.Add(fc);
+            }
+
+            return outList.Count - before;
+        }
+
+        /// adds active room's "Image-Frame-X" Transforms to the input list.
+        /// by default, it looks for FrameController components,
+        /// returns how many were added.
+        /// the transforms will be useful later for proximity based rendering, if we go that route.
+        /// could also add in some sort of grouping mechanism based on proximity if we need one.
+        /// <param name="outList">destination list (NOT cleared on run).</param>
+        /// <param name="includeInactive">include objects that are inactive in hierarchy?(debugging mostly)</param>
+        public int CollectActiveDisplayTransforms(List<Transform> outList, bool includeInactive = false)
+        {
+            if (outList == null) return 0;
+
+            var activeRoot = GetActiveModelRoot();
+            if (!activeRoot) return 0;
+
+            int before = outList.Count;
+
+            // find transforms that have a FrameController component(parent object in display prefab has the script)
+            var frameControllers = activeRoot.GetComponentsInChildren<FrameController>(includeInactive: true);
+            foreach (var fc in frameControllers)
+            {
+                if (!fc) continue;
+                if (!includeInactive && !fc.gameObject.activeInHierarchy) continue;
+                outList.Add(fc.transform);
+            }
+
+            return outList.Count - before;
+        }
 }

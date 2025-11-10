@@ -204,7 +204,7 @@ def getArtInfo(url, verbose):
                     ydl.download(link)
                 file_paths.append(str(relative_destination_video_only))
                 print("Successfully downloaded Youtube VIDEO ONLY from " + link)
-              if verbose:
+                if verbose:
                     print("Successfully downloaded Youtube VIDEO ONLY from " + link)  
                     SUCCESS_DOWNLOADS.append({'url': link, 'stage': 'video', 'dest': file_paths})
             except Exception as e: 
@@ -736,4 +736,7 @@ def scrapePsyche(verbose=False):
             print(f" - [{stage}] {url}")
     else:
         print("\n There were no successful video downloads...")
+
+        
+init_db()
 scrapePsyche(verbose=True)
