@@ -4,6 +4,9 @@ import re
 import sys
 import subprocess
 
+import fitz # PyMuPDF
+from PIL import Image
+from io import BytesIO
 import bs4
 import requests
 from bs4 import BeautifulSoup
@@ -24,14 +27,18 @@ from typing import Optional
 HERE = Path(__file__).resolve().parent
 ARTWORK_DIR = (HERE / ".." / "Psyche VR Experience" / "Assets" / "Artwork").resolve()
 ARTWORK_DIR.mkdir(parents=True, exist_ok=True)
-#TODO TEMP FIX: ADDED .pdf TO THE ALLOWED EXTENSIONS. REMOVE PDF FROM THIS IT SHOULDN"T BE ALLOWED 
-FILE_EXTENSIONS = [".bmp", ".exr", ".gif", ".hdr", ".iff", ".jpeg", ".jpg", ".pct", ".pdf", ".pic", ".pict", ".png", ".psd", ".tga", ".tif", ".tiff"]
+ALLOWED_FILE_EXTENSIONS = [".bmp", ".exr", ".gif", ".hdr", ".iff", ".jpeg", ".jpg", ".pct", ".pic", ".pict", ".png", ".psd", ".tga", ".tif", ".tiff"]
+HANDLED_FILE_EXTENSIONS = [".pdf"]
 # ART_PATH = ART_DIR / "psyche.db"
 
 # global list to collect failed download URLs
 SUCCESS_DOWNLOADS = []
 FAILED_DOWNLOADS = []
 
+# Used for printing errors
+RED = "\033[31m"
+YELLOW = "\033[33m"
+RESET = "\033[0m"
 
 def _safe_destination(dest_dir: Path, filename: str) -> Path:
     # avoids overwriting existing files by appending -1, -2, ... before the extension.
@@ -47,14 +54,20 @@ def _safe_destination(dest_dir: Path, filename: str) -> Path:
 
 
 # returns a dictionary with keys [artTitle, artistName, date (returned as *month day, year*), artistMajor, genre, description]
-def getArtInfo(url):
-    # TODO: delete later, for debugging
-    print("Starting to scrape: " + url)
+def getArtInfo(url, verbose):
+    if verbose:
+        print("Starting to scrape: " + url)
 
     results = {}
 
     # grab the html and create a beautiful soup object of parsed HTML
-    artPage = requests.get(url)
+    try:
+        artPage = requests.get(url)
+    except requests.exceptions.RequestException as e:
+        if verbose:
+            print(RED + "[ERROR] There was an error accessing this art project: " + url + "[ERROR]" + RESET)
+            print(RED + str(e) + RESET)
+        return None
     pageContent = BeautifulSoup(artPage.text, "html.parser")
     artContent = pageContent.find("div", class_="row justify-content-center")
 
@@ -108,12 +121,22 @@ def getArtInfo(url):
     # A small amount of art entries combine art and major in the first p tag, so they will have a newline
     if date.find("\n") != -1:
         dateAndMajor = date.split("\n")
-        results["date"] = standardizeDate(dateAndMajor[0])
+        try:
+            results["date"] = standardizeDate(dateAndMajor[0])
+        except ValueError as e:
+            if verbose:
+                print(RED + "[ERROR] There was an error converting the date for project with title: " + results["title"] + ". Please change it manually [ERROR]" + YELLOW + "Continuing with incorrect date." + RESET)
+                print(RED + str(e) + RESET)
 
         artistMajor = cleanString(dateAndMajor[1])
         results["artistMajor"] = artistMajor
     else:
-        results["date"] = standardizeDate(date)
+        try:
+            results["date"] = standardizeDate(date)
+        except ValueError as e:
+            if verbose:
+                print(RED + "[ERROR] There was an error converting the date for project with title: " + results["title"] + ". Please change it manually [ERROR]" + YELLOW + "Continuing with incorrect date." + RESET)
+                print(RED + str(e) + RESET)
 
         # major is contained in the second h4 tag
         artistMajor = cleanString(pageTags[1].text)
@@ -140,8 +163,9 @@ def getArtInfo(url):
     # download video if there is one embedded
     if type(iframeTag) is bs4.Tag and iframeTag.has_attr("src"):
         # create YouTube link from embedded source
-        if "youtube" in iframeTag["src"]: 
-            print("Found a Youtube video")
+        if "youtube" in iframeTag["src"]:
+            if verbose:
+                print("Found a Youtube video")
             link = "https://www.youtube.com/watch?v=" + iframeTag["src"].split("/")[-1].split("?")[0]
             yt_link = YouTube(link)
 
@@ -160,7 +184,8 @@ def getArtInfo(url):
             
              #Download HIGHEST QUALITY VIDEO ONLY
             try:
-                print("Getting Youtube VIDEO ONLY")
+                if verbose:
+                    print("Getting Youtube VIDEO ONLY")
                 # absolute path for us, relative path for database and unity
                 absolute_destination_video_only = _safe_destination(project_dir, base_video_only)
                 relative_destination_video_only = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_video_only.name
@@ -179,17 +204,19 @@ def getArtInfo(url):
                     ydl.download(link)
                 file_paths.append(str(relative_destination_video_only))
                 print("Successfully downloaded Youtube VIDEO ONLY from " + link)
-                SUCCESS_DOWNLOADS.append({'url': link, 'stage': 'video', 'dest': file_paths})
+                if verbose:
+                    print("Successfully downloaded Youtube VIDEO ONLY from " + link)  
+                    SUCCESS_DOWNLOADS.append({'url': link, 'stage': 'video', 'dest': file_paths})
             except Exception as e: 
-                print("Error downloading video (VIDEO) from link " + link)
-                try:
+                if verbose:
+                    print(RED + "[ERROR] There was an error getting video from: " + link + "[ERROR]. " + YELLOW + "Video NOT added." + RESET)
+                    print(RED + str(e) + RESET)
                     FAILED_DOWNLOADS.append({'url': link, 'stage': 'video', 'error': str(e)})
-                except Exception:
-                    pass
 
             #Download HIGHEST QUALITY AUDIO ONLY
             try:
-                print("Getting Youtube AUDIO ONLY")
+                if verbose:
+                    print("Getting Youtube AUDIO ONLY")
                 # absolute path for us, relative path for database and unity
                 absolute_destination_audio = _safe_destination(project_dir, base_audio)
                 relative_destination_audio = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_audio.name
@@ -207,14 +234,14 @@ def getArtInfo(url):
                 with yt_dlp.YoutubeDL(ydl_audio_opts) as ydl:
                     ydl.download(link)
                 file_paths.append(str(relative_destination_audio))        
-                print("Successfully downoaded Youtube AUDIO ONLY from " + link)
-                SUCCESS_DOWNLOADS.append({'url': link, 'stage': 'audio', 'dest': file_paths})
+                if verbose:
+                  print("Successfully downoaded Youtube AUDIO ONLY from " + link)
+                  SUCCESS_DOWNLOADS.append({'url': link, 'stage': 'audio', 'dest': file_paths})
             except Exception as e:
-                print("Error downloading video (AUDIO) from link " + link)
-                try:
+                 if verbose:
+                    print(RED + "[ERROR] There was an error getting audio from: " + link + "[ERROR]. " + YELLOW + "Audio NOT added." + RESET)
+                    print(RED + str(e) + RESET)
                     FAILED_DOWNLOADS.append({'url': link, 'stage': 'audio', 'error': str(e)})
-                except Exception:
-                    pass
             
             try:
                 print("Preparing to combine video and audio together")
@@ -287,13 +314,16 @@ def getArtInfo(url):
             
         #Catch a vimeo video and convert it into an mp4 file.
         elif "vimeo" in iframeTag["src"]:
-            print("Found a Vimeo video")
+            if verbose:
+                print("Found a Vimeo video")
             try:
-                print(url)
-                print(iframeTag["src"])
+                if verbose:
+                    print(url)
+                    print(iframeTag["src"])
+                    print("Attempting to download vimeo file")
                 v = Vimeo(iframeTag["src"], embedded_on=url)
                 print("Attempting to download vimeo file")
-                #base_video= f"{results['artistName'].replace(' ','')}_{results['artTitle'].replace(' ','')}.mp4"
+                base_video= f"{results['artistName'].replace(' ','')}_{results['artTitle'].replace(' ','')}.mp4"
                 # absolute path for us, relative path for database and unity
                 #absolute_destination_video = _safe_destination(project_dir, base_video)
                 #relative_destination_video = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_video.name
@@ -308,14 +338,13 @@ def getArtInfo(url):
                 file_paths.append(str(relative_destination_video))
                 SUCCESS_DOWNLOADS.append({'url': link, 'stage': 'vimeo', 'dest': file_paths})
             except Exception as e:
-                print("There was an error downloading the vimeo file from link " + iframeTag["src"])
-                try:
+                if verbose:
+                    print(RED + "[ERROR] There was an error downloading the vimeo file from link: " + iframeTag["src"] + "[ERROR]. " + YELLOW + "Video NOT added." + RESET)
+                    print(RED + str(e) + RESET)
                     FAILED_DOWNLOADS.append({'url': iframeTag["src"], 'stage': 'vimeo', 'error': str(e)})
-                except Exception:
-                    pass
         #For now this catches anything that isn't Youtube or Vimeo, we could add extra stuff here is something blows up.
         else:
-            print("Something went terribly wrong. I found an src tag, but don't recognize the host.") 
+            print(RED + "[ERROR] Something went wrong. We think we found a video but we do not recognize the host. [ERROR]. " + YELLOW + "Video NOT added." + RESET)
 
 
     # download regular art files if there is no video
@@ -332,6 +361,8 @@ def getArtInfo(url):
         # download each link and store it in the media file
         for link in download_link:
             try:
+                pdf = False
+
                 # Send GET request to the URL
                 response = requests.get(link)
 
@@ -339,33 +370,43 @@ def getArtInfo(url):
                     orig_name = link.split("/")[-1]
 
                     fileExt = Path(orig_name).suffix
-                    if not fileOK(fileExt):
-                        print(fileExt)
-                        handleError("Disallowed File")
-                        #TODO Change this logic to catch the none
-                        return results
+                    if not fileExt in ALLOWED_FILE_EXTENSIONS:
+                        handleable = False
+                        if fileExt in HANDLED_FILE_EXTENSIONS:
+                            handleable = True
+                        if fileExt == ".pdf":
+                            pdf = True
+                        if not handleable:
+                            print(RED + "[ERROR] We cannot handle this type of file: " + fileExt +
+                                  "\nPlease convert manually to one of the following + " + str(ALLOWED_FILE_EXTENSIONS) + "and add to the following project: " + results["title"] + "[ERROR]. " + YELLOW + "File NOT added." + RESET)
+                            continue
 
                     # absolute path for us, relative path for database and unity
                     absolute_destination = _safe_destination(project_dir, orig_name)
                     relative_destination = Path("Assets") / "Artwork" / str(project_id) / absolute_destination.name
-                    with open(absolute_destination, "wb") as f:
-                        f.write(response.content)
+                    if pdf:
+                        convertedFilePath = convertAndDownloadPDF(response, absolute_destination, verbose)
+                        if not convertedFilePath is None:
+                            file_paths.append(convertedFilePath)
+                    else:
+                        with open(absolute_destination, "wb") as f:
+                            f.write(response.content)
 
-                    file_paths.append(str(relative_destination))
+                        file_paths.append(str(relative_destination))
                 else:
                     file_paths.append("ERROR: " + link)
 
             except requests.exceptions.RequestException as e:
-                print("There was an error downloading the link " + link)
-                print(e)
-
-                file_paths.append("ERROR: " + link)
+                if verbose:
+                    print(RED + "[ERROR] There was an error downloading from the link: " + link + "[ERROR]. " + YELLOW + "File NOT added." + RESET)
+                    print(RED + str(e) + RESET)
+                continue
 
     results["file_paths"] = file_paths
 
-    # TODO: delete later, for debugging
-    print("Results of " + url + ":")
-    printArtProject(results)
+    if verbose:
+        print("Results of " + url + ":")
+        printArtProject(results)
 
     return results
 
@@ -390,11 +431,42 @@ def cleanString(string):
         string = string.strip()
     return string
 
-def fileOK(extension):
-    return extension in FILE_EXTENSIONS
+# combines all pages of a pdf into one image (png)
+def convertAndDownloadPDF(response, destination, verbose):
+    try:
+        destination = Path(destination).with_suffix(".png")
 
-def handleError(error):
-    print("ALERT - AN ERROR HAS OCCURRED: " + error)
+        # keep the pdf in memory rather than downloading it and having to change it later
+        pdf = fitz.open(stream=response.content, filetype="pdf")
+        images = []
+
+        # make each page a PIL image
+        for page_index in range(pdf.page_count):
+            page = pdf.load_page(page_index)
+            pix = page.get_pixmap()
+            img = Image.open(BytesIO(pix.tobytes("png")))
+            images.append(img)
+
+        # stack images to combine all of them
+        total_height = sum([img.height for img in images])
+        max_width = max([img.width for img in images])
+        combined = Image.new("RGB", (max_width, total_height), (255, 255, 255))
+
+        yPos = 0
+        for img in images:
+            combined.paste(img, (0, yPos))
+            yPos += img.height
+
+        # save Image
+        combined.save(destination)
+        pdf.close()
+
+        return str(destination)
+    except Exception as e:
+        if verbose:
+            print(RED + "[ERROR] There was an error converting a pdf to a png. [ERROR]. " + YELLOW + "File NOT added." + RESET)
+            print(RED + str(e) + RESET)
+        return None
 
 # Make the first letter of each part of the name capitalized
 def standardizeName(name):
@@ -428,7 +500,10 @@ def standardizeDate(date):
             clean_date = clean_date.replace(",", " ")
             dateParts = clean_date.split(" ")
             clean_date = f"{dateParts[0]} {dateParts[1]}, {dateParts[2]}"
-            dateTime = datetime.strptime(clean_date, "%B %d, %Y")
+            try:
+                dateTime = datetime.strptime(clean_date, "%B %d, %Y")
+            except ValueError:
+                raise ValueError
 
     # Format the datetime object as "YYYY-MM-DD" string (that is how SQL date is)
     return dateTime.strftime("%Y-%m-%d")
@@ -584,7 +659,7 @@ def verify_packages():
         sys.exit(-1)
 
 
-def scrapePsyche():
+def scrapePsyche(verbose=False):
 
     #Call up to the package verification function to ensure that key packages are up to date
     verify_packages()
@@ -592,7 +667,6 @@ def scrapePsyche():
     #Grab the page URL for the scraper
     pageURL = "https://psyche.ssl.berkeley.edu/galleries/artwork/page/"
     pageNum = 1
-    projectID = 0
 
     # Get the page with up to 16 art projects
     psychePage = requests.get(pageURL + str(pageNum))
@@ -600,7 +674,8 @@ def scrapePsyche():
 
     # Art project titles are held in span tags with the "caption title" - this while loop goes until none are found on the current page
     while artCaptions := content.find_all("a", class_="excerpt"):
-        print("Starting page number: " + str(pageNum))       # TODO: delete this, it's for debugging
+        if verbose:
+            print("Starting page number: " + str(pageNum))
 
         projectLinks = []
         # for every title on the page ...
@@ -608,11 +683,14 @@ def scrapePsyche():
             # href has the link to the project page
             projectLinks.append(caption["href"])
 
-        scrapedResults = []
+        scraped_results = []
         with ThreadPoolExecutor() as executor:
-            scrapedResults = list(executor.map(getArtInfo, projectLinks))
+            verbose_list = [verbose] * len(projectLinks)
+            scraped_results = list(executor.map(getArtInfo, projectLinks, verbose_list))
 
-        for artInfo in scrapedResults:
+        for artInfo in scraped_results:
+            if artInfo is None:
+                continue
             artist_name = artInfo["artistName"]
             art_title = artInfo["artTitle"]
             date_iso = artInfo["date"]
@@ -658,3 +736,4 @@ def scrapePsyche():
             print(f" - [{stage}] {url}")
     else:
         print("\n There were no successful video downloads...")
+scrapePsyche(verbose=True)
