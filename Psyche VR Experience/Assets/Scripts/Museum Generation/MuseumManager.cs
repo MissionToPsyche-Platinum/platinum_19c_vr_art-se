@@ -26,7 +26,7 @@ public class MuseumManager : MonoBehaviour
     [Tooltip("Automatically populate frames on Start after building the museum?")]
     [SerializeField] bool autoPopulateOnStart = true;
 
-    public void Start()
+    public void Awake()
     {
         GenerateMuseum(20);
 
