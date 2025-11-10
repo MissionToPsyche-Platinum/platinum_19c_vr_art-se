@@ -212,7 +212,7 @@ public class FrameController : MonoBehaviour
      */
     void UpdateBorders(float imgWidth, float imgHeight)
     {
-        // inner “window” is the image plane edges; frame sits around it with borderThickness and a bit of depth.
+        // inner ï¿½windowï¿½ is the image plane edges; frame sits around it with borderThickness and a bit of depth.
         // 4 strips to be used as frame edges
         var topEdge = bordersParent.Find(TOP);
         var bottomEdge = bordersParent.Find(BOTTOM);
