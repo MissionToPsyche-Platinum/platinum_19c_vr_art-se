@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class ImageFrameList : MonoBehaviour
+public class ArtDisplayList : MonoBehaviour
 {
     public GameObject[] artFrames;
 }
