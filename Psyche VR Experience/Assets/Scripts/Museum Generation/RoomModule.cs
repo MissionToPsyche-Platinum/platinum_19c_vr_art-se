@@ -15,6 +15,8 @@ public class RoomModule : MonoBehaviour
         ThreeOpen,
         FourOpen,
         FlatOpen,
+        TwoOpenLShapeFlat,
+        ThreeOpenFlat,
         SIZE
     }
 
@@ -72,7 +74,9 @@ public class RoomModule : MonoBehaviour
         {RoomType.TwoOpenStraight,   new RoomInfo(true, true, false, false, 2) },     
         {RoomType.ThreeOpen,   new RoomInfo(false, true, true, true, 1) },           
         {RoomType.FourOpen,   new RoomInfo(true, true, true, true, 0) },           
-        {RoomType.FlatOpen,   new RoomInfo(true, true, true, true, 0) }
+        {RoomType.FlatOpen,   new RoomInfo(true, true, true, true, 0) },
+        {RoomType.TwoOpenLShapeFlat, new RoomInfo(false, true, true, false, 2) },
+        {RoomType.ThreeOpenFlat,   new RoomInfo(false, true, true, true, 1) }
     };
 
     //number of openings in each room
