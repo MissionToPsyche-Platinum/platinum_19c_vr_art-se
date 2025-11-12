@@ -1,0 +1,20 @@
+Accessibility Options
+General Settings
+  Set Player Speed (Slider?) - Speed up or slow down the player’s speed.
+  Find a set floor and ceiling in order to allow users to move at a speed that feels right to them.
+  Teleportation Enabled? [Bool] - Swap to standard movement (or just disable the teleport button)
+  Music [Bool] - Turn music on/off
+  Volume [Slider 0-100] - Change the volume of the music
+  Camera Sensitivity [Slider] - Change how sensitive the camera is on Mouse and Keyboard
+  Reset Location [Character Stuck] - OPTIONAL, just a thought though…
+
+Accessibility Settings
+  Rotating Skybox [Bool] - Turn skybox rotation on/off
+  FOV [Slider] - Change the field of view for the camera
+  Fadeout Timer [Slider] - Change how long the fadeout time animation is between teleportations.
+  Auto-Shuffle Art [Bool] - Turn on/off the auto shuffling art
+  Enhanced Text [Bool] - Make the text always the larger size
+  Enable Subtitles [Bool] - This is a stretch, and may not be possible, but could be useful
+  Enable Vignette [Bool] - Turn Vignette on/off 
+  Accessibility Presets (Low/Med/High) - Might have some defaults that enable or disable certain things
+  Enhanced Interaction [Bool] - Increases the size of hitboxes to make interacting easier
