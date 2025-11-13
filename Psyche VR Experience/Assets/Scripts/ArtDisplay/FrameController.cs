@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -52,6 +53,10 @@ public class FrameController : MonoBehaviour
 
     // per-renderer property block for per-instance textures
     MaterialPropertyBlock _mpb;
+
+    private Coroutine autoIterateRoutine;
+    [SerializeField, Tooltip("Seconds between automatic image switches when auto-iteration is running.")]
+    private float autoIterationInterval = 5f;
 
     void Awake()
     {
@@ -269,6 +274,52 @@ public class FrameController : MonoBehaviour
         {
             var qt = imageQuadRenderer.transform;
             qt.localPosition = new Vector3(0f, 0f, -0.001f);
+        }
+    }
+
+    /// Starts automatic image cycling for this frame.
+    /// <param name="intervalSeconds">time in seconds between each image switch.</param>
+    public void StartAutoIteration(float intervalSeconds = -1f)
+    {
+        // will update the variable, otherwise 5
+        if (intervalSeconds > 0f)
+            autoIterationInterval = intervalSeconds;
+
+        StopAutoIteration(); // ensure no duplicate coroutines
+        autoIterateRoutine = StartCoroutine(AutoIterateCoroutine());
+    }
+
+    // stops auto-iteration if it’s currently active.
+    public void StopAutoIteration()
+    {
+        if (autoIterateRoutine != null)
+        {
+            StopCoroutine(autoIterateRoutine);
+            autoIterateRoutine = null;
+        }
+    }
+
+    // toggles for auto iteration 
+    public void ToggleAutoIteration(float intervalSeconds = -1f)
+    {
+        if (autoIterateRoutine != null)
+        {
+            StopAutoIteration();
+        }
+        else
+        {
+            StartAutoIteration(intervalSeconds);
+        }
+    }
+    
+    // coroutine instance
+    // (only handles images rn. Need to add video functionality before I add waiting for videos to finish)
+    private IEnumerator AutoIterateCoroutine()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(autoIterationInterval);
+            NextImage();
         }
     }
 }
