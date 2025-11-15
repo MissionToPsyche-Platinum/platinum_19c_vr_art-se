@@ -77,17 +77,17 @@ public class MuseumManager : MonoBehaviour
         })
     };
 
-    public void Awake()
+    public async void Awake()
     {
         System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
         sw.Start();
-        GenerateMuseum(200);
+        await GenerateMuseum(200);
 
         sw.Stop();
         Debug.Log("[Museum Manager] Time Elapsed: " + sw.ElapsedMilliseconds + " milliseconds");
     }
 
-    void GenerateMuseum(int numArtPieces)
+    public async Awaitable GenerateMuseum(int numArtPieces)
     {
         numFrames = 0;
         int size = (int)(numArtPieces);
@@ -107,7 +107,7 @@ public class MuseumManager : MonoBehaviour
         //Debug.Log("Count: " + CountArtSpots());
 
         if(populateArt)
-            AssignArt(numArtPieces);
+            await AssignArt(numArtPieces);
     }
 
     public void InitMuseum(int size)
@@ -253,7 +253,7 @@ public class MuseumManager : MonoBehaviour
         return total;
     }
 
-    public void AssignArt(int numArtPieces)
+    public async Awaitable AssignArt(int numArtPieces)
     {
         //int numSpots = CountArtSpots();
         int numSpots = numFrames;
@@ -278,6 +278,9 @@ public class MuseumManager : MonoBehaviour
             numSpaces = 1;
         }
 
+        const int numPerWait = 20;
+        int numNow = 0;
+
         for (int x = 0; x < roomGrid.Length; x++)
         {
             for (int y = 0; y < roomGrid[x].Length; y++)
@@ -286,7 +289,7 @@ public class MuseumManager : MonoBehaviour
                 {
                     if (spotsFilled >= numArtPieces)
                     {
-                        roomGrid[x][y].SetArtDisplays(0);
+                        await roomGrid[x][y].SetArtDisplays(0);
                         continue;
                     }
 
@@ -310,9 +313,17 @@ public class MuseumManager : MonoBehaviour
                         }
                     }
 
-                    roomGrid[x][y].SetArtDisplays(numSet, items, spotsFilled);
+                    await roomGrid[x][y].SetArtDisplays(numSet, items, spotsFilled);
 
                     spotsFilled += numSet;
+
+                    numNow++;
+
+                    if(numNow > numPerWait)
+                    {
+                        numNow = 0;
+                        await Awaitable.WaitForSecondsAsync(0.01f);
+                    }
                 }
             }
         }

@@ -302,7 +302,7 @@ public class RoomModule : MonoBehaviour
     /// Set some number of frames in the room to art from the given list, starting from start_index and iterating along numSet times.
     /// </summary>
     /// <returns>Number of art displays set.</returns>
-    public int SetArtDisplays(int numSet, List<ArtworkData> art = null, int start_index = 0)
+    public async Awaitable SetArtDisplays(int numSet, List<ArtworkData> art = null, int start_index = 0)
     {
         for (int i = 0; i < artDisplayLists[(int)roomType].artFrames.Length; i++)
         {
@@ -320,9 +320,10 @@ public class RoomModule : MonoBehaviour
                 if(frameObject != null)
                     frameObject.gameObject.SetActive(false);
             }
+
+            await Awaitable.WaitForSecondsAsync(0.01f);
         }
 
-        return this.roomInfos[this.roomType].numArt;
     }
 
     /// finds the active room model variant and returns it
