@@ -24,19 +24,22 @@ public class MoveTestPlayer : MonoBehaviour
 
     [SerializeField]
     protected float interactRange = 4f;
-    protected float speed = 1.5f;
+    protected float speed;
+
+    [SerializeField][Tooltip("The default speed the player moves at")] protected float standardSpeed = 5.0f;
+
+    [SerializeField][Tooltip("The sprinting speed the player moves at")] protected float sprintSpeed = 9.0f;
     protected int currentPerspective;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
-        Debug.Log("Hello There");
         rb = GetComponent<Rigidbody>();
-        //playerCamera = GetComponentInChildren<Camera>();
         if (rb != null)
         {
             rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
         }
     }
+
     void Start()
     {
         playerInput = GetComponent<PlayerInput>();
@@ -60,42 +63,45 @@ public class MoveTestPlayer : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    //Helps stablize and control movement.
+    void FixedUpdate() 
     {
-
         CurrentPerspectiveListener();
-        //Debug.Log(currentPerspective);
-        if (currentPerspective == 1)
+        if(currentPerspective == 1)
         {
-            MovePlayer();
+            MovePlayer();    
         }
         else if (currentPerspective == 2)
         {
             MoveFreeCamera();
         }
+        
+    }
+    // Update is called once per frame
+    void Update()
+    {
+        //Both need to be checked every frame, otherwise they can get missed.
         if (interactAction.triggered)
         {
             PlayerInteract();
+        }
+        
+        if (sprintAction.triggered)
+        {
+            ToggledSprintAction();
         }
         
     }
 
     void MovePlayer()
     {
-        if (sprintAction.triggered) //If left shift is pressed, toggle the sprint
-        {
-            toggledSprintAction = !toggledSprintAction;
-            Debug.Log("Toggled Sprint! Value is now " + toggledSprintAction);
-        }
-
         if (toggledSprintAction == true)
         {
-            speed = 3.5f;
+            speed = sprintSpeed;
         }
         else
         {
-            speed = 1.5f;
+            speed = standardSpeed;
         }
 
         Vector2 direction = moveAction.ReadValue<Vector2>();
@@ -103,45 +109,39 @@ public class MoveTestPlayer : MonoBehaviour
         if (Mathf.Abs(direction.x) > 0.1f)
         {
             float turnSpeed = 150f;
-            transform.Rotate(0, direction.x * turnSpeed * Time.deltaTime, 0);
+            transform.Rotate(0, direction.x * turnSpeed * Time.fixedDeltaTime, 0);
         }
         // Move forward/backward with W/S (y-axis)
-        Vector3 move = transform.forward * direction.y * speed * Time.fixedDeltaTime;
+        Vector3 move = transform.forward * direction.y * speed * Time.fixedDeltaTime;    
         rb.MovePosition(rb.position + move);
     }
 
+    //Movement logic for the free flying camera
     void MoveFreeCamera()
     {
-        Vector2 direction = moveAction.ReadValue<Vector2>();
-        // Turn left/right with A/D (x-axis)
-        if (sprintAction.triggered) //If left shift is pressed, toggle the sprint
-        {
-            toggledSprintAction = !toggledSprintAction;
-            Debug.Log("Toggled Sprint! Value is now " + toggledSprintAction);
-        }
-
         if (toggledSprintAction == true)
         {
-            speed = 3.5f;
+            speed = sprintSpeed;
         }
         else
         {
-            speed = 1.5f;
+            speed = standardSpeed;
         }
 
+        Vector2 direction = moveAction.ReadValue<Vector2>();
         if (Mathf.Abs(direction.x) > 0.1f)
         {
             float turnSpeed = 150f;
-            transform.Rotate(0, direction.x * turnSpeed * Time.deltaTime, 0);
+            transform.Rotate(0, direction.x * turnSpeed * Time.fixedDeltaTime, 0);
         }
 
         if (ascendAction.IsPressed())
         {
-            transform.position += transform.up * .5f * Time.fixedDeltaTime;
+            transform.position += transform.up * 1.8f * Time.fixedDeltaTime;
         }
         else if (descendAction.IsPressed())
         {
-            transform.position -= transform.up * .5f * Time.fixedDeltaTime;
+            transform.position -= transform.up * 1.8f * Time.fixedDeltaTime;
         }
         //Generate Movement on a non-rigid body (Freecamera ignores physics and colliders)
         Vector3 move = transform.forward * direction.y * speed * Time.fixedDeltaTime;
@@ -170,9 +170,16 @@ public class MoveTestPlayer : MonoBehaviour
         }
     }
     
+    //Gives us our current perspective for the camera.
     int CurrentPerspectiveListener()
     {
         currentPerspective = spawnController.GetCurrentPerspective();
         return currentPerspective;
+    }
+    
+    //Flips the sprint toggle on and off
+    void ToggledSprintAction()
+    {
+        toggledSprintAction = !toggledSprintAction;
     }
 }
