@@ -54,9 +54,11 @@ public class FrameController : MonoBehaviour
     // per-renderer property block for per-instance textures
     MaterialPropertyBlock _mpb;
 
+    // Auto Iterate stuff.
     private Coroutine autoIterateRoutine;
     [SerializeField, Tooltip("Seconds between automatic image switches when auto-iteration is running.")]
     private float autoIterationInterval = 5f;
+
 
     void Awake()
     {
