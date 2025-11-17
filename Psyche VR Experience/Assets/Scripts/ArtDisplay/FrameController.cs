@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Video;
 
 public class FrameController : MonoBehaviour
 {
@@ -16,6 +17,7 @@ public class FrameController : MonoBehaviour
     [Header("Images")]
     [Tooltip("All images this frame can show. Only one is visible at a time. API is available.")]
     [SerializeField] List<Texture2D> images = new List<Texture2D>();
+    [SerializeField] private List<string> mediaPaths = new List<string>();
 
     [Tooltip("Index into Images to show.")]
     [SerializeField] int currentImageIndex = 0;
@@ -59,6 +61,11 @@ public class FrameController : MonoBehaviour
     [SerializeField, Tooltip("Seconds between automatic image switches when auto-iteration is running.")]
     private float autoIterationInterval = 5f;
 
+    // video playback stuff
+    private VideoPlayer videoPlayer; 
+    private RenderTexture videoTexture;
+    private bool isVideoMode = false;
+
 
     void Awake()
     {
@@ -99,6 +106,9 @@ public class FrameController : MonoBehaviour
     public void SetArtwork(ArtworkData data)
     {
         if (data == null) return;
+
+        // store the paths for potential video playback as well
+        mediaPaths = new List<string>(data.artworkURLs);
 
         List<Texture2D> textures = data.LoadTextures();
         if (textures.Count > 0)
@@ -144,6 +154,34 @@ public class FrameController : MonoBehaviour
 
         var tex = (images != null && images.Count > 0) ? images[Mathf.Clamp(currentImageIndex, 0, images.Count - 1)] : null;
 
+
+        // ***** video handling portion of apply all *****
+
+        if (scriptable is ArtworkData artData &&
+            artData.artworkURLs != null &&
+            currentImageIndex < artData.artworkURLs.Count)
+        {
+            string relPath = artData.artworkURLs[currentImageIndex];
+
+            // Convert "Assets/..." to absolute file path
+            string fullPath = System.IO.Path.Combine(
+                Application.dataPath,
+                relPath.Substring("Assets/".Length)
+            );
+
+            // if its a video, switch to the video playback functionality.
+            // stops previous video playback(if applicable!!!does not wait for video completion, this is just to make sure videos play)
+            if (IsVideoFile(fullPath))
+            {
+                StopVideoIfNeeded();   // stop previously playing video if applicable
+                PlayVideo(fullPath);   // play new one
+                return;                
+            }
+        }
+
+        // if we reach this point, ensure no lingering video playback or ghost frames(spooky!)
+        StopVideoIfNeeded();
+
         // set texture via MaterialPropertyBlock (per-renderer), not sharedMaterial as it was
         imageQuadRenderer.GetPropertyBlock(_mpb);
 
@@ -163,7 +201,7 @@ public class FrameController : MonoBehaviour
         imageQuadRenderer.SetPropertyBlock(_mpb);
 
         // compute the aspect ratio and then set image quad local scale
-        Vector2Int resolution = tex ? new Vector2Int(tex.width, tex.height) : baseResolution;
+        Vector2Int resolution = tex ? new(tex.width, tex.height) : baseResolution;
         float aspectRatio = resolution.x / (float)resolution.y; // width / height
         float imgHeight = nominalImageHeight;
         float imgWidth = imgHeight * aspectRatio;
@@ -279,6 +317,14 @@ public class FrameController : MonoBehaviour
         }
     }
 
+    // safe getter for media paths
+    public string GetMediaPath(int index)
+    {
+        if (mediaPaths == null || index < 0 || index >= mediaPaths.Count)
+            return null;
+        return mediaPaths[index];
+    }
+
     /// Starts automatic image cycling for this frame.
     /// <param name="intervalSeconds">time in seconds between each image switch.</param>
     public void StartAutoIteration(float intervalSeconds = -1f)
@@ -313,7 +359,7 @@ public class FrameController : MonoBehaviour
             StartAutoIteration(intervalSeconds);
         }
     }
-    
+
     // coroutine instance
     // (only handles images rn. Need to add video functionality before I add waiting for videos to finish)
     private IEnumerator AutoIterateCoroutine()
@@ -324,4 +370,80 @@ public class FrameController : MonoBehaviour
             NextImage();
         }
     }
+
+    // ***** Video and Audio Handling *****
+
+    // helper for detecting videofile(just checks the extension)
+    private bool IsVideoFile(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return false;
+        string ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
+        return ext == ".mp4" || ext == ".mov" || ext == ".m4v" || ext == ".avi" || ext == ".webm";
+    }
+
+    //
+    private void OnVideoPrepared(VideoPlayer source)
+    {
+        source.prepareCompleted -= OnVideoPrepared;
+
+        // start video playback
+        source.Play();
+
+        // apply the RenderTexture to the quad
+        imageQuadRenderer.GetPropertyBlock(_mpb);
+        _mpb.SetTexture("_BaseMap", videoTexture);
+        _mpb.SetTexture("_MainTex", videoTexture);
+        imageQuadRenderer.SetPropertyBlock(_mpb);
+    }
+
+    private void StopVideoIfNeeded()
+    {
+        if (videoPlayer != null && videoPlayer.isPlaying)
+        {
+            videoPlayer.Stop();
+        }
+
+        isVideoMode = false;
+    }
+
+
+
+    private void PlayVideo(string fullPath)
+    {
+        if (!System.IO.File.Exists(fullPath))
+        {
+            Debug.LogWarning("[FrameController]Video file not found: " + fullPath);
+            return;
+        }
+
+        // creates new or configures current video player component
+        if (videoPlayer == null)
+        {
+            videoPlayer = gameObject.AddComponent<VideoPlayer>();
+            videoPlayer.playOnAwake = false;
+
+            // render to RenderTexture
+            videoPlayer.renderMode = VideoRenderMode.RenderTexture;
+            videoPlayer.isLooping = false;
+            videoPlayer.waitForFirstFrame = true;
+            
+            // callback assigns texture
+            videoPlayer.prepareCompleted += OnVideoPrepared;
+        }
+
+        // create the renderTexture (lazy, doesn't check the video aspect ratio.)
+        // @TODO add video scaling detection here
+        if (videoTexture == null)
+        {
+            videoTexture = new RenderTexture(1920, 1080, 0);
+        }
+        videoPlayer.targetTexture = videoTexture;
+
+        // assigns the media path to the video player
+        videoPlayer.url = fullPath;
+        videoPlayer.prepareCompleted += OnVideoPrepared;
+        videoPlayer.Prepare();
+        isVideoMode = true;
+    }
+
 }
