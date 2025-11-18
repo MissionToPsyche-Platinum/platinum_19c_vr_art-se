@@ -13,6 +13,7 @@ public class MoveTestPlayer : MonoBehaviour
     protected InputAction ascendAction;
     protected InputAction descendAction;
     protected InputAction interactAction;
+    protected InputAction povSwapAction;
     protected bool toggledSprintAction = false;
     protected Rigidbody rb;
 
@@ -22,10 +23,12 @@ public class MoveTestPlayer : MonoBehaviour
     [SerializeField][Tooltip("Add the Player Camera object here")]
     protected Camera playerCamera;
 
+    protected CameraFollowPlayer playerCameraScript;
+
     [SerializeField]
     protected float interactRange = 4f;
     protected float speed;
-
+ 
     [SerializeField][Tooltip("The default speed the player moves at")] protected float standardSpeed = 5.0f;
 
     [SerializeField][Tooltip("The sprinting speed the player moves at")] protected float sprintSpeed = 9.0f;
@@ -38,6 +41,7 @@ public class MoveTestPlayer : MonoBehaviour
         {
             rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
         }
+        playerCameraScript = playerCamera.GetComponent<CameraFollowPlayer>();
     }
 
     void Start()
@@ -53,6 +57,7 @@ public class MoveTestPlayer : MonoBehaviour
             ascendAction = playerMap.FindAction("Ascend", true); //Spacebar on Keyboard (FREE CAMERA ONLY)
             descendAction = playerMap.FindAction("Descend", true); //Left Control (FREE CAMERA ONLY)
             interactAction = playerMap.FindAction("Interact", true); //E on Keyboard
+            povSwapAction = playerMap.FindAction("POVSwap", true); //Z on Keyboard (Player Only)
             
             Debug.Log($"Found moveAction action in map : {moveAction.actionMap.name}");
             moveAction.Enable();
@@ -89,6 +94,11 @@ public class MoveTestPlayer : MonoBehaviour
         if (sprintAction.triggered)
         {
             ToggledSprintAction();
+        }
+
+        if (povSwapAction.triggered)
+        {
+            playerCameraScript.CameraPositionChange();
         }
         
     }
