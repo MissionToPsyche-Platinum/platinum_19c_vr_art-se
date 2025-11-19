@@ -419,7 +419,7 @@ public class MuseumManager : MonoBehaviour
             //if we're in range and there's a room on the corner, we omit the beams
             if(range && roomGrid[x + xOffset][y + yOffset] != null)
             {
-                room.SetOpenings(openNorth, openSouth, openWest, openEast);
+                room.SetOpenings(openNorth, openSouth, openWest, openEast, false);
                 room.SetRoomActive(RoomModule.RoomType.TwoOpenLShapeFlat);
                 return;
             }
@@ -465,7 +465,7 @@ public class MuseumManager : MonoBehaviour
 
             if (range && roomGrid[xN][yN] != null && diagonals)
             {
-                room.SetOpenings(openNorth, openSouth, openWest, openEast);
+                room.SetOpenings(openNorth, openSouth, openWest, openEast, false);
                 room.SetRoomActive(RoomModule.RoomType.ThreeOpenFlat);
                 return;
             }

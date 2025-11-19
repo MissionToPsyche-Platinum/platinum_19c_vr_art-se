@@ -24,7 +24,8 @@ public class RoomModule : MonoBehaviour
     public RoomType roomType = RoomType.OneOpen;
 
     public GameObject[] roomModels;
-    public ArtDisplayList[] artDisplayLists;
+    public GameObject room;
+    public ArtDisplayList display;
 
     //North is -Z, South is +Z, West is +X, East is -X
     public bool openNorth, openSouth, openWest, openEast;
@@ -84,36 +85,26 @@ public class RoomModule : MonoBehaviour
     //number of openings in each room
     int[] roomOpeningCounts = new int[(int)RoomType.SIZE];
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Awake()
+    void CreateRoom()
     {
-        //SetupActiveRoom();
-    }
-
-    /// <summary>
-    /// Deactivates all room objects first and sets the roomType room to active. Useful for setup.
-    /// </summary>
-    /// <param name="nRoomType"></param>
-    private void SetupActiveRoom()
-    {
-        foreach (GameObject roomModel in roomModels)
+        if (room != null)
         {
-            roomModel.SetActive(false);
+            Destroy(room);
         }
 
-        roomModels[(int)roomType].gameObject.SetActive(true);
-        UpdateRoomOpenings();
+        room = Instantiate(roomModels[(int)roomType], transform);
+        display = room.GetComponent<ArtDisplayList>();
     }
-
+       
     /// <summary>
     /// Deactivates the previous room model and activates the model given. Then, sets the roomType property to the new value.
     /// </summary>
     /// <param name="nRoomType">The new room shape to use</param>
     public void SetRoomActive(RoomType nRoomType)
     {
-        roomModels[((int)roomType)].SetActive(false);
-        roomModels[(int)nRoomType].SetActive(true);
         roomType = nRoomType;
+
+        CreateRoom();
         UpdateRoomOpenings();
     }
 
@@ -128,9 +119,8 @@ public class RoomModule : MonoBehaviour
         {
             SetOrientation(roomOrientation, false);
         }
-        roomModels[((int)roomType)].gameObject.SetActive(false);
-        roomModels[(int)nRoomType].gameObject.SetActive(true);
         roomType = nRoomType;
+        CreateRoom();
         UpdateRoomOpenings();
     }
 
@@ -208,7 +198,6 @@ public class RoomModule : MonoBehaviour
             UpdateRoomOpenings();
     }
 
-
     int CountNumDirections(bool[] directions)
     {
         int count = 0;
@@ -264,7 +253,7 @@ public class RoomModule : MonoBehaviour
         return rooms[0];
     }
 
-    public void SetOpenings(bool north, bool south, bool west, bool east)
+    public void SetOpenings(bool north, bool south, bool west, bool east, bool autoSetRoom = true)
     {
         bool[] directions = new bool[4] { north, south, west, east };
 
@@ -290,7 +279,10 @@ public class RoomModule : MonoBehaviour
             }
         }
 
-        SetRoomActive(room, dir);
+        if (autoSetRoom)
+            SetRoomActive(room, dir);
+        else
+            SetOrientation(dir);
     }
 
     public int GetNumArtDisplays()
@@ -304,18 +296,18 @@ public class RoomModule : MonoBehaviour
     /// <returns>Number of art displays set.</returns>
     public async Awaitable SetArtDisplays(int numSet, List<ArtworkData> art = null, int start_index = 0)
     {
-        for (int i = 0; i < artDisplayLists[(int)roomType].artFrames.Length; i++)
+        for (int i = 0; i < display.artFrames.Length; i++)
         {
             if(i < numSet)
             {
-                GameObject frameObject = artDisplayLists[(int)roomType].artFrames[i];
+                GameObject frameObject = display.artFrames[i];
                 FrameController frame = frameObject.GetComponent<FrameController>();
 
                 frame.SetArtwork(art[start_index + i]);
             }
-            else if(artDisplayLists[(int)roomType].artFrames.Length > i)
+            else if(display.artFrames.Length > i)
             {
-                GameObject frameObject = artDisplayLists[(int)roomType].artFrames[i];
+                GameObject frameObject = display.artFrames[i];
 
                 if(frameObject != null)
                     frameObject.gameObject.SetActive(false);
