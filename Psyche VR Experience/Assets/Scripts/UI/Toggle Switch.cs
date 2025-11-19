@@ -8,10 +8,9 @@ using UnityEngine.UI;
 
 public class ToggleSwitch : MonoBehaviour
 {
-    protected float sliderValue = 0f;
+    [SerializeField] protected float sliderValue = 0f;
     public bool CurrentValue { get; private set; }
 
-    private bool _previousValue;
     private Slider slider;
 
     private float animationDuration = 0.5f;
@@ -23,10 +22,18 @@ public class ToggleSwitch : MonoBehaviour
     [SerializeField] private UnityEvent onToggleOn;
     [SerializeField] private UnityEvent onToggleOff;
 
+    [Header("Background")]
+    [SerializeField] private Image backgroundImage;
+    [SerializeField] private Material backgroundMaterial;
+    private Material localCopyOfBackgroundMaterial;
+
     protected Action transitionEffect;
 
     protected virtual void OnValidate()
     {
+        localCopyOfBackgroundMaterial = new Material(backgroundMaterial);
+        backgroundImage.material = localCopyOfBackgroundMaterial;
+
         if (slider != null) { return; }
 
         slider = GetComponent<UnityEngine.UI.Slider>();
@@ -77,12 +84,17 @@ public class ToggleSwitch : MonoBehaviour
                 float lerpFactor = slideEase.Evaluate(time / animationDuration);
                 slider.value = sliderValue = Mathf.Lerp(startValue, endValue, lerpFactor);
 
-                transitionEffect?.Invoke();
+                TransitionImages();
 
                 yield return null;
             }
         }
 
         slider.value = endValue;
+    }
+
+    private void TransitionImages()
+    {
+        backgroundImage.material.SetFloat("_MixValue", sliderValue);
     }
 }
