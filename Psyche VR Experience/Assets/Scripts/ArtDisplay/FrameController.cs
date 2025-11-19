@@ -79,7 +79,7 @@ public class FrameController : MonoBehaviour
         borderThickness = Mathf.Max(0.0001f, borderThickness);
         frameDepth = Mathf.Max(0.0f, frameDepth);
         nominalImageHeight = Mathf.Max(0.001f, nominalImageHeight);
-        currentMediaIndex = Mathf.Clamp(currentMediaIndex, 0, Mathf.Max(0, images.Count - 1));
+        currentMediaIndex = Mathf.Clamp(currentMediaIndex, 0, Mathf.Max(0, mediaPaths.Count - 1));
         ApplyAll();
     }
 
