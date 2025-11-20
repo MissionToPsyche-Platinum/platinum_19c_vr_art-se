@@ -33,6 +33,8 @@ public class MoveTestPlayer : MonoBehaviour
 
     [SerializeField][Tooltip("The sprinting speed the player moves at")] protected float sprintSpeed = 9.0f;
     protected int currentPerspective;
+    private Vector2 cachedInputMovement;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
@@ -74,11 +76,11 @@ public class MoveTestPlayer : MonoBehaviour
         CurrentPerspectiveListener();
         if(currentPerspective == 1)
         {
-            MovePlayer();    
+            MovePlayer(cachedInputMovement);    
         }
         else if (currentPerspective == 2)
         {
-            MoveFreeCamera();
+            MoveFreeCamera(cachedInputMovement);
         }
         
     }
@@ -100,10 +102,12 @@ public class MoveTestPlayer : MonoBehaviour
         {
             playerCameraScript.CameraPositionChange();
         }
+
+        cachedInputMovement = moveAction.ReadValue<Vector2>();
         
     }
 
-    void MovePlayer()
+    void MovePlayer(Vector2 storedPlayerInput)
     {
         if (toggledSprintAction == true)
         {
@@ -114,20 +118,20 @@ public class MoveTestPlayer : MonoBehaviour
             speed = standardSpeed;
         }
 
-        Vector2 direction = moveAction.ReadValue<Vector2>();
         // Turn left/right with A/D (x-axis) **MAY SWAP TO BE A/D FOR MOVE LEFT MOVE RIGHT AND MOUSE FOR LOOK**
-        if (Mathf.Abs(direction.x) > 0.1f)
+        if (Mathf.Abs(storedPlayerInput.x) > 0.1f)
         {
             float turnSpeed = 150f;
-            transform.Rotate(0, direction.x * turnSpeed * Time.fixedDeltaTime, 0);
+            Quaternion turn = Quaternion.Euler(0, storedPlayerInput.x * turnSpeed * Time.fixedDeltaTime, 0);
+            rb.MoveRotation(rb.rotation * turn);
         }
         // Move forward/backward with W/S (y-axis)
-        Vector3 move = transform.forward * direction.y * speed * Time.fixedDeltaTime;    
+        Vector3 move = transform.forward * storedPlayerInput.y * speed * Time.fixedDeltaTime;    
         rb.MovePosition(rb.position + move);
     }
 
     //Movement logic for the free flying camera
-    void MoveFreeCamera()
+    void MoveFreeCamera(Vector2 storedPlayerInput)
     {
         if (toggledSprintAction == true)
         {
@@ -138,23 +142,22 @@ public class MoveTestPlayer : MonoBehaviour
             speed = standardSpeed;
         }
 
-        Vector2 direction = moveAction.ReadValue<Vector2>();
-        if (Mathf.Abs(direction.x) > 0.1f)
+        if (Mathf.Abs(storedPlayerInput.x) > 0.1f)
         {
             float turnSpeed = 150f;
-            transform.Rotate(0, direction.x * turnSpeed * Time.fixedDeltaTime, 0);
+            transform.Rotate(0, storedPlayerInput.x * turnSpeed * Time.fixedDeltaTime, 0);
         }
 
         if (ascendAction.IsPressed())
         {
-            transform.position += transform.up * 1.8f * Time.fixedDeltaTime;
+            transform.position += transform.up * 2.5f * Time.fixedDeltaTime;
         }
         else if (descendAction.IsPressed())
         {
-            transform.position -= transform.up * 1.8f * Time.fixedDeltaTime;
+            transform.position -= transform.up * 2.5f * Time.fixedDeltaTime;
         }
         //Generate Movement on a non-rigid body (Freecamera ignores physics and colliders)
-        Vector3 move = transform.forward * direction.y * speed * Time.fixedDeltaTime;
+        Vector3 move = transform.forward * storedPlayerInput.y * speed * Time.fixedDeltaTime;
         transform.position += move;
     }
     
