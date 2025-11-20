@@ -18,6 +18,7 @@ import sqlite3
 import hashlib
 import shutil
 import ffmpeg
+print(ffmpeg.__file__)
 import yt_dlp
 from pathlib import Path
 from contextlib import contextmanager
@@ -213,6 +214,34 @@ def getArtInfo(url, verbose):
                     print(RED + str(e) + RESET)
                     FAILED_DOWNLOADS.append({'url': link, 'stage': 'video', 'error': str(e)})
 
+            # Force video color primaries to Rec.709 to avoid Unity warnings
+            try:
+                video_input_path = Path(absolute_destination_video_only).resolve()
+                corrected_path = absolute_destination_video_only.with_name(absolute_destination_video_only.stem + "_rec709.mp4")
+
+                (ffmpeg.input(video_input_path)).output(
+                    str(corrected_path),
+                    vcodec="libx264",
+                    pix_fmt="yuv420p",
+                    color_primaries="bt709",
+                    color_trc="bt709",
+                    colorspace="bt709",
+                    acodec="copy"  # video-only, so no audio
+                ).overwrite_output()
+                
+
+                # Replace original with corrected version
+                os.remove(absolute_destination_video_only)
+                absolute_destination_video_only = corrected_path
+
+                if verbose:
+                    print("Corrected video to Rec.709 for Unity compatibility.")
+
+            except Exception as e:
+                print("[WARNING] Failed to convert video to Rec.709:", e)
+                print(ffmpeg.__file__)
+                print(ffmpeg.__path__)
+
             #Download HIGHEST QUALITY AUDIO ONLY
             try:
                 if verbose:
@@ -404,9 +433,9 @@ def getArtInfo(url, verbose):
 
     results["file_paths"] = file_paths
 
-    if verbose:
-        print("Results of " + url + ":")
-        printArtProject(results)
+    # if verbose:
+    #     print("Results of " + url + ":")
+    #     printArtProject(results)
 
     return results
 
