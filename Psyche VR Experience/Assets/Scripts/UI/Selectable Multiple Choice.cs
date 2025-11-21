@@ -7,25 +7,30 @@ public class SelectableMultipleChoice : SelectableSetting
     [SerializeField] private MultipleChoice choiceController;
     [SerializeField] private XRInputValueReader<Vector2> multipleChoiceInteraction;
 
+    private float pressThreshold = 0.8f;
+    private bool menuInteracted = false;        // need this to use the joystick as a button
+
     // Update is called once per frame
     private void Update()
     {
-        if (!multipleChoiceInteraction.inputAction.triggered)
-        {
-            return;
-        }
-
         float x = multipleChoiceInteraction.ReadValue().x;
 
-        // left
-        if (x < 0)
+        // up
+        if (!menuInteracted && x > pressThreshold)
         {
+            menuInteracted = true;
+            choiceController.RightPressed();
+        }
+        // down
+        else if (!menuInteracted && x < -pressThreshold)
+        {
+            menuInteracted = true;
             choiceController.LeftPressed();
         }
-        // right
-        else if (x > 0)
+
+        if (menuInteracted && Mathf.Abs(x) < pressThreshold)
         {
-            choiceController.RightPressed();
+            menuInteracted = false;
         }
     }
 }

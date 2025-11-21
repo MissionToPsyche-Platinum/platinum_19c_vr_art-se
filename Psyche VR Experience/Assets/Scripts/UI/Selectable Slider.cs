@@ -10,9 +10,12 @@ public class SelectableSlider : SelectableSetting
     [SerializeField, Tooltip("How fast the slider changes per second based on stick input")]
     private float sensitivity = 1f;
 
+    private float deadzone = 0.25f;
+
     private void Update()
     {
         float x = menuInteraction.ReadValue().x;
+        if (Mathf.Abs(x) < deadzone) { return;  }
 
         // Update slider value based on input, sensitivity, and deltaTime
         slider.value += x * sensitivity * Time.deltaTime;

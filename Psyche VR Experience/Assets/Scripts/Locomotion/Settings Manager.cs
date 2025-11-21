@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using Unity.XR.CoreUtils;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Readers;
 
@@ -19,8 +21,23 @@ public class LocomotionSettingsManager : MonoBehaviour
     private bool menuOpen = false;
     private int selectedIndex = 0;
 
+    private float pressThreshold = 0.8f;
+    private bool menuInteracted = false;        // need this to use the joystick as a button
+
     private void OnValidate()
     {
+        RefreshSelectables();
+    }
+    private void Awake()
+    {
+        RefreshSelectables();
+        selectables[selectedIndex].enabled = true;
+    }
+
+    private void RefreshSelectables()
+    {
+        selectables.Clear();
+
         foreach (Transform child in LocomotionSettingsMenu.transform)
         {
             SelectableSetting setting = child.GetComponent<SelectableSetting>();
@@ -29,11 +46,6 @@ public class LocomotionSettingsManager : MonoBehaviour
                 selectables.Add(setting);
             }
         }
-
-    }
-    private void Awake()
-    {
-        OnValidate();
     }
 
     // Update is called once per frame
@@ -43,19 +55,24 @@ public class LocomotionSettingsManager : MonoBehaviour
             OpenOrCloseMenu(); 
         }
 
-        if (menuOpen && menuInteraction.inputAction.triggered)
+        if (menuOpen)
         {
             float y = menuInteraction.ReadValue().y;
 
             // up
-            if (y > 0)
+            if (!menuInteracted && y > pressThreshold)
             {
                 upSelection();
             }
             // down
-            if (y < 0)
+            else if (!menuInteracted && y < -pressThreshold)
             {
                 downSelection();
+            }
+
+            if (menuInteracted && Mathf.Abs(y) < pressThreshold)
+            {
+                menuInteracted = false;
             }
         }
 
@@ -78,6 +95,7 @@ public class LocomotionSettingsManager : MonoBehaviour
         {
             return;
         }
+        menuInteracted = true;
 
         selectables[selectedIndex].enabled = false;
         selectedIndex++;
@@ -90,6 +108,7 @@ public class LocomotionSettingsManager : MonoBehaviour
         {
             return;
         }
+        menuInteracted = true;
 
         selectables[selectedIndex].enabled = false;
         selectedIndex--;
