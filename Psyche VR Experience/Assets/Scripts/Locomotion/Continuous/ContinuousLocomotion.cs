@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Readers;
 
 public class ContinuousLocomotion : MonoBehaviour
@@ -6,14 +8,17 @@ public class ContinuousLocomotion : MonoBehaviour
     public Transform rig;
     public Transform cameraTransform;
     public float moveSpeed = 2f;
+    public Volume volume;
+    public Vignette vignette;
 
     [SerializeField]
     XRInputValueReader<Vector2> inputDir;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    void Awake()
     {
-        
+        volume = GetComponent<Volume>();
+        volume.profile.TryGet(out vignette);
     }
 
     // Update is called once per frame
@@ -35,8 +40,18 @@ public class ContinuousLocomotion : MonoBehaviour
             // rotate the movement to be in the direction of the camera
             movementDirection = Quaternion.LookRotation(cameraDirection) * movementDirection;
 
+            // apply vignette if setting is on
+            if (LocomotionSettings.CONTINUOUS_VIGNETTE)
+            {
+                vignette.intensity.value = 0.5f;
+            }
 
             rig.position += movementDirection * moveSpeed * Time.deltaTime;
+        }
+        else
+        {
+            // remove vignette
+            vignette.intensity.value = 0f;
         }
     }
 }

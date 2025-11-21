@@ -116,6 +116,16 @@ public class LocomotionSettingsManager : MonoBehaviour
         LocomotionSettings.LOCOMOTION_MODE = LocomotionSettings.LocomotionMode.TELEPORT;
     }
 
+    public void LocomotionVignetteToggleOn()
+    {
+        LocomotionSettings.CONTINUOUS_VIGNETTE = true;
+    }
+
+    public void LocomotionVignetteToggleOff()
+    {
+        LocomotionSettings.CONTINUOUS_VIGNETTE = false;
+    }
+
     public void adjustMasterVolume(float val)
     {
         GlobalSettings.MASTER_VOLUME = val;
