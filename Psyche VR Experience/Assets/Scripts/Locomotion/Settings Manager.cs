@@ -11,10 +11,9 @@ public class LocomotionSettingsManager : MonoBehaviour
     [SerializeField] private XRInputButtonReader menuButton;
     [SerializeField] private XRInputValueReader<Vector2> menuInteraction;
 
-    [SerializeField, Tooltip("The settings that can be selected and interacted with")] private List<SelectableSetting> selectables;
-
     [SerializeField] private GameObject LocomotionSettingsMenu;
-    [SerializeField] private Toggle LocomotionToggle;
+
+    [SerializeField, Tooltip("The settings that can be selected and interacted with")] private List<SelectableSetting> selectables;
 
     private bool menuOpen = false;
     private int selectedIndex = 0;
@@ -115,5 +114,10 @@ public class LocomotionSettingsManager : MonoBehaviour
     public void LocomotionToggleOff()
     {
         LocomotionSettings.LOCOMOTION_MODE = LocomotionSettings.LocomotionMode.TELEPORT;
+    }
+
+    public void adjustVolume(float val)
+    {
+        GlobalSettings.MASTER_VOLUME = val;
     }
 }
