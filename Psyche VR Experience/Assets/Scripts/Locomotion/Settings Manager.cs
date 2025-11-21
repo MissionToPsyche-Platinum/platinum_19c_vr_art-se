@@ -8,12 +8,10 @@ using UnityEngine.XR.Interaction.Toolkit.Inputs.Readers;
 
 public class LocomotionSettingsManager : MonoBehaviour
 {
-
     [SerializeField] private XRInputButtonReader menuButton;
-    [SerializeField] private XRInputButtonReader menuSelect; // TODO: DELETE as part of task 163
     [SerializeField] private XRInputValueReader<Vector2> menuInteraction;
 
-    [SerializeField] private List<SelectableSetting> selectables;
+    [SerializeField, Tooltip("The settings that can be selected and interacted with")] private List<SelectableSetting> selectables;
 
     [SerializeField] private GameObject LocomotionSettingsMenu;
     [SerializeField] private Toggle LocomotionToggle;
@@ -49,7 +47,7 @@ public class LocomotionSettingsManager : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         if (menuButton.ReadWasPerformedThisFrame()) {
             OpenOrCloseMenu(); 
@@ -75,12 +73,6 @@ public class LocomotionSettingsManager : MonoBehaviour
                 menuInteracted = false;
             }
         }
-
-        // TODO: DELETE as part of task 163
-        if (menuOpen && menuSelect.ReadWasPerformedThisFrame()) {
-            bool curr = LocomotionToggle.isOn;
-            LocomotionToggle.isOn = !curr;
-        }
     }
 
     private void OpenOrCloseMenu()
@@ -89,7 +81,7 @@ public class LocomotionSettingsManager : MonoBehaviour
         menuOpen = !menuOpen;
     }
 
-    public void downSelection()
+    private void downSelection()
     {
         if (selectedIndex >= selectables.Count - 1)
         {
@@ -102,7 +94,7 @@ public class LocomotionSettingsManager : MonoBehaviour
         selectables[selectedIndex].enabled = true;
     }
 
-    public void upSelection()
+    private void upSelection()
     {
         if (selectedIndex <= 0)
         {
@@ -115,16 +107,13 @@ public class LocomotionSettingsManager : MonoBehaviour
         selectables[selectedIndex].enabled = true;
     }
 
-    // TODO: DELETE as part of task 163
-    public void ToggleLocomotion()
+    public void LocomotionToggleOn()
     {
-        if (LocomotionSettings.LOCOMOTION_MODE == LocomotionSettings.LocomotionMode.TELEPORT)
-        {
-            LocomotionSettings.LOCOMOTION_MODE = LocomotionSettings.LocomotionMode.CONTINUOUS;
-        }
-        else
-        {
-            LocomotionSettings.LOCOMOTION_MODE = LocomotionSettings.LocomotionMode.TELEPORT;
-        }
+        LocomotionSettings.LOCOMOTION_MODE = LocomotionSettings.LocomotionMode.CONTINUOUS;
+    }
+
+    public void LocomotionToggleOff()
+    {
+        LocomotionSettings.LOCOMOTION_MODE = LocomotionSettings.LocomotionMode.TELEPORT;
     }
 }
