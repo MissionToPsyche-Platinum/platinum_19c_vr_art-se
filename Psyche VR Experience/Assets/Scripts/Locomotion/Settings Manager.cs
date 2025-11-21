@@ -116,8 +116,13 @@ public class LocomotionSettingsManager : MonoBehaviour
         LocomotionSettings.LOCOMOTION_MODE = LocomotionSettings.LocomotionMode.TELEPORT;
     }
 
-    public void adjustVolume(float val)
+    public void adjustMasterVolume(float val)
     {
         GlobalSettings.MASTER_VOLUME = val;
+    }
+
+    public void adjustMusicVolume(float val)
+    {
+        GlobalSettings.MUSIC_VOLUME = val;
     }
 }

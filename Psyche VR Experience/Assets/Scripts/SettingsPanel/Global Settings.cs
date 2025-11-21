@@ -1,5 +1,4 @@
 using UnityEngine;
-using static LocomotionSettings;
 
 public static class GlobalSettings
 {
@@ -10,5 +9,13 @@ public static class GlobalSettings
         set { masterVolume = value; }
     }
 
+    // a float from 0 - 1 to represent how loud the game's music is
+    public static float MUSIC_VOLUME
+    {
+        get { return musicVolume; }
+        set { musicVolume = value; }
+    }
+
     private static float masterVolume;
+    private static float musicVolume;
 }
