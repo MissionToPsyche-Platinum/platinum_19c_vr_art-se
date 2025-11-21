@@ -260,7 +260,7 @@ GameObject:
   - component: {fileID: 4529410574643325624}
   - component: {fileID: 6751745536772299622}
   - component: {fileID: 9082633187308440848}
-  - component: {fileID: 7057256980848036134}
+  - component: {fileID: 8624542829113180281}
   m_Layer: 3
   m_Name: Left Hand
   m_TagString: Untagged
@@ -362,7 +362,7 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -4299625302041532480, guid: bf7151579c38e2a44be94ba8773876c1, type: 3}
---- !u!114 &7057256980848036134
+--- !u!114 &8624542829113180281
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -380,7 +380,7 @@ MonoBehaviour:
       m_Name: 
       m_Type: 0
       m_ExpectedControlType: 
-      m_Id: 56dafa6e-ba23-44cd-8426-5be7588e8130
+      m_Id: 48936104-10f6-4b27-ba1a-d0d7ceeb0656
       m_Processors: 
       m_Interactions: 
       m_SingletonActionBindings: []
@@ -389,7 +389,7 @@ MonoBehaviour:
       m_Name: 
       m_Type: 0
       m_ExpectedControlType: 
-      m_Id: f0ba914b-f96b-4381-8ab1-cae122e9b7bc
+      m_Id: e8ad9beb-708f-4e23-97d1-9866ba174d7e
       m_Processors: 
       m_Interactions: 
       m_SingletonActionBindings: []
@@ -410,7 +410,7 @@ MonoBehaviour:
       m_Name: 
       m_Type: 0
       m_ExpectedControlType: 
-      m_Id: cb396d8e-2103-4cad-b349-186801553380
+      m_Id: db919ece-e5c5-4343-afcd-d9127cdb5d6e
       m_Processors: 
       m_Interactions: 
       m_SingletonActionBindings: []
@@ -419,7 +419,7 @@ MonoBehaviour:
       m_Name: 
       m_Type: 0
       m_ExpectedControlType: 
-      m_Id: 8cff0e98-1832-443f-a9f2-ea10634a0c6a
+      m_Id: b9d8fcc9-e454-4ae7-9199-97bb3ebee713
       m_Processors: 
       m_Interactions: 
       m_SingletonActionBindings: []
@@ -434,6 +434,21 @@ MonoBehaviour:
     m_ManualQueueWasCompletedThisFrame: 0
     m_ManualQueueValue: 0
     m_ManualQueueTargetFrame: 0
+  menuInteraction:
+    m_InputSourceMode: 2
+    m_InputAction:
+      m_Name: 
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: c10d382e-0207-44bc-989b-020707b90ead
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_InputActionReference: {fileID: -8656744826552312936, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+    m_ObjectReferenceObject: {fileID: 0}
+    m_ManualValue: {x: 0, y: 0}
+  selectables: []
   LocomotionSettingsMenu: {fileID: 3562136429363707729}
   LocomotionToggle: {fileID: 1519499276025246447}
 --- !u!1 &1723686052166837929

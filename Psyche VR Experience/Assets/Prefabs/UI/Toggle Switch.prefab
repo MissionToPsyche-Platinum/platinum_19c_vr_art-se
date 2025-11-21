@@ -47,6 +47,7 @@ GameObject:
   - component: {fileID: 5673445499634500369}
   - component: {fileID: 431047721261714325}
   - component: {fileID: 429405469330017858}
+  - component: {fileID: 6212571505356607862}
   m_Layer: 3
   m_Name: Toggle Switch
   m_TagString: Untagged
@@ -148,6 +149,53 @@ MonoBehaviour:
       m_Calls: []
   backgroundImage: {fileID: 4273693740533338202}
   backgroundMaterial: {fileID: 2100000, guid: 857a3c5a66d5f954b892652123189184, type: 2}
+--- !u!114 &6212571505356607862
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5167116151528415638}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdbcb261cebe86642b45fc6838dd4186, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SelectableToggle
+  selectedImages:
+  - {fileID: 495234825134510554}
+  selectedColor: {r: 0, g: 255, b: 206, a: 1}
+  defaultColor: {r: 1, g: 1, b: 1, a: 1}
+  selectButton:
+    m_InputSourceMode: 2
+    m_InputActionPerformed:
+      m_Name: 
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: 56a04811-349a-4d59-969c-c544efdd2ad6
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_InputActionValue:
+      m_Name: 
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: ced8926c-947d-4940-9792-a9e2f0450beb
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_InputActionReferencePerformed: {fileID: -3260126714850950918, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+    m_InputActionReferenceValue: {fileID: -3260126714850950918, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+    m_ObjectReferenceObject: {fileID: 0}
+    m_ManualPerformed: 0
+    m_ManualValue: 0
+    m_ManualQueuePerformed: 0
+    m_ManualQueueWasPerformedThisFrame: 0
+    m_ManualQueueWasCompletedThisFrame: 0
+    m_ManualQueueValue: 0
+    m_ManualQueueTargetFrame: 0
+  toggle: {fileID: 429405469330017858}
 --- !u!1 &5636723222106562057
 GameObject:
   m_ObjectHideFlags: 0

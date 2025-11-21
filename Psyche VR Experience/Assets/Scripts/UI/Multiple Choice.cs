@@ -83,6 +83,23 @@ public class MultipleChoice : MonoBehaviour
 
     private void buttonPressed()
     {
+        if (currIndex == 0)
+        {
+            leftArrow.SetActive(false);
+        }
+        else
+        {
+            leftArrow.SetActive(true);
+        }
+        if (currIndex >= options.Count - 1)
+        {
+            rightArrow.SetActive(false);
+        }
+        else
+        {
+            rightArrow.SetActive(true);
+        }
+
         onChange?.Invoke(options[currIndex]);
     }
 }

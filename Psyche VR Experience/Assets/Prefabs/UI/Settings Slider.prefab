@@ -257,6 +257,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7870802873621538564}
   - component: {fileID: 2366053935513795159}
+  - component: {fileID: 1540811865947349158}
   m_Layer: 3
   m_Name: Settings Slider
   m_TagString: Untagged
@@ -337,6 +338,38 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1540811865947349158
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7737285825896278337}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2e05051000ac1e468f844a05976a4da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SelectableSlider
+  selectedImages:
+  - {fileID: 3942740848090526516}
+  selectedColor: {r: 0, g: 255, b: 206, a: 1}
+  defaultColor: {r: 1, g: 1, b: 1, a: 1}
+  slider: {fileID: 2366053935513795159}
+  menuInteraction:
+    m_InputSourceMode: 2
+    m_InputAction:
+      m_Name: 
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: ab5547bd-c788-402b-9fc2-b308994462e6
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_InputActionReference: {fileID: -5522464032369994603, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+    m_ObjectReferenceObject: {fileID: 0}
+    m_ManualValue: {x: 0, y: 0}
+  sensitivity: 1
 --- !u!1 &7778476590513856107
 GameObject:
   m_ObjectHideFlags: 0

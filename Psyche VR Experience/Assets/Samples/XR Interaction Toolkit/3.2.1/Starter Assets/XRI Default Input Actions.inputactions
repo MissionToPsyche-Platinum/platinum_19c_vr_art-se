@@ -2118,6 +2118,33 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Menu Multiple Choice Interaction",
+                    "type": "Value",
+                    "id": "898306ef-4033-468a-a0aa-0601577b5abc",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Menu Slider Interaction",
+                    "type": "Value",
+                    "id": "00e561ae-4ef5-4bfd-986b-01636398a4f0",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Settings Menu Interaction",
+                    "type": "Value",
+                    "id": "204baf97-5f36-499c-9030-8f7b5c90842e",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -2431,8 +2458,8 @@
                 },
                 {
                     "name": "",
-                    "id": "76382bb1-2a7d-478a-94f0-02c99e61aaa9",
-                    "path": "<XRController>{RightHand}/{PrimaryTrigger}",
+                    "id": "5567f56d-34d5-41b0-9cec-bbf6f1307135",
+                    "path": "<XRController>{RightHand}/{PrimaryButton}",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -2442,12 +2469,34 @@
                 },
                 {
                     "name": "",
-                    "id": "5567f56d-34d5-41b0-9cec-bbf6f1307135",
-                    "path": "<XRController>{RightHand}/{PrimaryButton}",
-                    "interactions": "",
+                    "id": "6dacb772-75e6-4bf1-bbc4-2a113d50109d",
+                    "path": "<XRController>{RightHand}/{PrimaryAxis}",
+                    "interactions": "Press(pressPoint=0.8)",
                     "processors": "",
                     "groups": "",
-                    "action": "Menu Select",
+                    "action": "Menu Multiple Choice Interaction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "229f8815-6864-4ee7-87a0-132e8d4a71f6",
+                    "path": "<XRController>{RightHand}/{PrimaryAxis}",
+                    "interactions": "",
+                    "processors": "AxisDeadzone(max=1)",
+                    "groups": "",
+                    "action": "Menu Slider Interaction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "dd0e5f7f-765d-4034-8dc4-2fb42f551752",
+                    "path": "<XRController>{RightHand}/{PrimaryAxis}",
+                    "interactions": "Press(pressPoint=0.8)",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Settings Menu Interaction",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

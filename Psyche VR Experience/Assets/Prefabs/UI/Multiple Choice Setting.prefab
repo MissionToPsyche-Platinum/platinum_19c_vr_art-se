@@ -278,6 +278,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1382901687216018237}
   - component: {fileID: 7819060331876213787}
+  - component: {fileID: 6992346826034443245}
   m_Layer: 3
   m_Name: Multiple Choice Setting
   m_TagString: Untagged
@@ -328,6 +329,38 @@ MonoBehaviour:
   onChange:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &6992346826034443245
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7753507278781707164}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7389f065f79c2e43bd82a7e3a0b4304, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SelectableMultipleChoice
+  selectedImages:
+  - {fileID: 4404896357573412385}
+  - {fileID: 5307517496980191872}
+  selectedColor: {r: 0, g: 255, b: 206, a: 1}
+  defaultColor: {r: 1, g: 1, b: 1, a: 1}
+  choiceController: {fileID: 7819060331876213787}
+  multipleChoiceInteraction:
+    m_InputSourceMode: 2
+    m_InputAction:
+      m_Name: 
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: 94a86fc9-684d-4941-a77d-a51eb747a186
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_InputActionReference: {fileID: -4621227237389324557, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+    m_ObjectReferenceObject: {fileID: 0}
+    m_ManualValue: {x: 0, y: 0}
 --- !u!1 &8654794530599670610
 GameObject:
   m_ObjectHideFlags: 0
