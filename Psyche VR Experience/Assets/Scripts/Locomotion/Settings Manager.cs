@@ -116,13 +116,22 @@ public class LocomotionSettingsManager : MonoBehaviour
         LocomotionSettings.LOCOMOTION_MODE = LocomotionSettings.LocomotionMode.TELEPORT;
     }
 
-    public void adjustMasterVolume(float val)
+    public void AdjustMasterVolume(float val)
     {
         GlobalSettings.MASTER_VOLUME = val;
     }
 
-    public void adjustMusicVolume(float val)
+    public void AdjustMusicVolume(float val)
     {
         GlobalSettings.MUSIC_VOLUME = val;
+    }
+
+    public void TextSizeValueChange(string newValue)
+    {
+        string input = newValue;
+        input = input.Substring(0, input.Length - 1);
+
+        float result = float.Parse(input);
+        GlobalSettings.TEXT_SIZE_MULTIPLIER = result;
     }
 }

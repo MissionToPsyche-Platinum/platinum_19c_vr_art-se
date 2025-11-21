@@ -16,6 +16,14 @@ public static class GlobalSettings
         set { musicVolume = value; }
     }
 
-    private static float masterVolume;
-    private static float musicVolume;
+    // The multiplier for how big the text should be
+    public static float TEXT_SIZE_MULTIPLIER
+    {
+        get { return textSizeMultplier; }
+        set { textSizeMultplier = value; }
+    }
+
+    private static float masterVolume = 1f;
+    private static float musicVolume = 1f;
+    private static float textSizeMultplier = 1f;
 }
