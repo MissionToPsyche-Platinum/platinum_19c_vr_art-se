@@ -43,6 +43,10 @@ public class FrameController : MonoBehaviour
     [Tooltip("The scriptable object containing the piece's path and data. (This is not included in functionality nor in the API atm)")]
     [SerializeField] Object scriptable = null;
 
+    [Header("Fallback Texture")]
+    [Tooltip("An image to display if the frame has nothing to display within itself due to errors or the media being audio only")]
+    [SerializeField] Texture2D fallbackTexture;
+
     // names for borders
     const string BORDER_PARENT = "Borders";
     const string TOP = "Top";
@@ -72,6 +76,10 @@ public class FrameController : MonoBehaviour
     void Awake()
     {
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
+        fallbackTexture = Resources.Load<Texture2D>("Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color-PNG.png");
+
+        if (fallbackTexture == null)
+            Debug.LogError("Fallback image missing! Add it at Assets/Resources/Fallbacks/empty_frame.png");
     }
 
     void OnValidate()
@@ -110,7 +118,21 @@ public class FrameController : MonoBehaviour
         if (data == null) return;
 
         // store the paths for potential video playback as well
-        mediaPaths = new List<string>(data.artworkURLs);
+        // while filtering out missing files(in case db got some bad entries)
+        var validated = new List<string>();
+        foreach (string relPath in data.artworkURLs)
+        {
+            string full = ResolveFullPath(relPath);
+            if (!string.IsNullOrEmpty(full) && System.IO.File.Exists(full))
+            {
+                validated.Add(relPath);
+            }
+            else
+            {
+                Debug.LogWarning($"[FrameController] Skipping missing media file: {relPath}");
+            }
+        }
+        mediaPaths = validated;
 
         currentMediaIndex = 0;
         ApplyAll();     // will now decide image vs video properly
@@ -145,94 +167,33 @@ public class FrameController : MonoBehaviour
         ApplyAll();
     }
 
-    /*  CORE FUNCTIONALITY  */
-    //void ApplyAll()
-    //{
-    //    if (!imageQuadRenderer) return;
-
-    //    Texture2D tex = null; // loading images dynamically instead of all at once
-
-
-
-    //    // ***** video handling portion of apply all *****
-
-    //    if (scriptable is ArtworkData artData &&
-    //        artData.artworkURLs != null &&
-    //        currentImageIndex < artData.artworkURLs.Count)
-    //    {
-    //        string relPath = artData.artworkURLs[currentImageIndex];
-
-    //        // Convert "Assets/..." to absolute file path
-    //        string fullPath = System.IO.Path.Combine(
-    //            Application.dataPath,
-    //            relPath.Substring("Assets/".Length)
-    //        );
-
-    //        // if its a video, switch to the video playback functionality.
-    //        // stops previous video playback(if applicable!!!does not wait for video completion, this is just to make sure videos play)
-    //        if (IsVideoFile(fullPath))
-    //        {
-    //            StopVideoIfNeeded();
-    //            PlayVideo(fullPath);
-    //            tex = null;  // so image logic is skipped
-    //        }
-    //        else
-    //        {
-    //            StopVideoIfNeeded();
-    //        }
-    //    }
-
-    //    // if we reach this point, ensure no lingering video playback or ghost frames(spooky!)
-    //    StopVideoIfNeeded();
-
-    //    // set texture via MaterialPropertyBlock (per-renderer), not sharedMaterial as it was
-    //    imageQuadRenderer.GetPropertyBlock(_mpb);
-
-    //    // Try both common property names to be robust across shaders (URP Lit vs legacy)
-    //    if (tex != null)
-    //    {
-    //        _mpb.SetTexture("_BaseMap", tex);
-    //        _mpb.SetTexture("_MainTex", tex);
-    //    }
-    //    else
-    //    {
-    //        // clear if no texture
-    //        _mpb.SetTexture("_BaseMap", null);
-    //        _mpb.SetTexture("_MainTex", null);
-    //    }
-
-    //    imageQuadRenderer.SetPropertyBlock(_mpb);
-
-    //    // compute the aspect ratio and then set image quad local scale
-    //    Vector2Int resolution = tex ? new(tex.width, tex.height) : baseResolution;
-    //    float aspectRatio = resolution.x / (float)resolution.y; // width / height
-    //    float imgHeight = nominalImageHeight;
-    //    float imgWidth = imgHeight * aspectRatio;
-
-    //    Transform quadT = imageQuadRenderer.transform;
-    //    quadT.localScale = new Vector3(imgWidth, imgHeight, 1f);
-
-    //    // builds/updates border geometry
-    //    EnsureBorders();
-    //    UpdateBorders(imgWidth, imgHeight);
-
-    //    // scale entire frame based on resolution vs base(reference) resolution
-    //    float overallScale = ComputeResolutionScale(resolution, baseResolution, scaleMode);
-    //    transform.localScale = new Vector3(overallScale, overallScale, overallScale);
-    //}
-
     void ApplyAll()
     {
         if (!imageQuadRenderer) return;
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
 
-        // Ensure valid index
-        if (mediaPaths == null || mediaPaths.Count == 0) return;
+        // Ensure valid index or display generic psyche logo instead
+        if (mediaPaths == null || mediaPaths.Count == 0)
+        {
+            Debug.LogWarning("[FrameController] No media found — using fallback image.");
+
+            ShowFallbackImage();
+            return;
+        }
+
         if (currentMediaIndex < 0 || currentMediaIndex >= mediaPaths.Count)
             currentMediaIndex = 0;
 
         string raw = mediaPaths[currentMediaIndex];
         string fullPath = ResolveFullPath(raw);
+        
+        
+        if (IsAudioFile(fullPath))
+        {
+            Debug.LogWarning($"[FrameController] Skipping audio file: {raw}");
+            NextImage();   // automatically go to next file
+            return;
+        }
 
         // VIDEO MODE?
         if (IsVideoFile(fullPath))
@@ -291,6 +252,24 @@ public class FrameController : MonoBehaviour
         tex.LoadImage(bytes);
         return tex;
     }
+
+    private void ShowFallbackImage()
+    {
+        if (fallbackTexture == null)
+            return;
+
+        videoPlayer.Stop();
+        imageQuadRenderer.enabled = true;
+        videoPlayer.gameObject.SetActive(false);
+
+        // apply the fallback texture
+        imageQuadRenderer.sharedMaterial.mainTexture = fallbackTexture;
+
+        // adjust quad aspect ratio if needed
+        float aspect = (float)fallbackTexture.width / fallbackTexture.height;
+        imageQuadRenderer.transform.localScale = new Vector3(aspect, 1f, 1f);
+    }
+
 
     /* --------------------------------------------------------------
      * FRAME SCALE AND RESOLUTION
@@ -415,6 +394,11 @@ public class FrameController : MonoBehaviour
         }
     }
 
+    /* --------------------------------------------------------------
+     *                      AUTO ITERATION
+     * -------------------------------------------------------------- */
+
+
     // safe getter for media paths
     public string GetMediaPath(int index)
     {
@@ -471,7 +455,10 @@ public class FrameController : MonoBehaviour
 
     }
 
-    // ***** Video and Audio Handling *****
+    /* --------------------------------------------------------------
+    *                   VIDEO AND AUDIO HANDLING
+    * -------------------------------------------------------------- */
+
 
     // helper for detecting videofile(just checks the extension)
     private bool IsVideoFile(string path)
@@ -479,6 +466,12 @@ public class FrameController : MonoBehaviour
         if (string.IsNullOrEmpty(path)) return false;
         string ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
         return ext == ".mp4" || ext == ".mov" || ext == ".m4v" || ext == ".avi" || ext == ".webm";
+    }
+    private bool IsAudioFile(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return false;
+        string ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
+        return ext == ".mp3" || ext == ".wav" || ext == ".m4a" || ext == ".ogg" || ext == ".flac";
     }
 
     //
@@ -560,8 +553,13 @@ public class FrameController : MonoBehaviour
             {
                 audioSource = gameObject.AddComponent<AudioSource>();
                 audioSource.playOnAwake = false;
-                audioSource.spatialBlend = 0f;
-                audioSource.loop = false;
+                audioSource.spatialBlend = 1f;                  // Make audio 3D
+                audioSource.rolloffMode = AudioRolloffMode.Linear;
+                audioSource.minDistance = .5f;                  // Start fading out
+                audioSource.maxDistance = 3f;                   // ~silent by this distance
+                audioSource.dopplerLevel = 0f;                  // Avoid doppler shift
+                audioSource.loop = false;                       // no looping ever please
+                audioSource.spread = 0f;                        // 0 = more directional  
             }
 
             videoPlayer.audioOutputMode = VideoAudioOutputMode.AudioSource;

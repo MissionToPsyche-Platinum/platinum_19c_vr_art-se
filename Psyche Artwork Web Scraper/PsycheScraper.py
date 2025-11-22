@@ -285,7 +285,8 @@ def getArtInfo(url, verbose):
                         (
                             ffmpeg
                             .input(str(absolute_destination_audio))
-                            .output(str(mp3_path), acodec="mp3", audio_bitrate="192k")
+                            .output(str(mp3_path), acodec="mp3", audio_bitrate="192k",
+                                    af="loudnorm=I=-14:TP=-1.5:LRA=11")
                             .overwrite_output()
                             .run()
                         )
@@ -491,6 +492,17 @@ def getArtInfo(url, verbose):
                     print(RED + "[ERROR] There was an error downloading from the link: " + link + "[ERROR]. " + YELLOW + "File NOT added." + RESET)
                     print(RED + str(e) + RESET)
                 continue
+    # remove any file paths pointing to files that no longer exist(video_only/audio/.mp4)
+    cleaned_paths = []
+    for p in file_paths:
+        abs_path = ARTWORK_DIR.parent.parent / p  # convert relative to absolute
+        if abs_path.exists():
+            cleaned_paths.append(p)
+        else:
+            if verbose:
+                print(f"[CLEANUP] Removing missing file from DB entry: {p}")
+
+    file_paths = cleaned_paths
 
     results["file_paths"] = file_paths
 
