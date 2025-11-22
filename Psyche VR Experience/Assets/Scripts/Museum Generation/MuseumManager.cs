@@ -19,6 +19,7 @@ public class MuseumManager : MonoBehaviour
 
     [Tooltip("Automatically populate frames on Start after building the museum?")]
     [SerializeField] bool populateArt = true;
+    public int numArtPieces = 100;
 
     [Tooltip("Sets ArtFrames asynchronously, with a delay between the population of each frame.")]
     [SerializeField] bool asyncPopulate = true;
@@ -86,26 +87,7 @@ public class MuseumManager : MonoBehaviour
         System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
         sw.Start();
 
-        int average_num_frames = 0;
-        int numIter = 1;
-        for (int i = 0; i < numIter; i++)
-        {
-            numFrames = 0;
-            await GenerateMuseum(400);
-            average_num_frames += numFrames;
-
-            for(int x = 0; x < roomGrid.Length; x++)
-                for(int y = 0; y < roomGrid[x].Length; y++)
-                {
-                    if (roomGrid[x][y] != null)
-                    {
-                        Destroy(roomGrid[x][y]);
-                        roomGrid[x][y] = null;
-                    }
-                }
-        }
-
-        Debug.Log("Average Frame Count = " + (average_num_frames / numIter));
+        await GenerateMuseum(numArtPieces);
 
         sw.Stop();
         Debug.Log("[Museum Manager] Time Elapsed: " + sw.ElapsedMilliseconds + " milliseconds");
