@@ -17,9 +17,12 @@ public class MuseumManager : MonoBehaviour
 
     private readonly List<Transform> activeDisplayTransforms = new(); // active image frame transforms (image frames of the active variant)
     private readonly List<FrameController> activeFrameControllers = new(); // active image frame framecontroller components (the actual art display scripts)
+    // track placed room transforms so other systems (like SpawnController) can query spawn locations
+    private readonly List<Transform> placedRoomTransforms = new();
 
     public IReadOnlyList<Transform> ActiveDisplayTransforms => activeDisplayTransforms;
     public IReadOnlyList<FrameController> ActiveFrameControllers => activeFrameControllers;
+    public IReadOnlyList<Transform> PlacedRoomTransforms => placedRoomTransforms;
 
     [Tooltip("Should the scan also gather inactive displays?")]
     [SerializeField] bool includeInactiveDisplays = false;         // usually false: only visible frames
@@ -103,6 +106,7 @@ public class MuseumManager : MonoBehaviour
         InitMuseum(chunkSize * numChunks);
 
         Vector2Int startPos = new Vector2Int(numChunks/2, 0);
+        Debug.Log("Starting Position: " + startPos.x + " " + startPos.y);
         bool[][] chunksTraversed = new bool[numChunks][];
 
         for(int i = 0; i < chunksTraversed.Length; i++) { chunksTraversed[i] = new bool[numChunks]; }
@@ -120,8 +124,12 @@ public class MuseumManager : MonoBehaviour
     {
         roomGrid = new RoomModule[size][];
 
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < size; i++) 
+        {
             roomGrid[i] = new RoomModule[size];
+        }
+
+        placedRoomTransforms.Clear();
     }
 
     public void AlignAllRooms()
@@ -142,7 +150,6 @@ public class MuseumManager : MonoBehaviour
     {
         int startX = chunkX * chunkSize;
         int startY = chunkY * chunkSize;
-
         int roomIndex = Random.Range(0, patterns.Length);
 
         RoomPattern pattern = patterns[roomIndex];
@@ -336,6 +343,10 @@ public class MuseumManager : MonoBehaviour
                     GenRoom(x, y);
                 else if (roomGrid[x][y] != null)
                 {
+                    //Remove from placed list before destroying
+                    if (placedRoomTransforms.Contains(roomGrid[x][y].transform))
+                        placedRoomTransforms.Remove(roomGrid[x][y].transform);
+
                     Destroy(roomGrid[x][y].gameObject);
                     roomGrid[x][y] = null;
                 }
@@ -356,6 +367,9 @@ public class MuseumManager : MonoBehaviour
         roomGrid[x][y] = Instantiate(roomModulePrefab);
 
         roomGrid[x][y].transform.position = new Vector3(x * roomSize, 0, y * roomSize);
+
+        //Track the placed room's transform so other systems can use it as a spawn/location reference
+        placedRoomTransforms.Add(roomGrid[x][y].transform);
     }
 
     public void AutoOpening(int x, int y)

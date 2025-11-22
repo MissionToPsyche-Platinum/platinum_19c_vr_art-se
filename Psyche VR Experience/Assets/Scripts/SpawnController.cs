@@ -24,9 +24,21 @@ public class SpawnController : MonoBehaviour
     protected GameObject[] characterArray;
 
     protected int currentPerspective; //0 is VR, 1 is M&K, 2 is Freeroam
-    
+
+    [SerializeField] protected MuseumManager MuseumManagerTracker;    
     void Start()
     {
+        //Task 188, Grab the position of a placed tile and set players spawn location to that point.
+        Vector3 spawnPosition = MuseumManagerTracker.PlacedRoomTransforms[0].position;
+        transform.position = spawnPosition;
+        Debug.Log("SpawnController moved to position " + transform.position);
+        if (spawnPosition != null) 
+        {
+            Vector3 playerSpawnPosition = new Vector3 (spawnPosition.x, 1f, spawnPosition.z);
+            characterArray[0].transform.position = playerSpawnPosition;
+        }
+        
+        //Set up Mouse and Keyboard controls
         playerInput = GetComponent<PlayerInput>();
         playerInput.currentActionMap.Enable();
         if (playerInput != null)
@@ -35,13 +47,13 @@ public class SpawnController : MonoBehaviour
             swapAction = controlCamera.FindAction("SwapCamera", true);
             swapAction.Enable();
         }
-
+        
         for (int i = 1; i < 3; i++)
         {
             cameraArray[i].enabled = false;
             characterArray[i].SetActive(false);
         }
-
+        
         //Task 113, this checks for an active instance of a VR headset. If it can't find one, it defaults to mouse and keyboard
         if (XRGeneralSettings.Instance?.Manager?.activeLoader ==  null)
         {
