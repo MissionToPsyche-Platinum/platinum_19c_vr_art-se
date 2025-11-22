@@ -173,4 +173,13 @@ public class SettingsManager : MonoBehaviour
         LocomotionSettings.TELEPORT_FADE_TIME = newFadeTime;
         LocomotionSettings.TELEPORT_FADE_WAIT = newFadeTime;
     }
+
+    public void InteractionSizeValueChange(string newValue)
+    {
+        string input = newValue;
+        input = input.Substring(0, input.Length - 1);
+
+        float result = float.Parse(input);
+        GlobalSettings.INTERACTION_SIZE_MULTIPLER = result;
+    }
 }

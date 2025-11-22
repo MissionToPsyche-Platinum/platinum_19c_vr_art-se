@@ -23,6 +23,14 @@ public static class GlobalSettings
         set { textSizeMultplier = value; }
     }
 
+    // The multiplier for how big the text should be
+    public static float INTERACTION_SIZE_MULTIPLER
+    {
+        get { return interactionSizeMultplier; }
+        set { interactionSizeMultplier = value; }
+    }
+
+    // whether or not projects auto-iterate
     public static bool AUTO_ITERATE_ON
     {
         get { return projectIterate; }
@@ -32,5 +40,6 @@ public static class GlobalSettings
     private static float masterVolume = 1f;
     private static float musicVolume = 1f;
     private static float textSizeMultplier = 1f;
+    private static float interactionSizeMultplier = 1f;
     private static bool projectIterate = false;
 }
