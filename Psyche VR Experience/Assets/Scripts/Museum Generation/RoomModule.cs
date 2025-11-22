@@ -294,7 +294,7 @@ public class RoomModule : MonoBehaviour
     /// Set some number of frames in the room to art from the given list, starting from start_index and iterating along numSet times.
     /// </summary>
     /// <returns>Number of art displays set.</returns>
-    public async Awaitable SetArtDisplays(int numSet, List<ArtworkData> art = null, int start_index = 0)
+    public async Awaitable SetArtDisplays(int numSet, List<ArtworkData> art = null, int start_index = 0, bool async = false, float delay = 0.1f)
     {
         for (int i = 0; i < display.artFrames.Length; i++)
         {
@@ -313,7 +313,8 @@ public class RoomModule : MonoBehaviour
                     frameObject.gameObject.SetActive(false);
             }
 
-            await Awaitable.WaitForSecondsAsync(0.01f);
+            if(async)
+                await Awaitable.WaitForSecondsAsync(delay);
         }
 
     }

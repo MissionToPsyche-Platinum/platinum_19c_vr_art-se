@@ -20,6 +20,10 @@ public class MuseumManager : MonoBehaviour
     [Tooltip("Automatically populate frames on Start after building the museum?")]
     [SerializeField] bool populateArt = true;
 
+    [Tooltip("Sets ArtFrames asynchronously, with a delay between the population of each frame.")]
+    [SerializeField] bool asyncPopulate = true;
+    [SerializeField] float populateDelay = 0.1f;
+
     private int numFrames = 0;
 
     //make sure this is no less than 9 probably
@@ -273,13 +277,11 @@ public class MuseumManager : MonoBehaviour
         int numSpaces = (numSpots / numArtPieces) - 2;
         int n = 0;
 
-        if(numSpaces == 0)
+        if (numSpaces == 0)
         {
             numSpaces = 1;
         }
-
-        const int numPerWait = 20;
-        int numNow = 0;
+        
 
         for (int x = 0; x < roomGrid.Length; x++)
         {
@@ -313,17 +315,9 @@ public class MuseumManager : MonoBehaviour
                         }
                     }
 
-                    await roomGrid[x][y].SetArtDisplays(numSet, items, spotsFilled);
+                    await roomGrid[x][y].SetArtDisplays(numSet, items, spotsFilled, asyncPopulate, populateDelay);
 
                     spotsFilled += numSet;
-
-                    numNow++;
-
-                    if(numNow > numPerWait)
-                    {
-                        numNow = 0;
-                        await Awaitable.WaitForSecondsAsync(0.01f);
-                    }
                 }
             }
         }
