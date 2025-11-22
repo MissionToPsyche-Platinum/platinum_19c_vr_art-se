@@ -18,6 +18,7 @@ public class FrameController : MonoBehaviour
     [Tooltip("All images this frame can show. Only one is visible at a time. API is available.")]
     [SerializeField] List<Texture2D> images = new List<Texture2D>();
     [SerializeField] private List<string> mediaPaths = new List<string>();
+    private Texture2D lastLoadedImage = null; // for use in unloading previous texture from memory
 
     [Tooltip("Index into Images to show.")]
     [SerializeField] int currentMediaIndex = 0;
@@ -47,6 +48,7 @@ public class FrameController : MonoBehaviour
     [Tooltip("An image to display if the frame has nothing to display within itself due to errors or the media being audio only")]
     [SerializeField] Texture2D fallbackTexture;
 
+
     // names for borders
     const string BORDER_PARENT = "Borders";
     const string TOP = "Top";
@@ -62,6 +64,8 @@ public class FrameController : MonoBehaviour
 
     // Auto Iterate stuff.
     private Coroutine autoIterateRoutine;
+    [SerializeField, Tooltip("Automatically start auto-iteration when play mode begins.")]
+    private bool autoIterateOnStart = true;
     [SerializeField, Tooltip("Seconds between automatic image switches when auto-iteration is running.")]
     private float autoIterationInterval = 5f;
 
@@ -69,6 +73,7 @@ public class FrameController : MonoBehaviour
     private VideoPlayer videoPlayer; 
     private RenderTexture videoTexture;
     private bool isVideoMode = false;
+    private double currentVideoDuration = 0.0;  // video duration for auto-iteration
     private AudioSource audioSource;
     [SerializeField] private bool enableAudio = true; //optional toggle 
 
@@ -76,7 +81,7 @@ public class FrameController : MonoBehaviour
     void Awake()
     {
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
-        fallbackTexture = Resources.Load<Texture2D>("Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color-PNG.png");
+        fallbackTexture = Resources.Load<Texture2D>("Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color-JPG.jpg");
 
         if (fallbackTexture == null)
             Debug.LogError("Fallback image missing! Add it at Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color-PNG.png");
@@ -129,7 +134,7 @@ public class FrameController : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"[FrameController] Skipping missing media file: {relPath}");
+                Debug.LogWarning($"[FrameController] Removing missing media file from list: {relPath}");
             }
         }
         mediaPaths = validated;
@@ -143,7 +148,14 @@ public class FrameController : MonoBehaviour
         {
             imageQuadRenderer.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
         }
+
         // @TODO assign UI text fields
+
+        // if enabled, automatically begin iterating once at least one valid media file is set
+        if (autoIterateOnStart && mediaPaths.Count > 1)
+        {
+            StartAutoIteration(autoIterationInterval);
+        }
     }
 
     public void SetImageIndex(int index)
@@ -204,7 +216,16 @@ public class FrameController : MonoBehaviour
 
         // IMAGE MODE
         StopVideoIfNeeded();
+        currentVideoDuration = 0.0;
         Texture2D tex = LoadImage(fullPath);
+
+        // destroy previous texture, if any
+        if (lastLoadedImage != null)
+        {
+            Destroy(lastLoadedImage);
+        }
+
+        lastLoadedImage = tex;
 
         imageQuadRenderer.GetPropertyBlock(_mpb);
         _mpb.SetTexture("_BaseMap", tex);
@@ -411,6 +432,8 @@ public class FrameController : MonoBehaviour
     /// <param name="intervalSeconds">time in seconds between each image switch.</param>
     public void StartAutoIteration(float intervalSeconds = -1f)
     {
+        // if there isn't more than one art path, don't start the routine.
+        if (!(mediaPaths.Count > 1)) return;
         // will update the variable, otherwise 5
         if (intervalSeconds > 0f)
             autoIterationInterval = intervalSeconds;
@@ -448,12 +471,22 @@ public class FrameController : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(autoIterationInterval);
+            // for videos: wait for the video's true length
+            if (isVideoMode && videoPlayer != null && videoPlayer.length > 0)
+            {
+                yield return new WaitForSeconds((float)currentVideoDuration);
+            }
+            else
+            {
+                // For images
+                yield return new WaitForSeconds(autoIterationInterval);
+            }
+
             currentMediaIndex = (currentMediaIndex + 1) % mediaPaths.Count;
             ApplyAll();
         }
-
     }
+
 
     /* --------------------------------------------------------------
     *                   VIDEO AND AUDIO HANDLING
@@ -497,7 +530,10 @@ public class FrameController : MonoBehaviour
         _mpb.SetTexture("_MainTex", videoTexture);
         imageQuadRenderer.SetPropertyBlock(_mpb);
 
+        // store the real duration for auto-iteration
+        currentVideoDuration = vp.length;
         vp.Play();
+
         if (enableAudio && audioSource != null) audioSource.Play();
 
         ResizeFrame(new Vector2Int(w, h));
@@ -519,6 +555,13 @@ public class FrameController : MonoBehaviour
     {
         // stop any currently running video
         StopVideoIfNeeded();
+
+        // free last image texture if switching to video
+        if (lastLoadedImage != null)
+        {
+            Destroy(lastLoadedImage);
+            lastLoadedImage = null;
+        }
 
         // start playing this video
         PlayVideo(fullPath);
