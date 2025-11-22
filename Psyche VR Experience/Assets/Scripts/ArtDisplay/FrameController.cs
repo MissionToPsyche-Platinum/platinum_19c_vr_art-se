@@ -79,7 +79,7 @@ public class FrameController : MonoBehaviour
         fallbackTexture = Resources.Load<Texture2D>("Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color-PNG.png");
 
         if (fallbackTexture == null)
-            Debug.LogError("Fallback image missing! Add it at Assets/Resources/Fallbacks/empty_frame.png");
+            Debug.LogError("Fallback image missing! Add it at Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color-PNG.png");
     }
 
     void OnValidate()
