@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Readers;
 
-public class LocomotionSettingsManager : MonoBehaviour
+public class SettingsManager : MonoBehaviour
 {
     [SerializeField] private XRInputButtonReader menuButton;
     [SerializeField] private XRInputValueReader<Vector2> menuInteraction;
@@ -153,5 +153,24 @@ public class LocomotionSettingsManager : MonoBehaviour
     public void AutoIterateOff()
     {
         GlobalSettings.AUTO_ITERATE_ON = false;
+    }
+
+    public void AdjustTeleportFade(float val)
+    {
+        if (val > 0f)
+        {
+            LocomotionSettings.TELEPORT_FADE_TO_BLACK = true;
+        }
+        else
+        {
+            LocomotionSettings.TELEPORT_FADE_TO_BLACK = false;
+        }
+
+        // adjust this to change the value of how high the fade and be
+        float maxFadeRange = 2f;
+        float newFadeTime = maxFadeRange * val;
+
+        LocomotionSettings.TELEPORT_FADE_TIME = newFadeTime;
+        LocomotionSettings.TELEPORT_FADE_WAIT = newFadeTime;
     }
 }
