@@ -184,9 +184,12 @@ def getArtInfo(url, verbose):
             yt_link = YouTube(link)
 
             # names for video/audio
-            base_video = f"{results['artistName'].replace(' ', '')}_{results['artTitle'].replace(' ', '')}_FINAL.mp4"
-            base_video_only = f"{results['artistName'].replace(' ', '')}_{results['artTitle'].replace(' ', '')}_VIDONLY.mp4"
-            base_audio = f"{results['artistName'].replace(' ', '')}_{results['artTitle'].replace(' ', '')}_AUDIO.mp4"
+            safe_artist = safe_filename(results["artistName"].replace(" ", ""))
+            safe_title = safe_filename(results["artTitle"].replace(" ", ""))
+
+            base_video = f"{safe_artist}_{safe_title}_FINAL.mp4"
+            base_video_only = f"{safe_artist}_{safe_title}_VIDONLY.mp4"
+            base_audio = f"{safe_artist}_{safe_title}_AUDIO.mp4"
 
             # download highest quality precombined mp4
             try:
@@ -230,7 +233,7 @@ def getArtInfo(url, verbose):
             # Force video color primaries to Rec.709 to avoid Unity warnings
             try:
                 video_input_path = Path(absolute_destination_video_only).resolve()
-                corrected_path = absolute_destination_video_only.with_name(absolute_destination_video_only.stem + "_rec709.mp4")
+                corrected_path = absolute_destination_video_only.with_name(absolute_destination_video_only.stem + "_temp.mp4")
 
                 (ffmpeg.input(video_input_path)).output(
                     str(corrected_path),
@@ -245,7 +248,7 @@ def getArtInfo(url, verbose):
 
                 # Replace original with corrected version
                 os.remove(absolute_destination_video_only)
-                absolute_destination_video_only = corrected_path
+                corrected_path.rename(absolute_destination_video_only)
 
                 if verbose:
                     print("Corrected video to Rec.709 for Unity compatibility.")
@@ -290,9 +293,9 @@ def getArtInfo(url, verbose):
                         # remove original mp4 audio file after successful conversion
                         os.remove(absolute_destination_audio)
 
-                        # update relative path (Unity + DB expect/can handle mp3)
+                        # update absolute/relative path (Unity + DB expect/can handle mp3)
                         relative_mp3 = relative_destination_audio.with_suffix(".mp3")
-
+                        absolute_destination_audio = mp3_path
                         file_paths.append(str(relative_mp3))
                         if verbose:
                             print("Converted audio to MP3:", mp3_path)
@@ -315,27 +318,44 @@ def getArtInfo(url, verbose):
                 print("Preparing to combine video and audio together")
                 #Get the input paths from the yt-dlp downloads
                 video_input_path = Path(absolute_destination_video_only).resolve()
-                audio_input_path = Path(absolute_destination_audio).resolve()
                 final_output_path = Path(absolute_destination_video).resolve()
+                # determine best available audio file (MP3 preferred, else MP4)
+                audio_mp3 = absolute_destination_audio if absolute_destination_audio.suffix == ".mp3" else absolute_destination_audio.with_suffix(
+                    ".mp3")
+                audio_mp4 = absolute_destination_audio if absolute_destination_audio.suffix == ".mp4" else absolute_destination_audio.with_suffix(
+                    ".mp4")
+
+                audio_input_path = None
+
+                if audio_mp3.exists():
+                    audio_input_path = audio_mp3.resolve()
+                elif audio_mp4.exists():
+                    audio_input_path = audio_mp4.resolve()
                 
-                if(video_input_path.exists() & audio_input_path.exists()):
-                    #Create the audio and video inputs
-                    video_input = ffmpeg.input(str(video_input_path))
-                    #SUCCESS_DOWNLOADS.append({'url':link,'stage':'2combineVIDEO2','dest': video_input})
-                    audio_input = ffmpeg.input(str(audio_input_path))
-                    #SUCCESS_DOWNLOADS.append({'url':link,'stage':'2combineAUDIO2','dest': audio_input})
-                    
+                if(video_input_path.exists() and audio_input_path and audio_input_path.exists()):
                     #Tries to combine the two files together using FFMPEG
                     try:
+                        # Create the audio and video inputs
+                        video_input = ffmpeg.input(str(video_input_path))
+                        # SUCCESS_DOWNLOADS.append({'url':link,'stage':'2combineVIDEO2','dest': video_input})
+                        audio_input = ffmpeg.input(str(audio_input_path))
+                        # SUCCESS_DOWNLOADS.append({'url':link,'stage':'2combineAUDIO2','dest': audio_input})
                         ffmpeg.output(audio_input, video_input, str(final_output_path),
-                                vcodec='copy', acodec='copy', format='mp4') \
-                        .run(overwrite_output=True)
+                                vcodec='copy',color_primaries="bt709", acodec='copy', format='mp4').run(overwrite_output=True)
                         SUCCESS_DOWNLOADS.append({'url': link, 'stage': 'combine', 'dest': file_paths})
-                        try:
-                            os.remove(absolute_destination_video_only)
-                            os.remove(absolute_destination_audio)
-                        except Exception as e:
-                            print("There was an issue removing the video and audio files: ", e)
+                        # remove source files ONLY if final output exists and is non-zero
+                        if final_output_path.exists() and final_output_path.stat().st_size > 0:
+                            try:
+                                if absolute_destination_video_only.exists():
+                                    os.remove(absolute_destination_video_only)
+                                if audio_mp3.exists():
+                                    os.remove(audio_mp3)
+                                if audio_mp4.exists():
+                                    os.remove(audio_mp4)
+                            except Exception as e:
+                                print("Warning: Could not remove intermediate files:", e)
+                        else:
+                            print("WARNING: Final combined video missing or empty — keeping source video/audio.")
                     except Exception as e:
                         print("Error when trying to Combine the videos" , e)
                         FAILED_DOWNLOADS.append({'url': link, 'stage': 'Combination', 'error': str(e)})
@@ -362,16 +382,17 @@ def getArtInfo(url, verbose):
                             SUCCESS_DOWNLOADS.append({'url': link, 'stage': 'precombined', 'dest': file_paths})
                     except Exception as e:
                         print("There was an issue downloading the best COMBINED video file ", e, link)
-                    if(video_input_path.exists()):
+                    # SAFE DELETE only if fallback final exists
+                    if final_output_path.exists() and final_output_path.stat().st_size > 0:
                         try:
-                            os.remove(absolute_destination_video_only)
+                            if absolute_destination_video_only.exists():
+                                os.remove(absolute_destination_video_only)
+                            if absolute_destination_audio.exists():
+                                os.remove(absolute_destination_audio)
                         except Exception as e:
-                            print("There was an issue removing the video file: ", e)
-                    if(audio_input_path.exists()):
-                        try:
-                            os.remove(absolute_destination_audio)
-                        except Exception as e:
-                            print("There was an issue removing the audio file: ", e)
+                            print("Warning: Could not remove intermediate files:", e)
+                    else:
+                        print("WARNING: Fallback final file missing — keeping VIDONLY and AUDIO sources.")
                     file_paths.append(str(relative_destination_video))
             except Exception as e:
                 print("Error combining audio and video files together into one")
@@ -393,8 +414,8 @@ def getArtInfo(url, verbose):
                 print("Attempting to download vimeo file")
                 base_video= f"{results['artistName'].replace(' ','')}_{results['artTitle'].replace(' ','')}.mp4"
                 # absolute path for us, relative path for database and unity
-                #absolute_destination_video = _safe_destination(project_dir, base_video)
-                #relative_destination_video = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_video.name
+                absolute_destination_video = _safe_destination(project_dir, base_video)
+                relative_destination_video = Path("Assets") / "Artwork" / str(project_id) / absolute_destination_video.name
 
                 #v.streams[-1].download(download_directory=str(absolute_destination_video.parent),filename=absolute_destination_video.name)
                 try:
@@ -869,15 +890,15 @@ def repair_media(verbose=True):
                     if verbose:
                         print(f"[ERROR : MEDIA REPAIR : AUDIO FIX] Failed to convert audio {audio_file}: {e}")
 
-            # repair type 2- orphaned audio (missing corresponding video)
+            # repair type 2- orphaned audio (missing corresponding video(main culprit of issues in unity end))
             if has_audio and not has_vidonly and not has_final:
                 orphan_audio.append(base)
 
-            # repair type 3- orphaned video (missing corresponding audio)
+            # repair type 3- orphaned video (missing corresponding audio(not frequent, haven't seen it actually))
             if has_vidonly and not has_audio and not has_final:
                 orphan_video.append(base)
 
-            # repair type 4- combined video never created
+            # repair type 4- combined video never created(This is just here in the case of ffmpeg errors , not frequent)
             if has_vidonly and has_audio and not has_final:
                 missing_final_video.append(base)
 
@@ -887,7 +908,7 @@ def repair_media(verbose=True):
             if final_file:
                 try:
                     # create corrected file name (safe overwrite)
-                    corrected_final = final_file.with_name(final_file.stem + "_rec709.mp4")
+                    corrected_final = final_file.with_name(final_file.stem + "_temp.mp4")
 
                     (
                         ffmpeg
