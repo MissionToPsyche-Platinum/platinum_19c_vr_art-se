@@ -592,18 +592,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 259151213096369315, guid: 5fab7a29b9171444180a6122e4bd09a0, type: 3}
-      propertyPath: populateArt
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 259151213096369315, guid: 5fab7a29b9171444180a6122e4bd09a0, type: 3}
-      propertyPath: asyncPopulate
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 259151213096369315, guid: 5fab7a29b9171444180a6122e4bd09a0, type: 3}
-      propertyPath: asyncPopulation
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 2262871615896042540, guid: 5fab7a29b9171444180a6122e4bd09a0, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
