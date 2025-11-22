@@ -233,7 +233,7 @@ def getArtInfo(url, verbose):
             # Force video color primaries to Rec.709 to avoid Unity warnings
             try:
                 video_input_path = Path(absolute_destination_video_only).resolve()
-                corrected_path = absolute_destination_video_only.with_name(absolute_destination_video_only.stem + "_temp.mp4")
+                corrected_path = absolute_destination_video_only.with_suffix(".temp.mp4")
 
                 (ffmpeg.input(video_input_path)).output(
                     str(corrected_path),
@@ -243,7 +243,7 @@ def getArtInfo(url, verbose):
                     color_trc="bt709",
                     colorspace="bt709",
                     acodec="copy"  # video-only, so no audio
-                ).overwrite_output()
+                ).overwrite_output().run()
                 
 
                 # Replace original with corrected version
@@ -341,7 +341,8 @@ def getArtInfo(url, verbose):
                         audio_input = ffmpeg.input(str(audio_input_path))
                         # SUCCESS_DOWNLOADS.append({'url':link,'stage':'2combineAUDIO2','dest': audio_input})
                         ffmpeg.output(audio_input, video_input, str(final_output_path),
-                                vcodec='copy',color_primaries="bt709", acodec='copy', format='mp4').run(overwrite_output=True)
+                                      vcodec='copy', color_primaries="bt709", color_trc="bt709",
+                                      colorspace="bt709", acodec='copy', format='mp4').run(overwrite_output=True)
                         SUCCESS_DOWNLOADS.append({'url': link, 'stage': 'combine', 'dest': file_paths})
                         # remove source files ONLY if final output exists and is non-zero
                         if final_output_path.exists() and final_output_path.stat().st_size > 0:
