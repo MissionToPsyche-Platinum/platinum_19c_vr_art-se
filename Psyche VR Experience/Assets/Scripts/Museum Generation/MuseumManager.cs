@@ -15,91 +15,110 @@ public class MuseumManager : MonoBehaviour
 
     public RoomModule[][] roomGrid;
 
-    private readonly List<Transform> activeDisplayTransforms = new(); // active image frame transforms (image frames of the active variant)
-    private readonly List<FrameController> activeFrameControllers = new(); // active image frame framecontroller components (the actual art display scripts)
-
-    public IReadOnlyList<Transform> ActiveDisplayTransforms => activeDisplayTransforms;
-    public IReadOnlyList<FrameController> ActiveFrameControllers => activeFrameControllers;
-
-    [Tooltip("Should the scan also gather inactive displays?")]
-    [SerializeField] bool includeInactiveDisplays = false;         // usually false: only visible frames
-
     [SerializeField] string dbPathOverride = null;
 
     [Tooltip("Automatically populate frames on Start after building the museum?")]
-    [SerializeField] bool autoPopulateOnStart = true;
+    [SerializeField] bool populateArt = true;
+    public int numArtPieces = 100;
+
+    [Tooltip("Sets ArtFrames asynchronously, with a delay between the population of each frame.")]
+    [SerializeField] bool asyncPopulate = true;
+    [SerializeField] float populateDelay = 0.1f;
+
+    private int numFrames = 0;
 
     //make sure this is no less than 9 probably
-        const int chunkSize = 11;
-        const int chunkMid = chunkSize / 2 + 1;
+    const int chunkSize = 11;
+    const int chunkMid = chunkSize / 2 + 1;
 
-        struct SquareRoom
-        {
-            public int x, y, width, height;
-            public bool add;
-
-            public SquareRoom(int x, int y, int width, int height, bool add = true)
-            {
-                this.x = x;
-                this.y = y;
-                this.width = width;
-                this.height = height;
-                this.add = add;
-            }
-        }
-
-        class RoomPattern
-        {
-            public SquareRoom[] squares;
-
-            public RoomPattern(SquareRoom[] squares)
-            {
-                this.squares = squares;
-            }
-        }
-
-        RoomPattern[] patterns = new RoomPattern[]
-        {
-            new RoomPattern(new SquareRoom[]
-            {
-                new SquareRoom(3, 3, chunkSize - 4, chunkSize - 4),
-                new SquareRoom(chunkMid - 1, chunkMid - 1, 3, 3, false)
-            }),
-
-            new RoomPattern(new SquareRoom[]
-            {
-                new SquareRoom(2, chunkMid, chunkSize - 2, 1),
-                new SquareRoom(chunkMid, chunkMid - 1, 1, 1)
-            }),
-
-            new RoomPattern(new SquareRoom[]
-            {
-                new SquareRoom(-2, 1, chunkSize + 4, chunkSize - 2),
-                new SquareRoom(chunkSize / 3, chunkMid - 1, 2, 2, false)
-            }),
-
-            new RoomPattern(new SquareRoom[]
-            {
-                new SquareRoom(3, 3, chunkSize - 3, chunkSize - 3)
-            })
-        };
-
-
-
-    public void Awake()
+    struct SquareRoom
     {
-        GenerateMuseum(50);
-        RefreshActiveDisplays();
+        public int x, y, width, height;
+        public bool add;
 
-        if (autoPopulateOnStart)
-            PopulateDisplays(ActiveFrameControllers.Count);
-
+        public SquareRoom(int x, int y, int width, int height, bool add = true)
+        {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+            this.add = add;
+        }
     }
-    void GenerateMuseum(int numArtPieces)
+
+    class RoomPattern
     {
+        public SquareRoom[] squares;
+
+        public RoomPattern(SquareRoom[] squares)
+        {
+            this.squares = squares;
+        }
+    }
+
+    RoomPattern[] patterns = new RoomPattern[]
+    {
+        new RoomPattern(new SquareRoom[]
+        {
+            new SquareRoom(3, 3, chunkSize - 4, chunkSize - 4),
+            new SquareRoom(chunkMid - 1, chunkMid - 1, 3, 3, false)
+        }),
+
+        new RoomPattern(new SquareRoom[]
+        {
+            new SquareRoom(2, chunkMid, chunkSize - 2, 1),
+            new SquareRoom(chunkMid, chunkMid - 1, 1, 1)
+        }),
+
+        new RoomPattern(new SquareRoom[]
+        {
+            new SquareRoom(-2, 1, chunkSize + 4, chunkSize - 2),
+            new SquareRoom(chunkSize / 3, chunkMid - 1, 2, 2, false)
+        }),
+
+        new RoomPattern(new SquareRoom[]
+        {
+            new SquareRoom(3, 3, chunkSize - 3, chunkSize - 3)
+        })
+    };
+
+    public async void Awake()
+    {
+        System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+        sw.Start();
+
+        await GenerateMuseum(numArtPieces);
+
+        sw.Stop();
+        Debug.Log("[Museum Manager] Time Elapsed: " + sw.ElapsedMilliseconds + " milliseconds");
+    }
+
+    public int ChunkCountForArtPieces(int numArtPieces)
+    {
+        //approximate error of +/- 20ish per chunk
+
+        //1 chunk ~= 33
+        //2 chunks ~= 130
+        //3 chunks ~= 330
+        //4 chunks ~= 583
+        //5 chunks ~= 911
+        //6 chunks ~= 1300
+
+        float result = 12226f + (0.0014f - 12226f) / (1 + Mathf.Pow(numArtPieces / 377528.4f, 0.5f));
+        result /= 100;
+
+        int chunkCount = (int)(result + 1);
+
+
+
+        return chunkCount;
+    }
+
+    public async Awaitable GenerateMuseum(int numArtPieces)
+    {
+        numFrames = 0;
         int size = (int)(numArtPieces);
-        int numChunks = 2; //TODO: Figure out the math for this
-        Debug.Log("Chunk Num: " + numChunks);
+        int numChunks = ChunkCountForArtPieces(numArtPieces); //TODO: Figure out the math for this
         InitMuseum(chunkSize * numChunks);
 
         Vector2Int startPos = new Vector2Int(numChunks/2, 0);
@@ -113,7 +132,8 @@ public class MuseumManager : MonoBehaviour
 
         //Debug.Log("Count: " + CountArtSpots());
 
-        AssignArt(numArtPieces);
+        if(populateArt)
+            await AssignArt(numArtPieces);
     }
 
     public void InitMuseum(int size)
@@ -134,8 +154,12 @@ public class MuseumManager : MonoBehaviour
                     continue;
 
                 AutoOpening(x, y);
+
+                numFrames += roomGrid[x][y].GetNumArtDisplays();
             }
         }
+
+        Debug.Log("numFrames = " + numFrames);
     }
 
     public void GenerateRandomRoomPattern(int chunkX, int chunkY)
@@ -153,7 +177,13 @@ public class MuseumManager : MonoBehaviour
         for (int i = 0; i < pattern.squares.Length; i++)
         {
             SquareRoom square = pattern.squares[i];
-            GenSquare(square.x + startX, square.y + startY, square.width, square.height, square.add);
+            if (square.add)
+            {
+                GenSquare(square.x + startX, square.y + startY, square.width, square.height);
+            } else
+            {
+                RemoveSquare(square.x + startX, square.y + startY, square.width, square.height);
+            }
         }
     }
 
@@ -162,46 +192,16 @@ public class MuseumManager : MonoBehaviour
         GenerateRandomRoomPattern(startPos.x, startPos.y);
 
         List<Vector2Int> directions = new List<Vector2Int>() { new Vector2Int(1, 0), new Vector2Int(-1, 0), new Vector2Int(0, 1), new Vector2Int(0, -1) };
-        List<Vector2Int> checkedDirections = new List<Vector2Int>();
 
-        int numRooms = 4;
-        int numRoomsMarked = 0;
-
-        //mark all of the directions as traversed and remove any previously traversed
-        for (int i = 0; i < 4; i++)
+        //loop over every direction we checked in the first loop
+        for (int i = 0; i < directions.Count; i++)
         {
-            if (directions.Count == 0)
-            {
-                break;
-            }
-
-            int directionIndex = Random.Range(0, directions.Count);
-
-            Vector2Int dir = directions[directionIndex];
-
-            Vector2Int nextPos = startPos + dir;
-
-            if (InBounds(nextPos.x, nextPos.y, chunksTraversed.Length) && !chunksTraversed[nextPos.x][nextPos.y])
-            {
-                chunksTraversed[nextPos.x][nextPos.y] = true;
-
-                if(numRoomsMarked < numRooms)
-                    checkedDirections.Add(dir);
-
-                numRoomsMarked++;
-            }
-
-            directions.RemoveAt(directionIndex);
-        }
-
-        for (int i = 0; i < checkedDirections.Count; i++)
-        {
-            Vector2Int dir = checkedDirections[i];
+            Vector2Int dir = directions[i];
 
             Vector2Int nextPos = startPos + dir;
 
             //if we haven't visited this chunk yet, mark it so and recurse on it
-            if (InBounds(nextPos.x, nextPos.y, chunksTraversed.Length))// && !chunksTraversed[nextPos.x][nextPos.y])
+            if (InBounds(nextPos.x, nextPos.y, chunksTraversed.Length) && !chunksTraversed[nextPos.x][nextPos.y])
             {
                 chunksTraversed[nextPos.x][nextPos.y] = true;
 
@@ -257,19 +257,31 @@ public class MuseumManager : MonoBehaviour
         return total;
     }
 
-    public void AssignArt(int numArtPieces)
+    public async Awaitable AssignArt(int numArtPieces)
     {
-        int numSpots = CountArtSpots();
+        //int numSpots = CountArtSpots();
+        int numSpots = numFrames;
+
+        //take the minimum between the two, we can't request more art than we have spots for
+        int requestCount = Mathf.Min(numSpots, numArtPieces);
+
+        List<ArtworkData> items = PsycheDBMiddleware.CreateRandomProjectSObjects(requestCount, dbPathOverride);
+        if (items == null || items.Count == 0)
+        {
+            Debug.LogWarning("[MuseumManager] PopulateDisplays: Middleware returned no ArtworkData.");
+            return;
+        }
+
         int spotsFilled = 0;
 
         int numSpaces = (numSpots / numArtPieces) - 2;
         int n = 0;
 
-        if(numSpaces == 0)
+        if (numSpaces == 0)
         {
             numSpaces = 1;
         }
-
+        
         for (int x = 0; x < roomGrid.Length; x++)
         {
             for (int y = 0; y < roomGrid[x].Length; y++)
@@ -278,7 +290,7 @@ public class MuseumManager : MonoBehaviour
                 {
                     if (spotsFilled >= numArtPieces)
                     {
-                        roomGrid[x][y].SetArtDisplays(0);
+                        await roomGrid[x][y].SetArtDisplays(0);
                         continue;
                     }
 
@@ -302,7 +314,7 @@ public class MuseumManager : MonoBehaviour
                         }
                     }
 
-                    roomGrid[x][y].SetArtDisplays(numSet);
+                    await roomGrid[x][y].SetArtDisplays(numSet, items, spotsFilled, asyncPopulate, populateDelay);
 
                     spotsFilled += numSet;
                 }
@@ -323,7 +335,7 @@ public class MuseumManager : MonoBehaviour
         return x >= 0 && x < size && y >= 0 && y < size;
     }
 
-    public void GenSquare(int xTop, int yTop, int xSize, int ySize, bool add = true)
+    public void GenSquare(int xTop, int yTop, int xSize, int ySize)
     {
         for(int x = xTop; x < xTop + xSize; x++)
         {
@@ -332,13 +344,22 @@ public class MuseumManager : MonoBehaviour
                 if (!InBounds(x, y, roomGrid.Length))
                     continue;
 
-                if(add)
-                    GenRoom(x, y);
-                else if (roomGrid[x][y] != null)
-                {
-                    Destroy(roomGrid[x][y].gameObject);
-                    roomGrid[x][y] = null;
-                }
+                GenRoom(x, y);
+            }
+        }
+    }
+
+    public void RemoveSquare(int xTop, int yTop, int xSize, int ySize)
+    {
+        for (int x = xTop; x < xTop + xSize; x++)
+        {
+            for (int y = yTop; y < yTop + ySize; y++)
+            {
+                if (!InBounds(x, y, roomGrid.Length))
+                    continue;
+
+                Destroy(roomGrid[x][y].gameObject);
+                roomGrid[x][y] = null;
             }
         }
     }
@@ -400,7 +421,7 @@ public class MuseumManager : MonoBehaviour
             //if we're in range and there's a room on the corner, we omit the beams
             if(range && roomGrid[x + xOffset][y + yOffset] != null)
             {
-                room.SetOpenings(openNorth, openSouth, openWest, openEast);
+                room.SetOpenings(openNorth, openSouth, openWest, openEast, false);
                 room.SetRoomActive(RoomModule.RoomType.TwoOpenLShapeFlat);
                 return;
             }
@@ -446,7 +467,7 @@ public class MuseumManager : MonoBehaviour
 
             if (range && roomGrid[xN][yN] != null && diagonals)
             {
-                room.SetOpenings(openNorth, openSouth, openWest, openEast);
+                room.SetOpenings(openNorth, openSouth, openWest, openEast, false);
                 room.SetRoomActive(RoomModule.RoomType.ThreeOpenFlat);
                 return;
             }
@@ -459,75 +480,4 @@ public class MuseumManager : MonoBehaviour
     {
         return y > -1 && x > -1 && y < size && x < size;
     }
-
-    /// rebuilds the lists(caches) of active display Transforms and FrameController components
-        /// rebuilds the lists(caches) of active display Transforms and FrameController components
-        /// <param name="includeInactive"> include inactive room variant image frames?(debugging/testing only)</param>
-        public void RefreshActiveDisplays(bool includeInactive = false)
-        {
-            activeDisplayTransforms.Clear();
-            activeFrameControllers.Clear();
-
-            if (roomGrid == null || roomGrid.Length == 0) return;
-
-            int size = roomGrid.Length;
-            for (int x = 0; x < size; x++)
-            {
-                var col = roomGrid[x];
-                if (col == null) continue;
-
-                for (int y = 0; y < size; y++)
-                {
-                    var room = col[y];
-                    if (room == null) continue;
-
-                    // uses the room module helpers to get transforms and the frame controller scripts
-                    room.CollectActiveDisplayTransforms(activeDisplayTransforms, includeInactive);
-                    room.CollectActiveFrameControllers(activeFrameControllers, includeInactive);
-                }
-            }
-        }
-
-        // Requests ScriptableObjects and assigns one-to-one to currently active frames.
-        // No overflow/repeat; stops at the shorter of the two lists.
-        public void PopulateDisplays(int numDisplays)
-        {
-            // ensure list caches are current
-            RefreshActiveDisplays(includeInactiveDisplays);
-
-            var frames = ActiveFrameControllers.ToList();
-            if (frames.Count == 0)
-            {
-                Debug.LogWarning("[MuseumManager] PopulateDisplays: No active FrameControllers found.");
-                return;
-            }
-
-            // making sure to request no more than we can display
-            int requestCount = Mathf.Clamp(numDisplays, 0, frames.Count);
-            if (requestCount == 0)
-            {
-                Debug.Log("[MuseumManager] PopulateDisplays: requestCount is 0; nothing to do.");
-                return;
-            }
-
-            List<ArtworkData> items = PsycheDBMiddleware.CreateRandomProjectSObjects(requestCount, dbPathOverride);
-            if (items == null || items.Count == 0)
-            {
-                Debug.LogWarning("[MuseumManager] PopulateDisplays: Middleware returned no ArtworkData.");
-                return;
-            }
-
-            int pairCount = Mathf.Min(frames.Count, items.Count);
-            for (int i = 0; i < pairCount; i++)
-            {
-                var fc = frames[i];
-                var data = items[i];
-                if (!fc || !data) continue;
-
-
-                fc.SetArtwork(data);
-            }
-
-            Debug.Log($"[MuseumManager] Assigned {pairCount} artwork ScriptableObjects to {frames.Count} frames.");
-        }
 }
