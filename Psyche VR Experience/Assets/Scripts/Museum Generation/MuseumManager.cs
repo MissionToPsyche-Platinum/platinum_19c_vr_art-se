@@ -85,17 +85,58 @@ public class MuseumManager : MonoBehaviour
     {
         System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
         sw.Start();
-        await GenerateMuseum(200);
+
+        int average_num_frames = 0;
+        int numIter = 1;
+        for (int i = 0; i < numIter; i++)
+        {
+            numFrames = 0;
+            await GenerateMuseum(400);
+            average_num_frames += numFrames;
+
+            for(int x = 0; x < roomGrid.Length; x++)
+                for(int y = 0; y < roomGrid[x].Length; y++)
+                {
+                    if (roomGrid[x][y] != null)
+                    {
+                        Destroy(roomGrid[x][y]);
+                        roomGrid[x][y] = null;
+                    }
+                }
+        }
+
+        Debug.Log("Average Frame Count = " + (average_num_frames / numIter));
 
         sw.Stop();
         Debug.Log("[Museum Manager] Time Elapsed: " + sw.ElapsedMilliseconds + " milliseconds");
+    }
+
+    public int ChunkCountForArtPieces(int numArtPieces)
+    {
+        //approximate error of +/- 20ish per chunk
+
+        //1 chunk ~= 33
+        //2 chunks ~= 130
+        //3 chunks ~= 330
+        //4 chunks ~= 583
+        //5 chunks ~= 911
+        //6 chunks ~= 1300
+
+        float result = 12226f + (0.0014f - 12226f) / (1 + Mathf.Pow(numArtPieces / 377528.4f, 0.5f));
+        result /= 100;
+
+        int chunkCount = (int)(result + 1);
+
+
+
+        return chunkCount;
     }
 
     public async Awaitable GenerateMuseum(int numArtPieces)
     {
         numFrames = 0;
         int size = (int)(numArtPieces);
-        int numChunks = 6; //TODO: Figure out the math for this
+        int numChunks = ChunkCountForArtPieces(numArtPieces); //TODO: Figure out the math for this
         InitMuseum(chunkSize * numChunks);
 
         Vector2Int startPos = new Vector2Int(numChunks/2, 0);
@@ -135,6 +176,8 @@ public class MuseumManager : MonoBehaviour
                 numFrames += roomGrid[x][y].GetNumArtDisplays();
             }
         }
+
+        Debug.Log("numFrames = " + numFrames);
     }
 
     public void GenerateRandomRoomPattern(int chunkX, int chunkY)
