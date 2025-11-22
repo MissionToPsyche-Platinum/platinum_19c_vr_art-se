@@ -96,7 +96,6 @@ public class MuseumManager : MonoBehaviour
         numFrames = 0;
         int size = (int)(numArtPieces);
         int numChunks = 6; //TODO: Figure out the math for this
-        Debug.Log("Chunk Num: " + numChunks);
         InitMuseum(chunkSize * numChunks);
 
         Vector2Int startPos = new Vector2Int(numChunks/2, 0);
@@ -153,7 +152,13 @@ public class MuseumManager : MonoBehaviour
         for (int i = 0; i < pattern.squares.Length; i++)
         {
             SquareRoom square = pattern.squares[i];
-            GenSquare(square.x + startX, square.y + startY, square.width, square.height, square.add);
+            if (square.add)
+            {
+                GenSquare(square.x + startX, square.y + startY, square.width, square.height);
+            } else
+            {
+                RemoveSquare(square.x + startX, square.y + startY, square.width, square.height);
+            }
         }
     }
 
@@ -162,46 +167,16 @@ public class MuseumManager : MonoBehaviour
         GenerateRandomRoomPattern(startPos.x, startPos.y);
 
         List<Vector2Int> directions = new List<Vector2Int>() { new Vector2Int(1, 0), new Vector2Int(-1, 0), new Vector2Int(0, 1), new Vector2Int(0, -1) };
-        List<Vector2Int> checkedDirections = new List<Vector2Int>();
 
-        int numRooms = 4;
-        int numRoomsMarked = 0;
-
-        //mark all of the directions as traversed and remove any previously traversed
-        for (int i = 0; i < 4; i++)
+        //loop over every direction we checked in the first loop
+        for (int i = 0; i < directions.Count; i++)
         {
-            if (directions.Count == 0)
-            {
-                break;
-            }
-
-            int directionIndex = Random.Range(0, directions.Count);
-
-            Vector2Int dir = directions[directionIndex];
-
-            Vector2Int nextPos = startPos + dir;
-
-            if (InBounds(nextPos.x, nextPos.y, chunksTraversed.Length) && !chunksTraversed[nextPos.x][nextPos.y])
-            {
-                chunksTraversed[nextPos.x][nextPos.y] = true;
-
-                if(numRoomsMarked < numRooms)
-                    checkedDirections.Add(dir);
-
-                numRoomsMarked++;
-            }
-
-            directions.RemoveAt(directionIndex);
-        }
-
-        for (int i = 0; i < checkedDirections.Count; i++)
-        {
-            Vector2Int dir = checkedDirections[i];
+            Vector2Int dir = directions[i];
 
             Vector2Int nextPos = startPos + dir;
 
             //if we haven't visited this chunk yet, mark it so and recurse on it
-            if (InBounds(nextPos.x, nextPos.y, chunksTraversed.Length))// && !chunksTraversed[nextPos.x][nextPos.y])
+            if (InBounds(nextPos.x, nextPos.y, chunksTraversed.Length) && !chunksTraversed[nextPos.x][nextPos.y])
             {
                 chunksTraversed[nextPos.x][nextPos.y] = true;
 
@@ -282,7 +257,6 @@ public class MuseumManager : MonoBehaviour
             numSpaces = 1;
         }
         
-
         for (int x = 0; x < roomGrid.Length; x++)
         {
             for (int y = 0; y < roomGrid[x].Length; y++)
@@ -336,7 +310,7 @@ public class MuseumManager : MonoBehaviour
         return x >= 0 && x < size && y >= 0 && y < size;
     }
 
-    public void GenSquare(int xTop, int yTop, int xSize, int ySize, bool add = true)
+    public void GenSquare(int xTop, int yTop, int xSize, int ySize)
     {
         for(int x = xTop; x < xTop + xSize; x++)
         {
@@ -345,13 +319,22 @@ public class MuseumManager : MonoBehaviour
                 if (!InBounds(x, y, roomGrid.Length))
                     continue;
 
-                if(add)
-                    GenRoom(x, y);
-                else if (roomGrid[x][y] != null)
-                {
-                    Destroy(roomGrid[x][y].gameObject);
-                    roomGrid[x][y] = null;
-                }
+                GenRoom(x, y);
+            }
+        }
+    }
+
+    public void RemoveSquare(int xTop, int yTop, int xSize, int ySize)
+    {
+        for (int x = xTop; x < xTop + xSize; x++)
+        {
+            for (int y = yTop; y < yTop + ySize; y++)
+            {
+                if (!InBounds(x, y, roomGrid.Length))
+                    continue;
+
+                Destroy(roomGrid[x][y].gameObject);
+                roomGrid[x][y] = null;
             }
         }
     }
