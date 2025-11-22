@@ -23,7 +23,14 @@ public static class GlobalSettings
         set { textSizeMultplier = value; }
     }
 
+    public static bool AUTO_ITERATE_ON
+    {
+        get { return projectIterate; }
+        set { projectIterate = value; }
+    }
+
     private static float masterVolume = 1f;
     private static float musicVolume = 1f;
     private static float textSizeMultplier = 1f;
+    private static bool projectIterate = false;
 }

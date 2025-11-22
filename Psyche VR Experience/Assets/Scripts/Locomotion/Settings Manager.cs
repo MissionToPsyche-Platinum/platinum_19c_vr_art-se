@@ -144,4 +144,14 @@ public class LocomotionSettingsManager : MonoBehaviour
         float result = float.Parse(input);
         GlobalSettings.TEXT_SIZE_MULTIPLIER = result;
     }
+
+    public void AutoIterateOn()
+    {
+        GlobalSettings.AUTO_ITERATE_ON = true;
+    }
+
+    public void AutoIterateOff()
+    {
+        GlobalSettings.AUTO_ITERATE_ON = false;
+    }
 }
