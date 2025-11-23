@@ -29,9 +29,11 @@ public class MoveTestPlayer : MonoBehaviour
     protected float interactRange = 4f;
     protected float speed;
  
-    [SerializeField][Tooltip("The default speed the player moves at")] protected float standardSpeed = 5.0f;
+    [SerializeField][Tooltip("The default speed the player moves at")] 
+    protected float standardSpeed = 5.0f;
 
-    [SerializeField][Tooltip("The sprinting speed the player moves at")] protected float sprintSpeed = 9.0f;
+    [SerializeField][Tooltip("The sprinting speed the player moves at")] 
+    protected float sprintSpeed = 9.0f;
     protected int currentPerspective;
     private Vector2 cachedInputMovement;
 
