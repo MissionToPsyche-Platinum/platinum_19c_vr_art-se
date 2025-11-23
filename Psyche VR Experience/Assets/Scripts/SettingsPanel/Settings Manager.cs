@@ -182,4 +182,14 @@ public class SettingsManager : MonoBehaviour
         float result = float.Parse(input);
         GlobalSettings.INTERACTION_SIZE_MULTIPLER = result;
     }
+
+    public void SkyboxRotationToggleOn()
+    {
+        GlobalSettings.SKYBOX_ROTATION_ON = 1f;
+    }
+
+    public void SkyboxRotationToggleOff()
+    {
+        GlobalSettings.SKYBOX_ROTATION_ON = 0f;
+    }
 }

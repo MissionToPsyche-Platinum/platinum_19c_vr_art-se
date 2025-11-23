@@ -37,6 +37,14 @@ public static class GlobalSettings
         set { projectIterate = value; }
     }
 
+    public static float SKYBOX_ROTATION_ON
+    {
+        get { return rotationSpeed; }
+        set { rotationSpeed = value; }
+    }
+
+    private static float rotationSpeed = 1f;
+
     private static float masterVolume = 1f;
     private static float musicVolume = 1f;
     private static float textSizeMultplier = 1f;

@@ -65,9 +65,10 @@ public class FrameController : MonoBehaviour
     // Auto Iterate stuff.
     private Coroutine autoIterateRoutine;
     [SerializeField, Tooltip("Automatically start auto-iteration when play mode begins.")]
-    private bool autoIterateOnStart = true;
+    private bool autoIterateOnStart = false;
     [SerializeField, Tooltip("Seconds between automatic image switches when auto-iteration is running.")]
     private float autoIterationInterval = 5f;
+    private bool previousIterationSetting;
 
     // video/audio playback stuff
     private VideoPlayer videoPlayer; 
@@ -80,6 +81,8 @@ public class FrameController : MonoBehaviour
 
     void Awake()
     {
+        previousIterationSetting = autoIterateOnStart;
+
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
         fallbackTexture = Resources.Load<Texture2D>("Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color-JPG.jpg");
 
@@ -109,6 +112,11 @@ public class FrameController : MonoBehaviour
 
     void Update()
     {
+        if (previousIterationSetting != GlobalSettings.AUTO_ITERATE_ON)
+        {
+            previousIterationSetting = GlobalSettings.AUTO_ITERATE_ON;
+            ToggleAutoIteration();
+        }
 #if UNITY_EDITOR
         if (!Application.isPlaying)
         {
@@ -461,7 +469,7 @@ public class FrameController : MonoBehaviour
         }
         else
         {
-            StartAutoIteration(intervalSeconds);
+            if(mediaPaths.Count >1) StartAutoIteration(intervalSeconds);
         }
     }
 
