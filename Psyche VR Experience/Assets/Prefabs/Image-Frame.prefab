@@ -50,16 +50,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   imageQuadRenderer: {fileID: 5104714339005017673}
   frameMaterial: {fileID: 0}
+  artDesc: {fileID: 8103332796235549648}
   images:
   - {fileID: 2800000, guid: d53d9c3b011196a4eaecad247b6fe94d, type: 3}
   - {fileID: 2800000, guid: e0d6bc9165394bb499fc8fe1a0e95ff0, type: 3}
-  currentImageIndex: 0
+  mediaPaths: []
+  currentMediaIndex: 0
   scaleMode: 0
   baseResolution: {x: 1920, y: 1080}
   nominalImageHeight: 1
   borderThickness: 0.05
   frameDepth: 0.05
   scriptable: {fileID: 0}
+  fallbackTexture: {fileID: 0}
+  autoIterateOnStart: 0
+  autoIterationInterval: 5
+  enableAudio: 1
 --- !u!1 &2079116551191390766
 GameObject:
   m_ObjectHideFlags: 0
@@ -930,3 +936,14 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 3772672903167469650, guid: c8cc9b555a2b35e44897a07f24355cc0, type: 3}
   m_PrefabInstance: {fileID: 6533295991190214067}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8103332796235549648 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3088972539050122851, guid: c8cc9b555a2b35e44897a07f24355cc0, type: 3}
+  m_PrefabInstance: {fileID: 6533295991190214067}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

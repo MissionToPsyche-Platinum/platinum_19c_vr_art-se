@@ -302,8 +302,10 @@ public class RoomModule : MonoBehaviour
             {
                 GameObject frameObject = display.artFrames[i];
                 FrameController frame = frameObject.GetComponent<FrameController>();
+                // TextBoxController textbox =  frameObject.GetComponent<TextBoxController>();
 
                 frame.SetArtwork(art[start_index + i]);
+                frame.SetDescText(art[start_index + i]);
             }
             else if(display.artFrames.Length > i)
             {
