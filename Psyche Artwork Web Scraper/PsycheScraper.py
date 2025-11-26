@@ -987,7 +987,8 @@ def repair_media(verbose=True):
             print("   -", e)
 
     print("\n*** MEDIA REPAIR : COMPLETE ***\n")
-        
-init_db()
-scrapePsyche(verbose=True)
-repair_media(verbose=True)
+
+if __name__ == '__main__':
+    init_db()
+    scrapePsyche(verbose=True)
+    repair_media(verbose=True)

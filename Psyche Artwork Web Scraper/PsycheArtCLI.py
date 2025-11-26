@@ -18,6 +18,7 @@ q: Quit""")
         if in_str == '1':
             PsycheScraper.init_db()
             PsycheScraper.scrapePsyche()
+            PsycheScraper.repair_media()
         elif in_str == '2':
             add_art_file()
             pass
