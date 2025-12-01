@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Video;
 
@@ -13,6 +14,9 @@ public class FrameController : MonoBehaviour
 
     [Tooltip("Material for the frame borders (4 extruded squares to make up edges).")]
     [SerializeField] Material frameMaterial;
+    
+    [Tooltip("The text field that shows the art description.")]
+    [SerializeField] TextMeshProUGUI artDesc;
 
     [Header("Images")]
     [Tooltip("All images this frame can show. Only one is visible at a time. API is available.")]
@@ -165,6 +169,18 @@ public class FrameController : MonoBehaviour
             StartAutoIteration(autoIterationInterval);
         }
     }
+    
+    public void SetDescText(ArtworkData data)
+    {
+        string descText = "Title: " + data.artworkName + "\n" +
+                          "Artist's Name: " + data.artistName + "\n" +
+                          "Date: " + data.artworkDate + "\n" +
+                          "Artist's Major: " + data.artistMajor + "\n" +
+                          "Art Genre/Medium: " + data.genre + "\n" +
+                          "About the Work: " + data.artworkDescription;
+        artDesc.text = descText;
+        artDesc.color = Color.black;
+    }
 
     public void SetImageIndex(int index)
     {
@@ -195,7 +211,7 @@ public class FrameController : MonoBehaviour
         // Ensure valid index or display generic psyche logo instead
         if (mediaPaths == null || mediaPaths.Count == 0)
         {
-            Debug.LogWarning("[FrameController] No media found — using fallback image.");
+            Debug.LogWarning("[FrameController] No media found ï¿½ using fallback image.");
 
             ShowFallbackImage();
             return;
@@ -450,7 +466,7 @@ public class FrameController : MonoBehaviour
         autoIterateRoutine = StartCoroutine(AutoIterateCoroutine());
     }
 
-    // stops auto-iteration if it’s currently active.
+    // stops auto-iteration if itï¿½s currently active.
     public void StopAutoIteration()
     {
         if (autoIterateRoutine != null)
