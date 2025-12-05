@@ -30,15 +30,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 59136333583180410}
-  - {fileID: 3040171890163290119}
-  - {fileID: 696073883435195211}
-  - {fileID: 2715910284166788131}
-  - {fileID: 2681602628561538739}
-  - {fileID: 3292634749378394349}
-  - {fileID: 1864939036585581029}
-  - {fileID: 5577854255605465709}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &3843917025955005547
@@ -55,23 +47,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   roomType: 0
   roomModels:
-  - {fileID: 835919666629785792}
-  - {fileID: 2412535866388892349}
-  - {fileID: 208048691840582129}
-  - {fileID: 3385311291821731481}
-  - {fileID: 3349877466009850889}
-  - {fileID: 2808585289021137495}
-  - {fileID: 1344967156969833311}
-  - {fileID: 5053975875338606807}
+  - {fileID: 7277142410873737247, guid: c73026757e58e9847a932a9e33eb3429, type: 3}
+  - {fileID: 1874052868508126829, guid: 30e150ec6036628478af359bdb9373f5, type: 3}
+  - {fileID: 5303109755642214278, guid: 34ba11e8e9ff5da488f9fb20217525ef, type: 3}
+  - {fileID: 5949910478342969505, guid: b4b92b713972ebc40a82d10e9ca4f28d, type: 3}
+  - {fileID: 8023511351481100746, guid: 05c60c2478f6c2f40a58fe1681f5a1f0, type: 3}
+  - {fileID: 7116434444811588528, guid: 8f15812dbba2c914ebb43fa487536ac0, type: 3}
+  - {fileID: 3470039319190951384, guid: 6d83461a7e322504e8c196f827dc50f8, type: 3}
+  - {fileID: 2533214597889045791, guid: 81ab8d452ef049241a2474654c49c8c1, type: 3}
   artDisplayLists:
-  - {fileID: 7048544227728616098}
-  - {fileID: 4637061665382840043}
-  - {fileID: 7106231907886106136}
-  - {fileID: 5214852904158509196}
-  - {fileID: 8028805677496205464}
-  - {fileID: 72535033075944822}
-  - {fileID: 6084879602153111453}
-  - {fileID: 1556779979886535822}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   openNorth: 0
   openSouth: 0
   openWest: 0

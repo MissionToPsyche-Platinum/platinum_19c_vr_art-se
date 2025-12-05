@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 using static RoomModule;
 
@@ -14,16 +15,17 @@ public class RoomModule : MonoBehaviour
         TwoOpenStraight,
         ThreeOpen,
         FourOpen,
-        FlatOpen,
         TwoOpenLShapeFlat,
         ThreeOpenFlat,
+        FlatOpen,
         SIZE
     }
 
     public RoomType roomType = RoomType.OneOpen;
 
     public GameObject[] roomModels;
-    public ArtDisplayList[] artDisplayLists;
+    public GameObject room;
+    public ArtDisplayList display;
 
     //North is -Z, South is +Z, West is +X, East is -X
     public bool openNorth, openSouth, openWest, openEast;
@@ -75,44 +77,34 @@ public class RoomModule : MonoBehaviour
         {RoomType.TwoOpenStraight,   new RoomInfo(true, true, false, false, 2) },     
         {RoomType.ThreeOpen,   new RoomInfo(false, true, true, true, 1) },           
         {RoomType.FourOpen,   new RoomInfo(true, true, true, true, 0) },           
-        {RoomType.FlatOpen,   new RoomInfo(true, true, true, true, 0) },
         {RoomType.TwoOpenLShapeFlat, new RoomInfo(false, true, true, false, 2) },
-        {RoomType.ThreeOpenFlat,   new RoomInfo(false, true, true, true, 1) }
+        {RoomType.ThreeOpenFlat,   new RoomInfo(false, true, true, true, 1) },
+        {RoomType.FlatOpen,   new RoomInfo(true, true, true, true, 0) }
     };
 
     //number of openings in each room
     int[] roomOpeningCounts = new int[(int)RoomType.SIZE];
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Awake()
+    void CreateRoom()
     {
-        //SetupActiveRoom();
-    }
-
-    /// <summary>
-    /// Deactivates all room objects first and sets the roomType room to active. Useful for setup.
-    /// </summary>
-    /// <param name="nRoomType"></param>
-    private void SetupActiveRoom()
-    {
-        foreach (GameObject roomModel in roomModels)
+        if (room != null)
         {
-            roomModel.SetActive(false);
+            Destroy(room);
         }
 
-        roomModels[(int)roomType].gameObject.SetActive(true);
-        UpdateRoomOpenings();
+        room = Instantiate(roomModels[(int)roomType], transform);
+        display = room.GetComponent<ArtDisplayList>();
     }
-
+       
     /// <summary>
     /// Deactivates the previous room model and activates the model given. Then, sets the roomType property to the new value.
     /// </summary>
     /// <param name="nRoomType">The new room shape to use</param>
     public void SetRoomActive(RoomType nRoomType)
     {
-        roomModels[((int)roomType)].SetActive(false);
-        roomModels[(int)nRoomType].SetActive(true);
         roomType = nRoomType;
+
+        CreateRoom();
         UpdateRoomOpenings();
     }
 
@@ -127,9 +119,8 @@ public class RoomModule : MonoBehaviour
         {
             SetOrientation(roomOrientation, false);
         }
-        roomModels[((int)roomType)].gameObject.SetActive(false);
-        roomModels[(int)nRoomType].gameObject.SetActive(true);
         roomType = nRoomType;
+        CreateRoom();
         UpdateRoomOpenings();
     }
 
@@ -207,7 +198,6 @@ public class RoomModule : MonoBehaviour
             UpdateRoomOpenings();
     }
 
-
     int CountNumDirections(bool[] directions)
     {
         int count = 0;
@@ -263,7 +253,7 @@ public class RoomModule : MonoBehaviour
         return rooms[0];
     }
 
-    public void SetOpenings(bool north, bool south, bool west, bool east)
+    public void SetOpenings(bool north, bool south, bool west, bool east, bool autoSetRoom = true)
     {
         bool[] directions = new bool[4] { north, south, west, east };
 
@@ -289,7 +279,10 @@ public class RoomModule : MonoBehaviour
             }
         }
 
-        SetRoomActive(room, dir);
+        if (autoSetRoom)
+            SetRoomActive(room, dir);
+        else
+            SetOrientation(dir);
     }
 
     public int GetNumArtDisplays()
@@ -298,94 +291,48 @@ public class RoomModule : MonoBehaviour
     }
 
     /// <summary>
-    /// Set each art display in the room module to some random artwork
+    /// Set some number of frames in the room to art from the given list, starting from start_index and iterating along numSet times.
     /// </summary>
     /// <returns>Number of art displays set.</returns>
-    public int SetArtDisplays(int numSet)
+    public async Awaitable SetArtDisplays(int numSet, List<ArtworkData> art = null, int start_index = 0, bool async = false, float delay = 0.1f)
     {
-        for (int i = 0; i < artDisplayLists[(int)roomType].artFrames.Length; i++)
+        for (int i = 0; i < display.artFrames.Length; i++)
         {
             if(i < numSet)
             {
-                GameObject frameObject = artDisplayLists[(int)roomType].artFrames[i];
+                GameObject frameObject = display.artFrames[i];
                 FrameController frame = frameObject.GetComponent<FrameController>();
+                // TextBoxController textbox =  frameObject.GetComponent<TextBoxController>();
 
-                //TODO: integrate this with middleware
+                frame.SetArtwork(art[start_index + i]);
+                frame.SetDescText(art[start_index + i]);
             }
-            else if(artDisplayLists[(int)roomType].artFrames.Length > i)
+            else if(display.artFrames.Length > i)
             {
-                GameObject frameObject = artDisplayLists[(int)roomType].artFrames[i];
+                GameObject frameObject = display.artFrames[i];
 
                 if(frameObject != null)
                     frameObject.gameObject.SetActive(false);
             }
+
+            if(async)
+                await Awaitable.WaitForSecondsAsync(delay);
         }
 
-        return this.roomInfos[this.roomType].numArt;
     }
+
     /// finds the active room model variant and returns it
-        /// prefers roomModels[(int)roomType], but safely falls back to any active model.
-        public GameObject GetActiveModelRoot()
-        {
-            // roomModels[(int)roomType] is the one we actively set, but also check activeSelf
-            var go = roomModels[(int)roomType];
-            if (go != null && go.activeSelf) return go;
+    /// prefers roomModels[(int)roomType], but safely falls back to any active model.
+    public GameObject GetActiveModelRoot()
+    {
+        // roomModels[(int)roomType] is the one we actively set, but also check activeSelf
+        var go = roomModels[(int)roomType];
+        if (go != null && go.activeSelf) return go;
 
-            // find any active in case something changed externally(shouldn't happen in any normal circumstance)
-            foreach (var m in roomModels)
-                if (m != null && m.activeSelf) return m;
+        // find any active in case something changed externally(shouldn't happen in any normal circumstance)
+        foreach (var m in roomModels)
+            if (m != null && m.activeSelf) return m;
 
-            return null;
-        }
-
-        /// adds the active room's FrameController components(not the gameobject containing the framecontroller)
-        /// <param name="outList">Destination list (is not to be cleared, is cumulative).</param>
-        /// <param name="includeInactive">Include components on inactive objects.(generally false, used for testing/debugging)</param>
-        public int CollectActiveFrameControllers(List<FrameController> outList, bool includeInactive = false)
-        {
-            if (outList == null) return 0;
-
-            var activeRoot = GetActiveModelRoot();
-            if (!activeRoot) return 0;
-
-            int before = outList.Count;
-
-            var frames = activeRoot.GetComponentsInChildren<FrameController>(includeInactive: true);
-            foreach (var fc in frames)
-            {
-                if (!fc) continue;
-                if (!includeInactive && !fc.gameObject.activeInHierarchy) continue;
-                outList.Add(fc);
-            }
-
-            return outList.Count - before;
-        }
-
-        /// adds active room's "Image-Frame-X" Transforms to the input list.
-        /// by default, it looks for FrameController components,
-        /// returns how many were added.
-        /// the transforms will be useful later for proximity based rendering, if we go that route.
-        /// could also add in some sort of grouping mechanism based on proximity if we need one.
-        /// <param name="outList">destination list (NOT cleared on run).</param>
-        /// <param name="includeInactive">include objects that are inactive in hierarchy?(debugging mostly)</param>
-        public int CollectActiveDisplayTransforms(List<Transform> outList, bool includeInactive = false)
-        {
-            if (outList == null) return 0;
-
-            var activeRoot = GetActiveModelRoot();
-            if (!activeRoot) return 0;
-
-            int before = outList.Count;
-
-            // find transforms that have a FrameController component(parent object in display prefab has the script)
-            var frameControllers = activeRoot.GetComponentsInChildren<FrameController>(includeInactive: true);
-            foreach (var fc in frameControllers)
-            {
-                if (!fc) continue;
-                if (!includeInactive && !fc.gameObject.activeInHierarchy) continue;
-                outList.Add(fc.transform);
-            }
-
-            return outList.Count - before;
-        }
+        return null;
+    }
 }
