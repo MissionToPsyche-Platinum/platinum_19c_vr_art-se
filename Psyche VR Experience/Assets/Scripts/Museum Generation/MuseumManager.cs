@@ -146,7 +146,8 @@ public class MuseumManager : MonoBehaviour
             roomGrid[i] = new RoomModule[size];
         }
 
-        placedRoomTransforms.Clear();
+        //TEMP COMMENT Cade Tanner 1/14/26. Working on this bug
+        //placedRoomTransforms.Clear();
     }
 
     public void AlignAllRooms()
@@ -383,7 +384,8 @@ public class MuseumManager : MonoBehaviour
         roomGrid[x][y].transform.position = new Vector3(x * roomSize, 0, y * roomSize);
 
         //Track the placed room's transform so other systems can use it as a spawn/location reference
-        placedRoomTransforms.Add(roomGrid[x][y].transform);
+        //TEMP COMMENT 1/14/26 Cade Tanner. Currently working on this bug
+        //placedRoomTransforms.Add(roomGrid[x][y].transform);
     }
 
     public void AutoOpening(int x, int y)

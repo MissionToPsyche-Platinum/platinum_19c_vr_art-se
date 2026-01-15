@@ -17,8 +17,9 @@ public class MoveTestPlayer : MonoBehaviour
     protected bool toggledSprintAction = false;
     protected Rigidbody rb;
 
-    [SerializeField][Tooltip ("Add the SpawnPoint Controller object here")]
-    protected SpawnController spawnController;
+    //TEMP DISABLE 1/14/26 CADE TANNER
+    //[SerializeField][Tooltip ("Add the SpawnPoint Controller object here")]
+    //protected SpawnController spawnController;
 
     [SerializeField][Tooltip("Add the Player Camera object here")]
     protected Camera playerCamera;
@@ -188,7 +189,8 @@ public class MoveTestPlayer : MonoBehaviour
     //Gives us our current perspective for the camera.
     int CurrentPerspectiveListener()
     {
-        currentPerspective = spawnController.GetCurrentPerspective();
+        //TEMP DISABLE CADE TANNER 1/14/26 working on the fix
+        //currentPerspective = spawnController.GetCurrentPerspective();
         return currentPerspective;
     }
     
