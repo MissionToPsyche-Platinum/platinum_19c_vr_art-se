@@ -1,5 +1,8 @@
+using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.Video;
 
 public class FrameController : MonoBehaviour
 {
@@ -11,13 +14,18 @@ public class FrameController : MonoBehaviour
 
     [Tooltip("Material for the frame borders (4 extruded squares to make up edges).")]
     [SerializeField] Material frameMaterial;
+    
+    [Tooltip("The text field that shows the art description.")]
+    [SerializeField] TextMeshProUGUI artDesc;
 
     [Header("Images")]
     [Tooltip("All images this frame can show. Only one is visible at a time. API is available.")]
     [SerializeField] List<Texture2D> images = new List<Texture2D>();
+    [SerializeField] private List<string> mediaPaths = new List<string>();
+    private Texture2D lastLoadedImage = null; // for use in unloading previous texture from memory
 
     [Tooltip("Index into Images to show.")]
-    [SerializeField] int currentImageIndex = 0;
+    [SerializeField] int currentMediaIndex = 0;
 
     [Header("Aspect & Sizing")]
     [Tooltip("How overall frame scale is derived from resolution vs Base Resolution.")]
@@ -40,6 +48,11 @@ public class FrameController : MonoBehaviour
     [Tooltip("The scriptable object containing the piece's path and data. (This is not included in functionality nor in the API atm)")]
     [SerializeField] Object scriptable = null;
 
+    [Header("Fallback Texture")]
+    [Tooltip("An image to display if the frame has nothing to display within itself due to errors or the media being audio only")]
+    [SerializeField] Texture2D fallbackTexture;
+
+
     // names for borders
     const string BORDER_PARENT = "Borders";
     const string TOP = "Top";
@@ -53,9 +66,32 @@ public class FrameController : MonoBehaviour
     // per-renderer property block for per-instance textures
     MaterialPropertyBlock _mpb;
 
+    // Auto Iterate stuff.
+    private Coroutine autoIterateRoutine;
+    [SerializeField, Tooltip("Automatically start auto-iteration when play mode begins.")]
+    private bool autoIterateOnStart = false;
+    [SerializeField, Tooltip("Seconds between automatic image switches when auto-iteration is running.")]
+    private float autoIterationInterval = 5f;
+    private bool previousIterationSetting;
+
+    // video/audio playback stuff
+    private VideoPlayer videoPlayer; 
+    private RenderTexture videoTexture;
+    private bool isVideoMode = false;
+    private double currentVideoDuration = 0.0;  // video duration for auto-iteration
+    private AudioSource audioSource;
+    [SerializeField] private bool enableAudio = true; //optional toggle 
+
+
     void Awake()
     {
+        previousIterationSetting = autoIterateOnStart;
+
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
+        fallbackTexture = Resources.Load<Texture2D>("Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color-JPG.jpg");
+
+        if (fallbackTexture == null)
+            Debug.LogError("Fallback image missing! Add it at Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color-PNG.png");
     }
 
     void OnValidate()
@@ -63,7 +99,7 @@ public class FrameController : MonoBehaviour
         borderThickness = Mathf.Max(0.0001f, borderThickness);
         frameDepth = Mathf.Max(0.0f, frameDepth);
         nominalImageHeight = Mathf.Max(0.001f, nominalImageHeight);
-        currentImageIndex = Mathf.Clamp(currentImageIndex, 0, Mathf.Max(0, images.Count - 1));
+        currentMediaIndex = Mathf.Clamp(currentMediaIndex, 0, Mathf.Max(0, mediaPaths.Count - 1));
         ApplyAll();
     }
 
@@ -80,6 +116,11 @@ public class FrameController : MonoBehaviour
 
     void Update()
     {
+        if (previousIterationSetting != GlobalSettings.AUTO_ITERATE_ON)
+        {
+            previousIterationSetting = GlobalSettings.AUTO_ITERATE_ON;
+            ToggleAutoIteration();
+        }
 #if UNITY_EDITOR
         if (!Application.isPlaying)
         {
@@ -93,85 +134,211 @@ public class FrameController : MonoBehaviour
     {
         if (data == null) return;
 
-        List<Texture2D> textures = data.LoadTextures();
-        if (textures.Count > 0)
+        // store the paths for potential video playback as well
+        // while filtering out missing files(in case db got some bad entries)
+        var validated = new List<string>();
+        foreach (string relPath in data.artworkURLs)
         {
-            images = textures; 
-            currentImageIndex = 0;
-            ApplyAll();
+            string full = ResolveFullPath(relPath);
+            if (!string.IsNullOrEmpty(full) && System.IO.File.Exists(full))
+            {
+                validated.Add(relPath);
+            }
+            else
+            {
+                Debug.LogWarning($"[FrameController] Removing missing media file from list: {relPath}");
+            }
         }
+        mediaPaths = validated;
+
+        currentMediaIndex = 0;
+        ApplyAll();     // will now decide image vs video properly
+
 
         //rotate the image quad 180(images are all backwards)
         if (imageQuadRenderer != null)
         {
             imageQuadRenderer.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
         }
+
         // @TODO assign UI text fields
+
+        // if enabled, automatically begin iterating once at least one valid media file is set
+        if (autoIterateOnStart && mediaPaths.Count > 1)
+        {
+            StartAutoIteration(autoIterationInterval);
+        }
+    }
+    
+    public void SetDescText(ArtworkData data)
+    {
+        string descText = "Title: " + data.artworkName + "\n" +
+                          "Artist's Name: " + data.artistName + "\n" +
+                          "Date: " + data.artworkDate + "\n" +
+                          "Artist's Major: " + data.artistMajor + "\n" +
+                          "Art Genre/Medium: " + data.genre + "\n" +
+                          "About the Work: " + data.artworkDescription;
+        artDesc.text = descText;
+        artDesc.color = Color.black;
     }
 
     public void SetImageIndex(int index)
     {
-        if (images == null || images.Count == 0) return;
-        currentImageIndex = Mathf.Clamp(index, 0, images.Count - 1);
+        if (mediaPaths == null || mediaPaths.Count == 0) return;
+        currentMediaIndex = Mathf.Clamp(index, 0, mediaPaths.Count - 1);
         ApplyAll();
     }
 
     public void NextImage()
     {
-        if (images == null || images.Count == 0) return;
-        currentImageIndex = (currentImageIndex + 1) % images.Count;
+        if (mediaPaths == null || mediaPaths.Count == 0) return;
+        currentMediaIndex = (currentMediaIndex + 1) % mediaPaths.Count;
         ApplyAll();
     }
 
     public void PreviousImage()
     {
-        if (images == null || images.Count == 0) return;
-        currentImageIndex = (currentImageIndex - 1 + images.Count) % images.Count;
+        if (mediaPaths == null || mediaPaths.Count == 0) return;
+        currentMediaIndex = (currentMediaIndex - 1 + mediaPaths.Count) % mediaPaths.Count;
         ApplyAll();
     }
 
-    /*  CORE FUNCTIONALITY  */
     void ApplyAll()
     {
         if (!imageQuadRenderer) return;
+        if (_mpb == null) _mpb = new MaterialPropertyBlock();
 
-        var tex = (images != null && images.Count > 0) ? images[Mathf.Clamp(currentImageIndex, 0, images.Count - 1)] : null;
+        // Ensure valid index or display generic psyche logo instead
+        if (mediaPaths == null || mediaPaths.Count == 0)
+        {
+            Debug.LogWarning("[FrameController] No media found � using fallback image.");
 
-        // set texture via MaterialPropertyBlock (per-renderer), not sharedMaterial as it was
+            ShowFallbackImage();
+            return;
+        }
+
+        if (currentMediaIndex < 0 || currentMediaIndex >= mediaPaths.Count)
+            currentMediaIndex = 0;
+
+        string raw = mediaPaths[currentMediaIndex];
+        string fullPath = ResolveFullPath(raw);
+        
+        
+        if (IsAudioFile(fullPath))
+        {
+            Debug.LogWarning($"[FrameController] Skipping audio file: {raw}");
+            NextImage();   // automatically go to next file
+            return;
+        }
+
+        // VIDEO MODE?
+        if (IsVideoFile(fullPath))
+        {
+            ShowVideo(fullPath);
+            return;
+        }
+
+        // IMAGE MODE
+        StopVideoIfNeeded();
+        currentVideoDuration = 0.0;
+        Texture2D tex = LoadImage(fullPath);
+
+        // destroy previous texture, if any
+        if (lastLoadedImage != null)
+        {
+            Destroy(lastLoadedImage);
+        }
+
+        lastLoadedImage = tex;
+
         imageQuadRenderer.GetPropertyBlock(_mpb);
-
-        // Try both common property names to be robust across shaders (URP Lit vs legacy)
-        if (tex != null)
-        {
-            _mpb.SetTexture("_BaseMap", tex);
-            _mpb.SetTexture("_MainTex", tex);
-        }
-        else
-        {
-            // clear if no texture
-            _mpb.SetTexture("_BaseMap", null);
-            _mpb.SetTexture("_MainTex", null);
-        }
-
+        _mpb.SetTexture("_BaseMap", tex);
+        _mpb.SetTexture("_MainTex", tex);
         imageQuadRenderer.SetPropertyBlock(_mpb);
 
-        // compute the aspect ratio and then set image quad local scale
-        Vector2Int resolution = tex ? new Vector2Int(tex.width, tex.height) : baseResolution;
-        float aspectRatio = resolution.x / (float)resolution.y; // width / height
-        float imgHeight = nominalImageHeight;
-        float imgWidth = imgHeight * aspectRatio;
-
-        Transform quadT = imageQuadRenderer.transform;
-        quadT.localScale = new Vector3(imgWidth, imgHeight, 1f);
-
-        // builds/updates border geometry
-        EnsureBorders();
-        UpdateBorders(imgWidth, imgHeight);
-
-        // scale entire frame based on resolution vs base(reference) resolution
-        float overallScale = ComputeResolutionScale(resolution, baseResolution, scaleMode);
-        transform.localScale = new Vector3(overallScale, overallScale, overallScale);
+        // Sizing based on the current texture
+        Vector2Int res = tex ? new(tex.width, tex.height) : baseResolution;
+        ResizeFrame(res);
     }
+
+    /* --------------------------------------------------------------
+     * PATH RESOLUTION + SAFE IMAGE LOADING
+     * -------------------------------------------------------------- */
+
+    private string ResolveFullPath(string raw)
+    {
+        if (string.IsNullOrEmpty(raw)) return null;
+
+        raw = raw.Replace('\\', '/');
+
+        if (System.IO.Path.IsPathRooted(raw))
+            return raw;
+
+        if (raw.StartsWith("Assets/"))
+        {
+            string relative = raw.Substring("Assets/".Length);
+            return System.IO.Path.Combine(Application.dataPath, relative);
+        }
+
+        return System.IO.Path.Combine(Application.dataPath, raw);
+    }
+
+
+    private Texture2D LoadImage(string path)
+    {
+        if (!System.IO.File.Exists(path))
+        {
+            Debug.LogWarning("[FrameController] Image not found: " + path);
+            return null;
+        }
+
+        byte[] bytes = System.IO.File.ReadAllBytes(path);
+        Texture2D tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+        tex.LoadImage(bytes);
+        return tex;
+    }
+
+    private void ShowFallbackImage()
+    {
+        if (fallbackTexture == null)
+            return;
+
+        videoPlayer.Stop();
+        imageQuadRenderer.enabled = true;
+        videoPlayer.gameObject.SetActive(false);
+
+        // apply the fallback texture
+        imageQuadRenderer.sharedMaterial.mainTexture = fallbackTexture;
+
+        // adjust quad aspect ratio if needed
+        float aspect = (float)fallbackTexture.width / fallbackTexture.height;
+        imageQuadRenderer.transform.localScale = new Vector3(aspect, 1f, 1f);
+    }
+
+
+    /* --------------------------------------------------------------
+     * FRAME SCALE AND RESOLUTION
+     * -------------------------------------------------------------- */
+
+    private void ResizeFrame(Vector2Int resolution)
+    {
+        float aspect = resolution.x / (float)resolution.y;
+        float height = nominalImageHeight;
+        float width = height * aspect;
+
+        // scale the quad
+        Transform quadT = imageQuadRenderer.transform;
+        quadT.localScale = new Vector3(width, height, 1f);
+
+        // rebuild borders
+        EnsureBorders();
+        UpdateBorders(width, height);
+
+        // global scale
+        float overall = ComputeResolutionScale(resolution, baseResolution, scaleMode);
+        transform.localScale = new Vector3(overall, overall, overall);
+    }
+
 
     float ComputeResolutionScale(Vector2Int resolution, Vector2Int baseResolution, ScaleMode scaleMode)
     {
@@ -271,4 +438,216 @@ public class FrameController : MonoBehaviour
             qt.localPosition = new Vector3(0f, 0f, -0.001f);
         }
     }
+
+    /* --------------------------------------------------------------
+     *                      AUTO ITERATION
+     * -------------------------------------------------------------- */
+
+
+    // safe getter for media paths
+    public string GetMediaPath(int index)
+    {
+        if (mediaPaths == null || index < 0 || index >= mediaPaths.Count)
+            return null;
+        return mediaPaths[index];
+    }
+
+    /// Starts automatic image cycling for this frame.
+    /// <param name="intervalSeconds">time in seconds between each image switch.</param>
+    public void StartAutoIteration(float intervalSeconds = -1f)
+    {
+        // if there isn't more than one art path, don't start the routine.
+        if (!(mediaPaths.Count > 1)) return;
+        // will update the variable, otherwise 5
+        if (intervalSeconds > 0f)
+            autoIterationInterval = intervalSeconds;
+
+        StopAutoIteration(); // ensure no duplicate coroutines
+        autoIterateRoutine = StartCoroutine(AutoIterateCoroutine());
+    }
+
+    // stops auto-iteration if it�s currently active.
+    public void StopAutoIteration()
+    {
+        if (autoIterateRoutine != null)
+        {
+            StopCoroutine(autoIterateRoutine);
+            autoIterateRoutine = null;
+        }
+    }
+
+    // toggles for auto iteration 
+    public void ToggleAutoIteration(float intervalSeconds = -1f)
+    {
+        if (autoIterateRoutine != null)
+        {
+            StopAutoIteration();
+        }
+        else
+        {
+            if(mediaPaths.Count >1) StartAutoIteration(intervalSeconds);
+        }
+    }
+
+    // coroutine instance
+    // (only handles images rn. Need to add video functionality before I add waiting for videos to finish)
+    private IEnumerator AutoIterateCoroutine()
+    {
+        while (true)
+        {
+            // for videos: wait for the video's true length
+            if (isVideoMode && videoPlayer != null && videoPlayer.length > 0)
+            {
+                yield return new WaitForSeconds((float)currentVideoDuration);
+            }
+            else
+            {
+                // For images
+                yield return new WaitForSeconds(autoIterationInterval);
+            }
+
+            currentMediaIndex = (currentMediaIndex + 1) % mediaPaths.Count;
+            ApplyAll();
+        }
+    }
+
+
+    /* --------------------------------------------------------------
+    *                   VIDEO AND AUDIO HANDLING
+    * -------------------------------------------------------------- */
+
+
+    // helper for detecting videofile(just checks the extension)
+    private bool IsVideoFile(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return false;
+        string ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
+        return ext == ".mp4" || ext == ".mov" || ext == ".m4v" || ext == ".avi" || ext == ".webm";
+    }
+    private bool IsAudioFile(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return false;
+        string ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
+        return ext == ".mp3" || ext == ".wav" || ext == ".m4a" || ext == ".ogg" || ext == ".flac";
+    }
+
+    //
+    private void OnVideoPrepared(VideoPlayer vp)
+    {
+        vp.prepareCompleted -= OnVideoPrepared;
+
+        int w = (int)vp.width;
+        int h = (int)vp.height;
+
+        // Correct RenderTexture size
+        if (videoTexture == null || videoTexture.width != w || videoTexture.height != h)
+        {
+            if (videoTexture != null) videoTexture.Release();
+            videoTexture = new RenderTexture(w, h, 0);
+        }
+
+        vp.targetTexture = videoTexture;
+
+        // Apply to quad
+        imageQuadRenderer.GetPropertyBlock(_mpb);
+        _mpb.SetTexture("_BaseMap", videoTexture);
+        _mpb.SetTexture("_MainTex", videoTexture);
+        imageQuadRenderer.SetPropertyBlock(_mpb);
+
+        // store the real duration for auto-iteration
+        currentVideoDuration = vp.length;
+        vp.Play();
+
+        if (enableAudio && audioSource != null) audioSource.Play();
+
+        ResizeFrame(new Vector2Int(w, h));
+    }
+
+
+    private void StopVideoIfNeeded()
+    {
+        if (videoPlayer != null)
+            videoPlayer.Stop();
+
+        if (audioSource != null)
+            audioSource.Stop();
+
+        isVideoMode = false;
+    }
+
+    private void ShowVideo(string fullPath)
+    {
+        // stop any currently running video
+        StopVideoIfNeeded();
+
+        // free last image texture if switching to video
+        if (lastLoadedImage != null)
+        {
+            Destroy(lastLoadedImage);
+            lastLoadedImage = null;
+        }
+
+        // start playing this video
+        PlayVideo(fullPath);
+
+        // mark that we are now in video mode
+        isVideoMode = true;
+    }
+
+
+
+    private void PlayVideo(string fullPath)
+    {
+        if (!System.IO.File.Exists(fullPath))
+        {
+            Debug.LogWarning("[FrameController] Video not found: " + fullPath);
+            return;
+        }
+
+        if (videoPlayer == null)
+        {
+            videoPlayer = gameObject.AddComponent<VideoPlayer>();
+            videoPlayer.playOnAwake = false;
+            videoPlayer.renderMode = VideoRenderMode.RenderTexture;
+            videoPlayer.waitForFirstFrame = true;
+            videoPlayer.isLooping = false;
+        }
+
+        // Setup audio
+        if (enableAudio)
+        {
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+                audioSource.playOnAwake = false;
+                audioSource.spatialBlend = 1f;                  // Make audio 3D
+                audioSource.rolloffMode = AudioRolloffMode.Linear;
+                audioSource.minDistance = .5f;                  // Start fading out
+                audioSource.maxDistance = 3f;                   // ~silent by this distance
+                audioSource.dopplerLevel = 0f;                  // Avoid doppler shift
+                audioSource.loop = false;                       // no looping ever please
+                audioSource.spread = 0f;                        // 0 = more directional  
+            }
+
+            videoPlayer.audioOutputMode = VideoAudioOutputMode.AudioSource;
+            videoPlayer.EnableAudioTrack(0, true);
+            videoPlayer.SetTargetAudioSource(0, audioSource);
+        }
+        else
+        {
+            videoPlayer.audioOutputMode = VideoAudioOutputMode.None;
+        }
+
+        // Assign video path
+        videoPlayer.url = fullPath;
+
+        // Only register ONCE
+        videoPlayer.prepareCompleted -= OnVideoPrepared;
+        videoPlayer.prepareCompleted += OnVideoPrepared;
+
+        videoPlayer.Prepare();
+        isVideoMode = true;
+    }
+
+
 }

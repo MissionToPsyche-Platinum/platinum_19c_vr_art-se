@@ -2118,6 +2118,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Settings Menu Interaction",
+                    "type": "Value",
+                    "id": "204baf97-5f36-499c-9030-8f7b5c90842e",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -2431,8 +2440,8 @@
                 },
                 {
                     "name": "",
-                    "id": "76382bb1-2a7d-478a-94f0-02c99e61aaa9",
-                    "path": "<XRController>{RightHand}/{PrimaryTrigger}",
+                    "id": "5567f56d-34d5-41b0-9cec-bbf6f1307135",
+                    "path": "<XRController>{RightHand}/{PrimaryButton}",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -2442,12 +2451,12 @@
                 },
                 {
                     "name": "",
-                    "id": "5567f56d-34d5-41b0-9cec-bbf6f1307135",
-                    "path": "<XRController>{RightHand}/{PrimaryButton}",
+                    "id": "dd0e5f7f-765d-4034-8dc4-2fb42f551752",
+                    "path": "<XRController>{RightHand}/{Primary2DAxis}",
                     "interactions": "",
-                    "processors": "",
+                    "processors": "StickDeadzone(max=1)",
                     "groups": "",
-                    "action": "Menu Select",
+                    "action": "Settings Menu Interaction",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
