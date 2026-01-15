@@ -3456,6 +3456,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "POVSwap",
+                    "type": "Button",
+                    "id": "af1e2768-93f9-4e38-b445-4a18b94465e8",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -3566,6 +3575,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Descend",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b31af25e-d1b3-447b-8e50-520c2947a745",
+                    "path": "<Keyboard>/z",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "POVSwap",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

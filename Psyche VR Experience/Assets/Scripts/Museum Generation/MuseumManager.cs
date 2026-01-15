@@ -122,6 +122,7 @@ public class MuseumManager : MonoBehaviour
         InitMuseum(chunkSize * numChunks);
 
         Vector2Int startPos = new Vector2Int(numChunks/2, 0);
+        Debug.Log("Starting Position: " + startPos.x + " " + startPos.y);
         bool[][] chunksTraversed = new bool[numChunks][];
 
         for(int i = 0; i < chunksTraversed.Length; i++) { chunksTraversed[i] = new bool[numChunks]; }
@@ -140,8 +141,12 @@ public class MuseumManager : MonoBehaviour
     {
         roomGrid = new RoomModule[size][];
 
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < size; i++) 
+        {
             roomGrid[i] = new RoomModule[size];
+        }
+
+        placedRoomTransforms.Clear();
     }
 
     public void AlignAllRooms()
@@ -166,7 +171,6 @@ public class MuseumManager : MonoBehaviour
     {
         int startX = chunkX * chunkSize;
         int startY = chunkY * chunkSize;
-
         int roomIndex = Random.Range(0, patterns.Length);
 
         RoomPattern pattern = patterns[roomIndex];
@@ -377,6 +381,9 @@ public class MuseumManager : MonoBehaviour
         roomGrid[x][y] = Instantiate(roomModulePrefab);
 
         roomGrid[x][y].transform.position = new Vector3(x * roomSize, 0, y * roomSize);
+
+        //Track the placed room's transform so other systems can use it as a spawn/location reference
+        placedRoomTransforms.Add(roomGrid[x][y].transform);
     }
 
     public void AutoOpening(int x, int y)
