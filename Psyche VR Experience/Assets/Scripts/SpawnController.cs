@@ -29,7 +29,7 @@ public class SpawnController : MonoBehaviour
     void Start()
     {
         //Task 188, Grab the position of a placed tile and set players spawn location to that point.
-        Vector3 spawnPosition = MuseumManagerTracker.PlacedRoomTransforms[0].position;
+        Vector3 spawnPosition = MuseumManagerTracker.roomGrid[0][0].transform.position;
         transform.position = spawnPosition;
         Debug.Log("SpawnController moved to position " + transform.position);
         if (spawnPosition != null) 
