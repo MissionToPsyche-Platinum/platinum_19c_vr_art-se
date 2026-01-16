@@ -17,8 +17,10 @@ public class ContinuousLocomotion : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
-        volume = GetComponent<Volume>();
-        volume.profile.TryGet(out vignette);
+       if (volume.profile.TryGet(out vignette))
+       {
+            vignette.intensity.value = 0f;
+       }
     }
 
     // Update is called once per frame
@@ -34,6 +36,7 @@ public class ContinuousLocomotion : MonoBehaviour
         // skip if there is not much input
         if (input.magnitude > 0.01f)
         {
+            Debug.Log("INPUT: " + input.magnitude);
             Vector3 movementDirection = new Vector3(input.x, 0f, input.y);
             Vector3 cameraDirection = new Vector3(cameraTransform.forward.x, 0f, cameraTransform.forward.z).normalized;
             
