@@ -37,6 +37,13 @@ public class FrameController : MonoBehaviour
     [Tooltip("Nominal image height in local units before resolution scaling (the script scales from here).")]
     [SerializeField] float nominalImageHeight = 1.0f;
 
+    [Header("Max Frame Size Clamp")]
+    [Tooltip("If true, forces a clamp on displayed quad size so it can't exceed a percentage of the base-resolution-derived size.")]
+    [SerializeField] private bool clampMaxFrameSize = true;
+
+    [Tooltip("Max size multiplier relative to the base resolution scale (1 = same as base, 0.8 = 80%, 1.5 = 150%).")]
+    [SerializeField, Range(0.1f, 5f)] private float maxFrameScalePercent = 1.0f;
+
     [Header("Frame Geometry")]
     [Tooltip("Frame border thickness around visible image (in local units).")]
     [SerializeField] float borderThickness = 0.05f;
@@ -323,8 +330,30 @@ public class FrameController : MonoBehaviour
     private void ResizeFrame(Vector2Int resolution)
     {
         float aspect = resolution.x / (float)resolution.y;
+
+        // quad size BEFORE clamp
         float height = nominalImageHeight;
         float width = height * aspect;
+
+        // clamping logic(enforce maximum scale)
+        if (clampMaxFrameSize)
+        {
+            float baseAspect = baseResolution.x / (float)baseResolution.y;
+
+            // base quad size
+            float baseHeight = nominalImageHeight;
+            float baseWidth = baseHeight * baseAspect;
+
+            // allowed percentage scale from base quad size
+            float maxH = baseHeight * maxFrameScalePercent;
+            float maxW = baseWidth * maxFrameScalePercent;
+
+            // if computed quad exceeds either bound, scale down uniformly(maintain aspect ratio but scale down)
+            float scaleDown = Mathf.Min(1f, maxW / width, maxH / height);
+            width *= scaleDown;
+            height *= scaleDown;
+        }
+
 
         // scale the quad
         Transform quadT = imageQuadRenderer.transform;
