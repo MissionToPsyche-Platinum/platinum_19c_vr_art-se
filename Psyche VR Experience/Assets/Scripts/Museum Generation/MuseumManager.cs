@@ -14,6 +14,7 @@ public class MuseumManager : MonoBehaviour
     const float roomSize = 5;
 
     public RoomModule[][] roomGrid;
+    public Transform firstRoom;
 
     [SerializeField] string dbPathOverride = null;
 
@@ -109,8 +110,6 @@ public class MuseumManager : MonoBehaviour
 
         int chunkCount = (int)(result + 1);
 
-
-
         return chunkCount;
     }
 
@@ -145,8 +144,6 @@ public class MuseumManager : MonoBehaviour
         {
             roomGrid[i] = new RoomModule[size];
         }
-
-        placedRoomTransforms.Clear();
     }
 
     public void AlignAllRooms()
@@ -373,6 +370,7 @@ public class MuseumManager : MonoBehaviour
         if (!InBounds(x, y, roomGrid.Length) || roomGrid[x][y] != null)
             return;
 
+
         if(roomModulePrefab == null)
         {
             LoadModuleAsset();
@@ -382,8 +380,10 @@ public class MuseumManager : MonoBehaviour
 
         roomGrid[x][y].transform.position = new Vector3(x * roomSize, 0, y * roomSize);
 
-        //Track the placed room's transform so other systems can use it as a spawn/location reference
-        placedRoomTransforms.Add(roomGrid[x][y].transform);
+        if(firstRoom == null)
+        {
+            firstRoom = roomGrid[x][y].transform;
+        }
     }
 
     public void AutoOpening(int x, int y)

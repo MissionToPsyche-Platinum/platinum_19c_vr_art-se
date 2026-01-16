@@ -26,10 +26,10 @@ public class SpawnController : MonoBehaviour
     protected int currentPerspective; //0 is VR, 1 is M&K, 2 is Freeroam
 
     [SerializeField] protected MuseumManager MuseumManagerTracker;    
-    void Start()
+    void Awake()
     {
         //Task 188, Grab the position of a placed tile and set players spawn location to that point.
-        Vector3 spawnPosition = MuseumManagerTracker.PlacedRoomTransforms[0].position;
+        Vector3 spawnPosition = MuseumManagerTracker.firstRoom.position;
         transform.position = spawnPosition;
         Debug.Log("SpawnController moved to position " + transform.position);
         if (spawnPosition != null) 
