@@ -387,7 +387,7 @@ public class MuseumManager : MonoBehaviour
         //Track the placed room's transform so other systems can use it as a spawn/location reference
         //TEMP COMMENT 1/14/26 Cade Tanner. Currently working on this bug
         
-        if(placedRoomTransforms.Count < 1)
+        if(placedRoomTransforms.Count == 0)
         {
             placedRoomTransforms.Add(roomGrid[x][y].transform);    
         }
