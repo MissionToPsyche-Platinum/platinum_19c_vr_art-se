@@ -30,7 +30,8 @@ public class MuseumManager : MonoBehaviour
     //make sure this is no less than 9 probably
     const int chunkSize = 11;
     const int chunkMid = chunkSize / 2 + 1;
-
+    private readonly List<Transform> placedRoomTransforms = new();
+    public IReadOnlyList<Transform> PlacedRoomTransforms => placedRoomTransforms;
     struct SquareRoom
     {
         public int x, y, width, height;
@@ -147,7 +148,7 @@ public class MuseumManager : MonoBehaviour
         }
 
         //TEMP COMMENT Cade Tanner 1/14/26. Working on this bug
-        //placedRoomTransforms.Clear();
+        placedRoomTransforms.Clear();
     }
 
     public void AlignAllRooms()
@@ -385,7 +386,11 @@ public class MuseumManager : MonoBehaviour
 
         //Track the placed room's transform so other systems can use it as a spawn/location reference
         //TEMP COMMENT 1/14/26 Cade Tanner. Currently working on this bug
-        //placedRoomTransforms.Add(roomGrid[x][y].transform);
+        
+        if(placedRoomTransforms.Count < 1)
+        {
+            placedRoomTransforms.Add(roomGrid[x][y].transform);    
+        }
     }
 
     public void AutoOpening(int x, int y)

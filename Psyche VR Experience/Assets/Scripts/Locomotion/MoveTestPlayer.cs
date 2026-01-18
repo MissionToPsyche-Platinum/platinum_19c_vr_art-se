@@ -18,8 +18,8 @@ public class MoveTestPlayer : MonoBehaviour
     protected Rigidbody rb;
 
     //TEMP DISABLE 1/14/26 CADE TANNER
-    //[SerializeField][Tooltip ("Add the SpawnPoint Controller object here")]
-    //protected SpawnController spawnController;
+    [SerializeField][Tooltip ("Add the SpawnPoint Controller object here")]
+    protected SpawnController spawnController;
 
     [SerializeField][Tooltip("Add the Player Camera object here")]
     protected Camera playerCamera;
@@ -63,6 +63,7 @@ public class MoveTestPlayer : MonoBehaviour
             descendAction = playerMap.FindAction("Descend", true); //Left Control (FREE CAMERA ONLY)
             interactAction = playerMap.FindAction("Interact", true); //E on Keyboard
             povSwapAction = playerMap.FindAction("POVSwap", true); //Z on Keyboard (Player Only)
+            //Q is swap to different camera perspective!
             
             Debug.Log($"Found moveAction action in map : {moveAction.actionMap.name}");
             moveAction.Enable();
@@ -190,7 +191,7 @@ public class MoveTestPlayer : MonoBehaviour
     int CurrentPerspectiveListener()
     {
         //TEMP DISABLE CADE TANNER 1/14/26 working on the fix
-        //currentPerspective = spawnController.GetCurrentPerspective();
+        currentPerspective = spawnController.GetCurrentPerspective();
         return currentPerspective;
     }
     
