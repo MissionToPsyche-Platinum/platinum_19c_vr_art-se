@@ -850,11 +850,31 @@ PrefabInstance:
       value: 0.15
       objectReference: {fileID: 0}
     - target: {fileID: 3088972539050122851, guid: c8cc9b555a2b35e44897a07f24355cc0, type: 3}
+      propertyPath: m_fontSizeMin
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3088972539050122851, guid: c8cc9b555a2b35e44897a07f24355cc0, type: 3}
       propertyPath: m_fontSizeBase
       value: 0.15
       objectReference: {fileID: 0}
     - target: {fileID: 3088972539050122851, guid: c8cc9b555a2b35e44897a07f24355cc0, type: 3}
+      propertyPath: m_overflowMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3088972539050122851, guid: c8cc9b555a2b35e44897a07f24355cc0, type: 3}
+      propertyPath: m_TextWrappingMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3088972539050122851, guid: c8cc9b555a2b35e44897a07f24355cc0, type: 3}
       propertyPath: m_enableAutoSizing
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3188308148787367848, guid: c8cc9b555a2b35e44897a07f24355cc0, type: 3}
+      propertyPath: m_ReverseArrangement
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3188308148787367848, guid: c8cc9b555a2b35e44897a07f24355cc0, type: 3}
+      propertyPath: m_ChildForceExpandWidth
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3772672903167469650, guid: c8cc9b555a2b35e44897a07f24355cc0, type: 3}
