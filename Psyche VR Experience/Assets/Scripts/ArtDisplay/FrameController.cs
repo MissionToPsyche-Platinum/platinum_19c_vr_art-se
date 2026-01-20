@@ -42,7 +42,7 @@ public class FrameController : MonoBehaviour
     [SerializeField] private bool clampMaxFrameSize = true;
 
     [Tooltip("Max size multiplier relative to the base resolution scale (1 = same as base, 0.8 = 80%, 1.5 = 150%).")]
-    [SerializeField, Range(0.1f, 5f)] private float maxFrameScalePercent = 1.0f;
+    [SerializeField, Range(0.1f, 5f)] private float maxFrameScalePercent = 1f;
 
     [Header("Frame Geometry")]
     [Tooltip("Frame border thickness around visible image (in local units).")]
@@ -365,6 +365,10 @@ public class FrameController : MonoBehaviour
 
         // global scale
         float overall = ComputeResolutionScale(resolution, baseResolution, scaleMode);
+
+        if (clampMaxFrameSize)
+            overall = Mathf.Min(overall, maxFrameScalePercent);
+
         transform.localScale = new Vector3(overall, overall, overall);
     }
 
