@@ -1,12 +1,14 @@
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class ExpoTimer : MonoBehaviour
 {
     [SerializeField] private float startingTimerSeconds;
     [SerializeField] private float warningSeconds;
     [SerializeField] private AudioSource warningAudio;
+    [SerializeField] private GameObject screenBlackSquare;
 
     // use these to actually run the timer
     private float secondsLeft;
@@ -25,6 +27,12 @@ public class ExpoTimer : MonoBehaviour
     {
         if (!timerRunning)
         {
+            // if timer is not running, fade in black screen
+            Color squareColor = screenBlackSquare.GetComponent<SpriteRenderer>().color;
+            if (squareColor.a < 1)
+            {
+                screenBlackSquare.GetComponent<SpriteRenderer>().color = new Color(.1f, .1f, .1f, squareColor.a + 5 * Time.deltaTime);
+            }
             return;
         }
 
@@ -49,11 +57,8 @@ public class ExpoTimer : MonoBehaviour
         warningHappened = true;
     }
 
-    // TODO: Implement this as part of US 196 Task 205
     public void timerDone()
     {
-        Debug.Log("Expo Timer Over");
-
         timerDoneHappened = true;
     }
 
@@ -78,6 +83,9 @@ public class ExpoTimer : MonoBehaviour
         timerRunning = false;
         warningHappened = false;
         timerDoneHappened = false;
+        
+        // reset screen overlay
+        screenBlackSquare.GetComponent<SpriteRenderer>().color = new Color(.1f, .1f, .1f, 0);
 }
 
     public void startTimer()
