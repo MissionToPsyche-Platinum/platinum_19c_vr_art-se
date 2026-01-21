@@ -35,14 +35,16 @@ public class FrameController : MonoBehaviour
     [SerializeField] Vector2Int baseResolution = new Vector2Int(1920, 1080);
 
     [Tooltip("Nominal image height in local units before resolution scaling (the script scales from here).")]
-    [SerializeField] float nominalImageHeight = 1.0f;
+    [SerializeField] float nominalImageHeight = 5f;
 
-    [Header("Max Frame Size Clamp")]
-    [Tooltip("If true, forces a clamp on displayed quad size so it can't exceed a percentage of the base-resolution-derived size.")]
-    [SerializeField] private bool clampMaxFrameSize = true;
+    [Header("World-Space Frame Size Clamp")]
+    [SerializeField] private bool clampWorldSize = true;
 
-    [Tooltip("Max size multiplier relative to the base resolution scale (1 = same as base, 0.8 = 80%, 1.5 = 150%).")]
-    [SerializeField, Range(0.1f, 5f)] private float maxFrameScalePercent = 1f;
+    [SerializeField, Tooltip("Max world-space height (units?) for the image quad.")]
+    private float maxWorldHeightMeters = 1.2f;
+
+    [SerializeField, Tooltip("Max world-space width (units?). Set <= 0 to ignore.")]
+    private float maxWorldWidthMeters = 1f;
 
     [Header("Frame Geometry")]
     [Tooltip("Frame border thickness around visible image (in local units).")]
@@ -95,10 +97,10 @@ public class FrameController : MonoBehaviour
         previousIterationSetting = autoIterateOnStart;
 
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
-        fallbackTexture = Resources.Load<Texture2D>("Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color-JPG.jpg");
+        fallbackTexture = Resources.Load<Texture2D>("/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png");
 
         if (fallbackTexture == null)
-            Debug.LogError("Fallback image missing! Add it at Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color-PNG.png");
+            Debug.LogError("Fallback image missing! Add it at Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png");
     }
 
     void OnValidate()
@@ -335,26 +337,6 @@ public class FrameController : MonoBehaviour
         float height = nominalImageHeight;
         float width = height * aspect;
 
-        // clamping logic(enforce maximum scale)
-        if (clampMaxFrameSize)
-        {
-            float baseAspect = baseResolution.x / (float)baseResolution.y;
-
-            // base quad size
-            float baseHeight = nominalImageHeight;
-            float baseWidth = baseHeight * baseAspect;
-
-            // allowed percentage scale from base quad size
-            float maxH = baseHeight * maxFrameScalePercent;
-            float maxW = baseWidth * maxFrameScalePercent;
-
-            // if computed quad exceeds either bound, scale down uniformly(maintain aspect ratio but scale down)
-            float scaleDown = Mathf.Min(1f, maxW / width, maxH / height);
-            width *= scaleDown;
-            height *= scaleDown;
-        }
-
-
         // scale the quad
         Transform quadT = imageQuadRenderer.transform;
         quadT.localScale = new Vector3(width, height, 1f);
@@ -366,10 +348,30 @@ public class FrameController : MonoBehaviour
         // global scale
         float overall = ComputeResolutionScale(resolution, baseResolution, scaleMode);
 
-        if (clampMaxFrameSize)
-            overall = Mathf.Min(overall, maxFrameScalePercent);
-
         transform.localScale = new Vector3(overall, overall, overall);
+
+        if (clampWorldSize)
+        {
+            // World size of the quad after all scaling (including parent scaling)
+            // Use lossyScale on the quad to capture parent scale + transform scale
+            Vector3 quadLossy = quadT.lossyScale;
+
+            float worldWidth = width * quadLossy.x;
+            float worldHeight = height * quadLossy.y;
+
+            float limitH = Mathf.Max(0.0001f, maxWorldHeightMeters);
+            float limitW = (maxWorldWidthMeters > 0f) ? maxWorldWidthMeters : float.PositiveInfinity;
+
+            float scaleDownH = limitH / worldHeight;
+            float scaleDownW = limitW / worldWidth;
+
+            float scaleDownWorld = Mathf.Min(1f, scaleDownH, scaleDownW);
+
+            if (scaleDownWorld < 0.9999f)
+            {
+                transform.localScale *= scaleDownWorld;
+            }
+        }
     }
 
 
