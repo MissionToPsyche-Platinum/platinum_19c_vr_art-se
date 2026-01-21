@@ -7,8 +7,8 @@ public class HeadsetCollisionHandler : MonoBehaviour
     private HeadsetCollisionManager collisionDetector;
     [SerializeField]
     private CharacterController characterController;
-    [SerializeField][Tooltip("The amount of force the wall pushes the player with")]
-    public float knockbackStrength = 1.0f;
+    [SerializeField, Range(0, 2.0f)][Tooltip("The amount of force the wall pushes the player with")]
+    public float knockbackStrength = 1.35f;
     
     private Vector3 CalculateKnockbackDirection(List<RaycastHit> colliderHits)
     {
