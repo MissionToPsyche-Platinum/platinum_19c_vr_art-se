@@ -6,6 +6,7 @@ public class ExpoTimer : MonoBehaviour
 {
     [SerializeField] private float startingTimerSeconds;
     [SerializeField] private float warningSeconds;
+    [SerializeField] private AudioSource warningAudio;
 
     // use these to actually run the timer
     private float secondsLeft;
@@ -40,10 +41,10 @@ public class ExpoTimer : MonoBehaviour
         }
     }
 
-    // TODO: Implement this as part of US 196 Task 209 
     public void warning()
     {
         Debug.Log(warningSeconds + " seconds left on the expo timer!");
+        warningAudio.Play();
 
         warningHappened = true;
     }
