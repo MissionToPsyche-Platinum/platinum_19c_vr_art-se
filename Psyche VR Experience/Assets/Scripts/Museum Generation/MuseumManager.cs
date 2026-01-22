@@ -31,8 +31,6 @@ public class MuseumManager : MonoBehaviour
     //make sure this is no less than 9 probably
     const int chunkSize = 11;
     const int chunkMid = chunkSize / 2 + 1;
-    private readonly List<Transform> placedRoomTransforms = new();
-    public IReadOnlyList<Transform> PlacedRoomTransforms => placedRoomTransforms;
     struct SquareRoom
     {
         public int x, y, width, height;
@@ -145,9 +143,6 @@ public class MuseumManager : MonoBehaviour
         {
             roomGrid[i] = new RoomModule[size];
         }
-
-        
-        placedRoomTransforms.Clear();
     }
 
     public void AlignAllRooms()
