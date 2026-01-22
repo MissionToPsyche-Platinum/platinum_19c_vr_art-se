@@ -85,6 +85,8 @@ public class FrameController : MonoBehaviour
 
     void Awake()
     {
+        SettingsManager.m_VideoVolumeChanged.AddListener(VolumeChanged);
+
         previousIterationSetting = autoIterateOnStart;
 
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
@@ -631,6 +633,7 @@ public class FrameController : MonoBehaviour
                 audioSource.dopplerLevel = 0f;                  // Avoid doppler shift
                 audioSource.loop = false;                       // no looping ever please
                 audioSource.spread = 0f;                        // 0 = more directional  
+                audioSource.volume = GlobalSettings.MASTER_VOLUME;
             }
 
             videoPlayer.audioOutputMode = VideoAudioOutputMode.AudioSource;
@@ -653,5 +656,11 @@ public class FrameController : MonoBehaviour
         isVideoMode = true;
     }
 
-
+    void VolumeChanged()
+    {
+        if (audioSource != null)
+        {
+            audioSource.volume = GlobalSettings.MASTER_VOLUME;
+        }
+    }
 }
