@@ -8,7 +8,7 @@ public class ExpoTimer : MonoBehaviour
     [SerializeField] private float startingTimerSeconds;
     [SerializeField] private float warningSeconds;
     [SerializeField] private AudioSource warningAudio;
-    [SerializeField] private GameObject screenBlackSquare;
+    [SerializeField] public Image blackScreen;
 
     // use these to actually run the timer
     private float secondsLeft;
@@ -25,14 +25,17 @@ public class ExpoTimer : MonoBehaviour
 
     void Update()
     {
+        // if the timer is finished and the screen is not fully black, darken the screen black cover
+        if (timerDoneHappened && blackScreen.color.a != 1.0f)
+        {
+            Color color = blackScreen.color;
+            color.a += Time.deltaTime;
+            color.a = Mathf.Clamp(color.a, 0, 1);
+            blackScreen.color = color;
+        }
+        
         if (!timerRunning)
         {
-            // if timer is not running, fade in black screen
-            Color squareColor = screenBlackSquare.GetComponent<SpriteRenderer>().color;
-            if (squareColor.a < 1)
-            {
-                screenBlackSquare.GetComponent<SpriteRenderer>().color = new Color(.1f, .1f, .1f, squareColor.a + 5 * Time.deltaTime);
-            }
             return;
         }
 
@@ -84,8 +87,10 @@ public class ExpoTimer : MonoBehaviour
         warningHappened = false;
         timerDoneHappened = false;
         
-        // reset screen overlay
-        screenBlackSquare.GetComponent<SpriteRenderer>().color = new Color(.1f, .1f, .1f, 0);
+        // remove the black screen
+        Color color = blackScreen.color;
+        color.a = 0;
+        blackScreen.color =  color;
 }
 
     public void startTimer()
