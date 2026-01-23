@@ -3,6 +3,7 @@ using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
+using Unity.XR.CoreUtils;
 using UnityEngine;
 using static RoomModule;
 
@@ -24,10 +25,19 @@ public class RoomModule : MonoBehaviour
     public RoomType roomType = RoomType.OneOpen;
 
     public GameObject[] roomModels;
+    [HideInInspector]
     public GameObject room;
+    [HideInInspector]
     public ArtDisplayList display;
 
+    [Header("Size Settings")]
+    [Tooltip("Wall Height is multiplied by this value.")]
+    public float wallHeightMod = 1;
+    [Tooltip("Whether to center the art displays on the walls automatically.")]
+    public bool centerArtPieces = true;
+
     //North is -Z, South is +Z, West is +X, East is -X
+    [HideInInspector]
     public bool openNorth, openSouth, openWest, openEast;
 
     public enum Orientation
@@ -39,6 +49,7 @@ public class RoomModule : MonoBehaviour
     }
 
     //indicates the direction that -Z points
+    [HideInInspector]
     public Orientation orientation = Orientation.North;
 
     public class RoomInfo
@@ -94,6 +105,25 @@ public class RoomModule : MonoBehaviour
 
         room = Instantiate(roomModels[(int)roomType], transform);
         display = room.GetComponent<ArtDisplayList>();
+
+        //this is a weird way to do this, as it requires part of the module to be named "Room"
+        GameObject walls = room.GetNamedChild("Room");
+
+        if (walls != null)
+        {
+            Transform wallTransform = walls.transform;
+
+            wallTransform.position = new Vector3(wallTransform.position.x, wallTransform.position.y * wallHeightMod, wallTransform.position.z); 
+            wallTransform.localScale = new Vector3(wallTransform.localScale.x, wallTransform.localScale.y, wallTransform.position.y * 100);
+
+            if (centerArtPieces)
+            {
+                foreach (GameObject g in display.artFrames)
+                {
+                    g.transform.position = new Vector3(g.transform.position.x, wallTransform.position.y + 0.25f, g.transform.position.z);
+                }
+            }
+        }
     }
        
     /// <summary>
