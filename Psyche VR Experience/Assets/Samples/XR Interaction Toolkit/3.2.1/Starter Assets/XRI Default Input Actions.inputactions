@@ -2624,6 +2624,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "Both Triggers 5 Seconds",
+                    "type": "Button",
+                    "id": "0d3d5fe3-b317-49e8-84b2-8d916ff1d519",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Submit",
                     "type": "Button",
                     "id": "eba98c2e-6268-4233-bb88-946287bc753c",
@@ -3037,6 +3046,39 @@
                     "processors": "",
                     "groups": "",
                     "action": "Navigate",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Both Triggers",
+                    "id": "801431e3-9742-44a2-83b7-00409c9f5799",
+                    "path": "OneModifier",
+                    "interactions": "Hold(duration=5)",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Both Triggers 5 Seconds",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "modifier",
+                    "id": "34f39d38-8e82-482e-8e7a-b64a87d73eaf",
+                    "path": "<XRController>{LeftHand}/{PrimaryTrigger}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Both Triggers 5 Seconds",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "binding",
+                    "id": "57aca411-1f1d-4b9c-9c44-0a5937f91c90",
+                    "path": "<XRController>{RightHand}/{PrimaryTrigger}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Both Triggers 5 Seconds",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
