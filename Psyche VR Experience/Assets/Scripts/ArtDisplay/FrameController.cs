@@ -180,6 +180,10 @@ public class FrameController : MonoBehaviour
                           "About the Work: " + data.artworkDescription;
         artDesc.text = descText;
         artDesc.color = Color.black;
+        artDesc.autoSizeTextContainer = false;
+        // artDesc.transform.localScale = new Vector3(1, .5f, 1);
+        artDesc.GetComponent<RectTransform>().sizeDelta = new Vector2(artDesc.GetComponent<RectTransform>().sizeDelta.x * 5, artDesc.GetComponent<RectTransform>().sizeDelta.y * 5);
+        // artDesc.alignment = TextAlignmentOptions.Right;
     }
 
     public void SetImageIndex(int index)
