@@ -82,6 +82,7 @@ public class FrameController : MonoBehaviour
     private AudioSource audioSource;
     [SerializeField] private bool enableAudio = true; //optional toggle 
 
+    [SerializeField] private TextBoxController textBoxController;
 
     void Awake()
     {
@@ -262,9 +263,17 @@ public class FrameController : MonoBehaviour
         _mpb.SetTexture("_MainTex", tex);
         imageQuadRenderer.SetPropertyBlock(_mpb);
 
+        Vector3 scale = transform.localScale; //keep track of this in case it changes
+
         // Sizing based on the current texture
         Vector2Int res = tex ? new(tex.width, tex.height) : baseResolution;
         ResizeFrame(res);
+
+        //make sure text controller isn't affected by the scaling (this is a little costly)
+        if(scale != transform.localScale)
+        {
+            textBoxController.ChangeTextSize();
+        }
     }
 
     /* --------------------------------------------------------------

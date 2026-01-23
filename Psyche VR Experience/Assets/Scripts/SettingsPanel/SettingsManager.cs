@@ -25,6 +25,8 @@ public class SettingsManager : MonoBehaviour
 
     //event to let video audio sources know that the volume has changed
     public static UnityEvent m_VideoVolumeChanged = new UnityEvent();
+    //event to let text know to change size
+    public static UnityEvent m_TextSizeChanged = new UnityEvent();
 
     private void OnValidate()
     {
@@ -149,6 +151,7 @@ public class SettingsManager : MonoBehaviour
 
         float result = float.Parse(input);
         GlobalSettings.TEXT_SIZE_MULTIPLIER = result;
+        m_TextSizeChanged?.Invoke();
     }
 
     public void AutoIterateOn()

@@ -66,6 +66,7 @@ MonoBehaviour:
   autoIterateOnStart: 0
   autoIterationInterval: 5
   enableAudio: 1
+  textBoxController: {fileID: 6535668632841089042}
 --- !u!1 &2079116551191390766
 GameObject:
   m_ObjectHideFlags: 0
@@ -1023,6 +1024,17 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1821801922540168, guid: c8cc9b555a2b35e44897a07f24355cc0, type: 3}
   m_PrefabInstance: {fileID: 6533295991190214067}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6535668632841089042 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7236885429069217, guid: c8cc9b555a2b35e44897a07f24355cc0, type: 3}
+  m_PrefabInstance: {fileID: 6533295991190214067}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6533763175447390011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93ad2ddba4be09f47b41035e6c9736b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &7994403989890907617 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3772672903167469650, guid: c8cc9b555a2b35e44897a07f24355cc0, type: 3}
