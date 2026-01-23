@@ -41,10 +41,10 @@ public class FrameController : MonoBehaviour
     [SerializeField] private bool clampWorldSize = true;
 
     [SerializeField, Tooltip("Max world-space height (units?) for the image quad.")]
-    private float maxWorldHeightMeters = 1.2f;
+    private float maxWorldHeight = 8.0f; // this is a rough estimate
 
     [SerializeField, Tooltip("Max world-space width (units?). Set <= 0 to ignore.")]
-    private float maxWorldWidthMeters = 1f;
+    private float maxWorldWidth = 6.5f; // this is a rough estimate
 
     [Header("Frame Geometry")]
     [Tooltip("Frame border thickness around visible image (in local units).")]
@@ -333,6 +333,13 @@ public class FrameController : MonoBehaviour
      * FRAME SCALE AND RESOLUTION
      * -------------------------------------------------------------- */
 
+    public void SetWorldSizeClamp(float maxH, float maxW)
+    {
+        clampWorldSize = (maxH > 0f || maxW > 0f);
+        maxWorldHeight = Mathf.Max(0.01f, maxH);
+        maxWorldWidth = Mathf.Max(0.01f, maxW);
+    }
+
     private void ResizeFrame(Vector2Int resolution)
     {
         float aspect = resolution.x / (float)resolution.y;
@@ -349,32 +356,26 @@ public class FrameController : MonoBehaviour
         EnsureBorders();
         UpdateBorders(width, height);
 
-        // global scale
-        float overall = ComputeResolutionScale(resolution, baseResolution, scaleMode);
+        float overall = ComputeResolutionScale(resolution, baseResolution, scaleMode);  // global scale
 
         transform.localScale = new Vector3(overall, overall, overall);
 
         if (clampWorldSize)
         {
-            // World size of the quad after all scaling (including parent scaling)
-            // Use lossyScale on the quad to capture parent scale + transform scale
-            Vector3 quadLossy = quadT.lossyScale;
+            // current world size of the displayed quad
+            float worldHeight = imageQuadRenderer.bounds.size.y;
+            float worldWidth = imageQuadRenderer.bounds.size.x;
 
-            float worldWidth = width * quadLossy.x;
-            float worldHeight = height * quadLossy.y;
+            // ratios needed to fit within limits
+            // NOTE: this will only ever shrink a frame
+            float hRatio = (worldHeight > maxWorldHeight) ? (maxWorldHeight / worldHeight) : 1f;
+            float wRatio = (worldWidth > maxWorldWidth) ? (maxWorldWidth / worldWidth) : 1f;
 
-            float limitH = Mathf.Max(0.0001f, maxWorldHeightMeters);
-            float limitW = (maxWorldWidthMeters > 0f) ? maxWorldWidthMeters : float.PositiveInfinity;
-
-            float scaleDownH = limitH / worldHeight;
-            float scaleDownW = limitW / worldWidth;
-
-            float scaleDownWorld = Mathf.Min(1f, scaleDownH, scaleDownW);
-
-            if (scaleDownWorld < 0.9999f)
-            {
-                transform.localScale *= scaleDownWorld;
-            }
+            float ratio = Mathf.Min(hRatio, wRatio);
+            // takes the bound that exceeds its param by the most then scales it
+            // down at the correct ratio
+            if (ratio < 1f)
+                transform.localScale *= ratio;
         }
     }
 
