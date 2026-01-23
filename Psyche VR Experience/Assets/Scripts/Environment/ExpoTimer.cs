@@ -2,13 +2,19 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using UnityEngine.XR.Interaction.Toolkit.Inputs.Readers;
 
 public class ExpoTimer : MonoBehaviour
 {
+    [Header("Timer Length")]
     [SerializeField] private float startingTimerSeconds;
     [SerializeField] private float warningSeconds;
+
     [SerializeField] private AudioSource warningAudio;
+
     [SerializeField] private GameObject screenBlackSquare;
+
+    [SerializeField] private XRInputButtonReader resetEvent;
 
     // use these to actually run the timer
     private float secondsLeft;
@@ -25,7 +31,7 @@ public class ExpoTimer : MonoBehaviour
 
     void Update()
     {
-        if (!timerRunning)
+        if (!timerRunning && timerDoneHappened)
         {
             // if timer is not running, fade in black screen
             Color squareColor = screenBlackSquare.GetComponent<SpriteRenderer>().color;
@@ -33,6 +39,12 @@ public class ExpoTimer : MonoBehaviour
             {
                 screenBlackSquare.GetComponent<SpriteRenderer>().color = new Color(.1f, .1f, .1f, squareColor.a + 5 * Time.deltaTime);
             }
+
+            if (resetEvent.ReadIsPerformed())
+            {
+                resetToLaunchRoom();
+            }
+
             return;
         }
 
@@ -86,12 +98,18 @@ public class ExpoTimer : MonoBehaviour
         
         // reset screen overlay
         screenBlackSquare.GetComponent<SpriteRenderer>().color = new Color(.1f, .1f, .1f, 0);
-}
+    }
 
     public void startTimer()
     {
         timerRunning = true;
 
         Debug.Log("Timer Started");
+    }
+
+    // TODO: RESET the event by going back to the launch room (rest of task 214)
+    private void resetToLaunchRoom()
+    {
+        return;
     }
 }
