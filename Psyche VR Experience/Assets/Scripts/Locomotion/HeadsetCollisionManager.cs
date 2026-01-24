@@ -4,14 +4,23 @@ using UnityEngine;
 
 public class HeadsetCollisionManager : MonoBehaviour
 {
-    [SerializeField, Range(0, 0.5f)]
+    [SerializeField, Range(0, 0.5f)][Tooltip("The delay between detection ticks")]
     private float detectionDelay = 0.05f;
-    [SerializeField]
-    private float detectionDistance = 0.2f;
+    [SerializeField, Range(0, 0.3f)][Tooltip("The range at which the collision is measured for pushing back")]
+    private float detectionDistance = 0.25f;
     [SerializeField]
     private LayerMask detectionLayers;
     public List<RaycastHit> DetectedColliderHits {get; private set; }
     private float currentTime = 0;
+    
+    /// <summary>
+    /// Returns a list of collisions used by the headset to push characters out of walls.
+    /// </summary>
+    /// <param name="position"></param>
+    /// <param name="distance">
+    /// </param>
+    /// <param name="mask"></param>
+    /// <returns></returns>
     private List<RaycastHit> DetectCollisions (Vector3 position, float distance, LayerMask mask)
     {
         List<RaycastHit> detectedHits = new();
