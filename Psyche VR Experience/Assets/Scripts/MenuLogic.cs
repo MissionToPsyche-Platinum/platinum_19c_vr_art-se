@@ -18,7 +18,7 @@ public class MenuLogic : MonoBehaviour
 
     public void QuitExperience()
     {
-        Debug.Log("Exiting Psyche VR Experience...");
+        UnityEngine.Debug.Log("Exiting Psyche VR Experience...");
         Application.Quit();
     }
 }
