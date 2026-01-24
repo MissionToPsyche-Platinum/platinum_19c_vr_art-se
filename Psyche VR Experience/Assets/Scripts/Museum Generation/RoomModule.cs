@@ -34,7 +34,7 @@ public class RoomModule : MonoBehaviour
     [Tooltip("Wall Height is multiplied by this value.")]
     public float wallHeightMod = 1;
     [Tooltip("Whether to center the art displays on the walls automatically.")]
-    public bool centerArtPieces = true;
+    public bool centerArtPieces = false;
     [SerializeField, Tooltip("Eye-level set at this value")] private float desiredFrameCenterWorldY = 1.6f;
     [SerializeField, Range(0f, 0.5f),Tooltip("how much of the bottom of the wall is reserved for text placement")] 
     private float reservedBottomPercent = 0.2f;
