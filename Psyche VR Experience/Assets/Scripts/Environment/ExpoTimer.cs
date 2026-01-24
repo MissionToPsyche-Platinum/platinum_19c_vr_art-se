@@ -15,6 +15,8 @@ public class ExpoTimer : MonoBehaviour
     [SerializeField] private Image blackScreen;
 
     [SerializeField] private XRInputButtonReader resetEvent;
+    [Tooltip("Attach the launch room manager hear to handle when the reset is triggered.")]
+    [SerializeField] private LaunchRoomManager launchRoomManager;
 
     // use these to actually run the timer
     private float secondsLeft;
@@ -44,7 +46,8 @@ public class ExpoTimer : MonoBehaviour
             
             if (resetEvent.ReadIsPerformed())
             {
-                resetToLaunchRoom();
+                resetTimer();
+                launchRoomManager.ResetExpo();
             }
 
             return;
@@ -109,11 +112,5 @@ public class ExpoTimer : MonoBehaviour
         timerRunning = true;
 
         Debug.Log("Timer Started");
-    }
-
-    // TODO: RESET the event by going back to the launch room (rest of task 214)
-    private void resetToLaunchRoom()
-    {
-        return;
     }
 }
