@@ -1,3 +1,4 @@
+//TEMP DISABLE 1/14/26 Cade Tanner
 using NUnit.Framework.Constraints;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -44,7 +45,7 @@ public class SpawnController : MonoBehaviour
         if (playerInput != null)
         {
             var controlCamera = playerInput.actions.FindActionMap("Mouse&Keyboard", true);
-            swapAction = controlCamera.FindAction("SwapCamera", true);
+            swapAction = controlCamera.FindAction("SwapCamera", true); //Q on Keyboard (Opens up Free Camera Only actions as well *See MoveTestPlayer*)
             swapAction.Enable();
         }
         
