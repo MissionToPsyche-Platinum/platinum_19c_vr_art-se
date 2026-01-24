@@ -46,6 +46,13 @@ public class FrameController : MonoBehaviour
     [SerializeField, Tooltip("Max world-space width (units?). Set <= 0 to ignore.")]
     private float maxWorldWidth = 6.5f; // this is a rough estimate
 
+    [Header("Wall Placement")]
+    [SerializeField] private bool clampToWallBand = false;
+    [SerializeField, Range(0f, 0.5f), Tooltip("The percentage of the bottom of the wall reserved for text")] 
+    private float reservedBottomPercent = 0.2f; // bottom x% reserved for text
+    [SerializeField] private float targetCenterWorldY = 1.6f;   // <-- you set this
+    [SerializeField] private float extraBottomPadding = 0.05f;                   // small safety buffer
+
     [Header("Frame Geometry")]
     [Tooltip("Frame border thickness around visible image (in local units).")]
     [SerializeField] float borderThickness = 0.05f;
@@ -71,6 +78,7 @@ public class FrameController : MonoBehaviour
 
     // holds the empty object for us
     Transform bordersParent;
+    private Renderer wallRendererRef;
 
     // per-renderer property block for per-instance textures
     MaterialPropertyBlock _mpb;
@@ -340,6 +348,15 @@ public class FrameController : MonoBehaviour
         maxWorldWidth = Mathf.Max(0.01f, maxW);
     }
 
+    public void ConfigureWallPlacement(Renderer wallRenderer, float targetY, float reservedBottom = 0.2f, float padding = 0.05f)
+    {
+        wallRendererRef = wallRenderer;
+        clampToWallBand = (wallRendererRef != null);
+        targetCenterWorldY = targetY;
+        reservedBottomPercent = Mathf.Clamp(reservedBottom, 0f, 0.5f);
+        extraBottomPadding = Mathf.Max(0f, padding);
+    }
+
     private void ResizeFrame(Vector2Int resolution)
     {
         float aspect = resolution.x / (float)resolution.y;
@@ -377,7 +394,36 @@ public class FrameController : MonoBehaviour
             if (ratio < 1f)
                 transform.localScale *= ratio;
         }
+        ApplyWallClampToTargetY();
     }
+
+    // the point here is to clamp the frame to a specific height if it can go there 
+    // while also leaving room for the text to display below it. The height it is
+    // can be adjusted, it's in the room module script.
+    private void ApplyWallClampToTargetY()
+    {
+        if (!clampToWallBand || wallRendererRef == null) return;
+        if (imageQuadRenderer == null) return;
+
+        Bounds wallB = wallRendererRef.bounds;
+        Bounds frameB = imageQuadRenderer.bounds;
+
+        float wallMinY = wallB.min.y;
+        float wallMaxY = wallB.max.y;
+
+        float reservedBottomY = wallMinY + (wallB.size.y * reservedBottomPercent);
+
+        float halfH = frameB.extents.y;
+
+        float minCenterY = reservedBottomY + extraBottomPadding + halfH;
+        float maxCenterY = wallMaxY - halfH;
+
+        float clampedY = Mathf.Clamp(targetCenterWorldY, minCenterY, maxCenterY);
+
+        var p = transform.position;
+        transform.position = new Vector3(p.x, clampedY, p.z);
+    }
+
 
 
     float ComputeResolutionScale(Vector2Int resolution, Vector2Int baseResolution, ScaleMode scaleMode)
