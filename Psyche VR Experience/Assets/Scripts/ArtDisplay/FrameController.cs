@@ -98,6 +98,8 @@ public class FrameController : MonoBehaviour
     private double currentVideoDuration = 0.0;  // video duration for auto-iteration
     private AudioSource audioSource;
     [SerializeField] private bool enableAudio = true; //optional toggle 
+    [Header("Video Playback")]
+    [SerializeField] private bool autoPlayVideoOnLoad = false;
 
 
     void Awake()
@@ -642,13 +644,20 @@ public class FrameController : MonoBehaviour
 
         // store the real duration for auto-iteration
         currentVideoDuration = vp.length;
-        vp.Play();
 
-        if (enableAudio && audioSource != null) audioSource.Play();
+        // Show first frame only
+        vp.Play();
+        vp.Pause();
+
+        if (enableAudio && audioSource != null)
+            audioSource.Pause();
+
+     
 
         ResizeFrame(new Vector2Int(w, h));
     }
 
+    
 
     private void StopVideoIfNeeded()
     {
