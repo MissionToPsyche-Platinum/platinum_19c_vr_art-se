@@ -651,13 +651,37 @@ public class FrameController : MonoBehaviour
 
         if (enableAudio && audioSource != null)
             audioSource.Pause();
-
-     
+        
+        // auto-play if explicitly enabled
+        if (autoPlayVideoOnLoad)
+        {
+            PlayPreparedVideo();
+        }
 
         ResizeFrame(new Vector2Int(w, h));
     }
 
-    
+
+    // will be used for proximity triggering
+    private void PlayPreparedVideo()
+    {
+        if (videoPlayer == null) return;
+
+        videoPlayer.Play();
+
+        if (enableAudio && audioSource != null)
+            audioSource.Play();
+    }
+
+    // will be used for proximity triggering and for pausing videos.
+    // Stop will reset video and audio time to zero so differing functionality is necessary
+    private void PausePreparedVideo()
+    {
+        if (videoPlayer != null) videoPlayer.Pause();
+        if (audioSource != null) audioSource.Pause();
+    }
+
+
 
     private void StopVideoIfNeeded()
     {
