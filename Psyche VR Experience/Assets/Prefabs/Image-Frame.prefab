@@ -59,6 +59,11 @@ MonoBehaviour:
   scaleMode: 0
   baseResolution: {x: 1920, y: 1080}
   nominalImageHeight: 1
+  clampMaxFrameSize: 1
+  maxFrameScalePercent: 0.97
+  clampWorldSize: 1
+  maxWorldHeightMeters: 2.11
+  maxWorldWidthMeters: 2.24
   borderThickness: 0.05
   frameDepth: 0.05
   scriptable: {fileID: 0}
