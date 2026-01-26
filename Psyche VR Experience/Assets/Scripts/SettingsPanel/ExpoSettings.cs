@@ -17,7 +17,7 @@ public class ExpoSettings : MonoBehaviour
         set {regenerateMuseum = value; }        
     }
 
-    public static float MUSEUM_TOUR_DURATION
+    public static int MUSEUM_TOUR_DURATION
     {
         get {return expoDuration; }
         set {expoDuration = value; }
@@ -25,7 +25,7 @@ public class ExpoSettings : MonoBehaviour
 
     public void ReadTourDurationInput (string inputString)
     {
-          if(float.TryParse(inputString, out expoDuration))
+          if(int.TryParse(inputString, out expoDuration))
         {
             Debug.Log("Successful Conversion: " + expoDuration);
         } 
@@ -98,49 +98,49 @@ public class ExpoSettings : MonoBehaviour
 
     public void IncrementTimeByOne()
     {
-        if (expoDuration < 3600.0f)
+        if (expoDuration < 3600)
         {
-            expoDuration += 1.0f;
+            expoDuration += 1;
         }
         else
         {
-            expoDuration = 3600.0f;
+            expoDuration = 3600;
         }
     }
 
     public void DecrementTimeByOne()
     {
-        if (expoDuration > 0.0f)
+        if (expoDuration > 0)
         {
-            expoDuration -= 1.0f;
+            expoDuration -= 1;
         }
         else
         {
-            expoDuration = 0.0f;
+            expoDuration = 0;
         }
     }
 
     public void IncremementTimeByTen()
     {
-        if (expoDuration < 3600.0f)
+        if (expoDuration < 3600)
         {
-            expoDuration += 10.0f;
+            expoDuration += 10;
         }
         else
         {
-            expoDuration = 150.0f;
+            expoDuration = 150;
         }
     }
 
     public void DecrementTimeByTen()
     {
-        if (expoDuration > 10.0f)
+        if (expoDuration > 10)
         {
-            expoDuration -= 10.0f;
+            expoDuration -= 10;
         }
         else
         {
-            expoDuration = 0.0f;
+            expoDuration = 0;
         }
     }
 
@@ -158,6 +158,6 @@ public class ExpoSettings : MonoBehaviour
     public TMP_InputField freeDurationInputField;
     static int numArtPieces = 30;
     static bool regenerateMuseum = true;
-    static float expoDuration = 300.0f;
+    static int expoDuration = 300;
     
 }

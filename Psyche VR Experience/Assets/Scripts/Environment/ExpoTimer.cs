@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 
 public class ExpoTimer : MonoBehaviour
 {
-    [Header("Timer Length")]
+    [Header("Timer Length (Overridden By Expo Settings)")]
     [SerializeField] private float startingTimerSeconds;
     [SerializeField] private float warningSeconds;
 
@@ -29,6 +29,8 @@ public class ExpoTimer : MonoBehaviour
 
     void Start()
     {
+        startingTimerSeconds = ExpoSettings.MUSEUM_TOUR_DURATION;
+
         resetEvent.action.performed += resetEventHappened;
         resetTimer();
     }

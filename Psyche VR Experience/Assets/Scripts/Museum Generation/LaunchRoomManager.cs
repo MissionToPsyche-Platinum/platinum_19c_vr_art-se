@@ -15,15 +15,15 @@ public class LaunchRoomManager : MonoBehaviour
     public async void startExpoExperience()
     {
         // generate the museum if we have the generate every time setting or if it hasn't been generated before
-        if (true || !museumGeneratedAtLeastOnce) // TODO US89: replace true with: ExpoSettings.GenerateEveryTime or the equivalent
+        if (true || !museumGeneratedAtLeastOnce)
         {
-            await museumManager.GenerateMuseum(50); // TODO US89: replace 50 with: ExpoSettings.NumArtPieces or the equivalent
+            await museumManager.GenerateMuseum(ExpoSettings.MUSEUM_TOUR_DURATION);
             museumGeneratedAtLeastOnce = true;
         }
         // else, just switch the art
         else
         {
-            await museumManager.AssignArt(50); // TODO US89: replace 50 with: ExpoSettings.NumArtPieces or the equivalent
+            await museumManager.AssignArt(ExpoSettings.MUSEUM_TOUR_DURATION);
         }
 
         expoTimer.startTimer();
@@ -44,7 +44,7 @@ public class LaunchRoomManager : MonoBehaviour
     public void ResetExpo()
     {
         // if we generate every time, simply reload the scene
-        if (true)   // TODO US89: replace true with: ExpoSettings.GenerateEveryTime or the equivalent
+        if (ExpoSettings.REGENERATE_MUSEUM)
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
