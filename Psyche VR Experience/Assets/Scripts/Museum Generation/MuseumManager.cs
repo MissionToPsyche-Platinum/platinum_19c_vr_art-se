@@ -26,6 +26,9 @@ public class MuseumManager : MonoBehaviour
     [SerializeField] bool asyncPopulate = true;
     [SerializeField] float populateDelay = 0.1f;
 
+    [Tooltip("Generate the museum immediately")]
+    [SerializeField] bool createOnAwake = true;
+
     private int numFrames = 0;
 
     //make sure this is no less than 9 probably
@@ -84,6 +87,11 @@ public class MuseumManager : MonoBehaviour
 
     public async void Awake()
     {
+        if (!createOnAwake)
+        {
+            return;
+        }
+
         System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
         sw.Start();
 
