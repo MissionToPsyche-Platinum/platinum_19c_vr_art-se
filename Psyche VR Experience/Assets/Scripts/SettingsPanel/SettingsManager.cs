@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using Unity.XR.CoreUtils;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Readers;
 
 public class SettingsManager : MonoBehaviour
 {
+
     [SerializeField] private XRInputButtonReader menuButton;
     [SerializeField] private XRInputValueReader<Vector2> menuInteraction;
 
@@ -20,6 +22,11 @@ public class SettingsManager : MonoBehaviour
 
     private float pressThreshold = 0.8f;
     private bool menuInteracted = false;        // need this to use the joystick as a button
+
+    //event to let video audio sources know that the volume has changed
+    public static UnityEvent m_VideoVolumeChanged = new UnityEvent();
+    //event to let text know to change size
+    public static UnityEvent m_TextSizeChanged = new UnityEvent();
 
     private void OnValidate()
     {
@@ -129,6 +136,7 @@ public class SettingsManager : MonoBehaviour
     public void AdjustMasterVolume(float val)
     {
         GlobalSettings.MASTER_VOLUME = val;
+        m_VideoVolumeChanged?.Invoke();
     }
 
     public void AdjustMusicVolume(float val)
@@ -143,6 +151,7 @@ public class SettingsManager : MonoBehaviour
 
         float result = float.Parse(input);
         GlobalSettings.TEXT_SIZE_MULTIPLIER = result;
+        m_TextSizeChanged?.Invoke();
     }
 
     public void AutoIterateOn()
