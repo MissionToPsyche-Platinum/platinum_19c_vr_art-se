@@ -99,9 +99,12 @@ public class FrameController : MonoBehaviour
     private AudioSource audioSource;
     [SerializeField] private bool enableAudio = true; //optional toggle 
 
+    [SerializeField] private TextBoxController textBoxController;
 
     void Awake()
     {
+        SettingsManager.m_VideoVolumeChanged.AddListener(VolumeChanged);
+
         previousIterationSetting = autoIterateOnStart;
 
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
@@ -277,9 +280,17 @@ public class FrameController : MonoBehaviour
         _mpb.SetTexture("_MainTex", tex);
         imageQuadRenderer.SetPropertyBlock(_mpb);
 
+        Vector3 scale = transform.localScale; //keep track of this in case it changes
+
         // Sizing based on the current texture
         Vector2Int res = tex ? new(tex.width, tex.height) : baseResolution;
         ResizeFrame(res);
+
+        //make sure text controller isn't affected by the scaling (this is a little costly)
+        if(scale != transform.localScale)
+        {
+            textBoxController.ChangeTextSize();
+        }
     }
 
     /* --------------------------------------------------------------
@@ -713,6 +724,7 @@ public class FrameController : MonoBehaviour
                 audioSource.dopplerLevel = 0f;                  // Avoid doppler shift
                 audioSource.loop = false;                       // no looping ever please
                 audioSource.spread = 0f;                        // 0 = more directional  
+                audioSource.volume = GlobalSettings.MASTER_VOLUME;
             }
 
             videoPlayer.audioOutputMode = VideoAudioOutputMode.AudioSource;
@@ -735,5 +747,11 @@ public class FrameController : MonoBehaviour
         isVideoMode = true;
     }
 
-
+    void VolumeChanged()
+    {
+        if (audioSource != null)
+        {
+            audioSource.volume = GlobalSettings.MASTER_VOLUME;
+        }
+    }
 }
