@@ -2645,7 +2645,7 @@
                     "name": "Cancel",
                     "type": "Button",
                     "id": "448b396b-0885-4543-ac5a-8b3405da6791",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -3063,7 +3063,7 @@
                 {
                     "name": "modifier",
                     "id": "34f39d38-8e82-482e-8e7a-b64a87d73eaf",
-                    "path": "<XRController>{LeftHand}/{PrimaryTrigger}",
+                    "path": "<XRController>{LeftHand}/{TriggerButton}",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -3074,7 +3074,7 @@
                 {
                     "name": "binding",
                     "id": "57aca411-1f1d-4b9c-9c44-0a5937f91c90",
-                    "path": "<XRController>{RightHand}/{PrimaryTrigger}",
+                    "path": "<XRController>{RightHand}/{TriggerButton}",
                     "interactions": "",
                     "processors": "",
                     "groups": "",

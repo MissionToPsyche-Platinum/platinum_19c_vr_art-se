@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Readers;
+using UnityEngine.InputSystem;
 
 public class ExpoTimer : MonoBehaviour
 {
@@ -14,7 +15,7 @@ public class ExpoTimer : MonoBehaviour
 
     [SerializeField] private Image blackScreen;
 
-    [SerializeField] private XRInputButtonReader resetEvent;
+    [SerializeField] private InputActionReference resetEvent;
     [Tooltip("Attach the launch room manager hear to handle when the reset is triggered.")]
     [SerializeField] private LaunchRoomManager launchRoomManager;
 
@@ -28,6 +29,7 @@ public class ExpoTimer : MonoBehaviour
 
     void Start()
     {
+        resetEvent.action.performed += resetEventHappened;
         resetTimer();
     }
 
@@ -42,12 +44,6 @@ public class ExpoTimer : MonoBehaviour
                 color.a += Time.deltaTime;
                 color.a = Mathf.Clamp(color.a, 0, 1);
                 blackScreen.color = color;
-            }
-            
-            if (resetEvent.ReadIsPerformed())
-            {
-                resetTimer();
-                launchRoomManager.ResetExpo();
             }
 
             return;
@@ -76,6 +72,9 @@ public class ExpoTimer : MonoBehaviour
 
     public void timerDone()
     {
+        Debug.Log("Expo Timer Done!");
+
+        timerRunning = false;
         timerDoneHappened = true;
     }
 
@@ -111,6 +110,17 @@ public class ExpoTimer : MonoBehaviour
     {
         timerRunning = true;
 
-        Debug.Log("Timer Started");
+        Debug.Log("Expo Timer Started");
+    }
+
+    private void resetEventHappened(InputAction.CallbackContext ctx)
+    {
+        Debug.Log("Reset Event Performed!");
+
+        if (!timerRunning && timerDoneHappened)
+        {
+            resetTimer();
+            launchRoomManager.ResetExpo();
+        }
     }
 }
