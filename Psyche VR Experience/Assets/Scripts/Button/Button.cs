@@ -43,7 +43,7 @@ public class Button : MonoBehaviour
 
         canBePushed = false;
 
-        while(animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
+        while(animator.GetCurrentAnimatorStateInfo(0).IsName("Push"))
         {
             if (this == null)
                 return;
@@ -51,7 +51,6 @@ public class Button : MonoBehaviour
             await Task.Delay(10);
         }
 
-        animator.Play("Idle");
         canBePushed = true;
     }
 
