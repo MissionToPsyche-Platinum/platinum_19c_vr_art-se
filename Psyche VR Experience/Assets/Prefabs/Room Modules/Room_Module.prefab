@@ -57,7 +57,7 @@ MonoBehaviour:
   - {fileID: 2533214597889045791, guid: 81ab8d452ef049241a2474654c49c8c1, type: 3}
   room: {fileID: 0}
   display: {fileID: 0}
-  wallHeightMod: 4
+  wallHeightMod: 2
   centerArtPieces: 1
   openNorth: 0
   openSouth: 0

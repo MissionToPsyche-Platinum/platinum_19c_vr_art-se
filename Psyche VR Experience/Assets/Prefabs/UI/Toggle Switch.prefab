@@ -140,7 +140,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a10631278621801499471472b1a7410f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ToggleSwithc
-  sliderValue: 0
+  sliderValue: 1
   onToggleOn:
     m_PersistentCalls:
       m_Calls: []

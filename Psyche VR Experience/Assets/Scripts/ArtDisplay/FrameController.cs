@@ -35,7 +35,23 @@ public class FrameController : MonoBehaviour
     [SerializeField] Vector2Int baseResolution = new Vector2Int(1920, 1080);
 
     [Tooltip("Nominal image height in local units before resolution scaling (the script scales from here).")]
-    [SerializeField] float nominalImageHeight = 1.0f;
+    [SerializeField] float nominalImageHeight = 5f;
+
+    [Header("World-Space Frame Size Clamp")]
+    [SerializeField] private bool clampWorldSize = true;
+
+    [SerializeField, Tooltip("Max world-space height (units?) for the image quad.")]
+    private float maxWorldHeight = 8.0f; // this is a rough estimate
+
+    [SerializeField, Tooltip("Max world-space width (units?). Set <= 0 to ignore.")]
+    private float maxWorldWidth = 6.5f; // this is a rough estimate
+
+    [Header("Wall Placement")]
+    [SerializeField] private bool clampToWallBand = false;
+    [SerializeField, Range(0f, 0.5f), Tooltip("The percentage of the bottom of the wall reserved for text")] 
+    private float reservedBottomPercent = 0.2f; // bottom x% reserved for text
+    [SerializeField] private float targetCenterWorldY = 1.6f;   // <-- you set this
+    [SerializeField] private float extraBottomPadding = 0.05f;                   // small safety buffer
 
     [Header("Frame Geometry")]
     [Tooltip("Frame border thickness around visible image (in local units).")]
@@ -62,6 +78,7 @@ public class FrameController : MonoBehaviour
 
     // holds the empty object for us
     Transform bordersParent;
+    private Renderer wallRendererRef;
 
     // per-renderer property block for per-instance textures
     MaterialPropertyBlock _mpb;
@@ -82,16 +99,19 @@ public class FrameController : MonoBehaviour
     private AudioSource audioSource;
     [SerializeField] private bool enableAudio = true; //optional toggle 
 
+    [SerializeField] private TextBoxController textBoxController;
 
     void Awake()
     {
+        SettingsManager.m_VideoVolumeChanged.AddListener(VolumeChanged);
+
         previousIterationSetting = autoIterateOnStart;
 
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
-        fallbackTexture = Resources.Load<Texture2D>("Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color-JPG.jpg");
+        fallbackTexture = Resources.Load<Texture2D>("/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png");
 
         if (fallbackTexture == null)
-            Debug.LogError("Fallback image missing! Add it at Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color-PNG.png");
+            Debug.LogError("Fallback image missing! Add it at Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png");
     }
 
     void OnValidate()
@@ -260,9 +280,17 @@ public class FrameController : MonoBehaviour
         _mpb.SetTexture("_MainTex", tex);
         imageQuadRenderer.SetPropertyBlock(_mpb);
 
+        Vector3 scale = transform.localScale; //keep track of this in case it changes
+
         // Sizing based on the current texture
         Vector2Int res = tex ? new(tex.width, tex.height) : baseResolution;
         ResizeFrame(res);
+
+        //make sure text controller isn't affected by the scaling (this is a little costly)
+        if(scale != transform.localScale)
+        {
+            textBoxController.ChangeTextSize();
+        }
     }
 
     /* --------------------------------------------------------------
@@ -324,9 +352,27 @@ public class FrameController : MonoBehaviour
      * FRAME SCALE AND RESOLUTION
      * -------------------------------------------------------------- */
 
+    public void SetWorldSizeClamp(float maxH, float maxW)
+    {
+        clampWorldSize = (maxH > 0f || maxW > 0f);
+        maxWorldHeight = Mathf.Max(0.01f, maxH);
+        maxWorldWidth = Mathf.Max(0.01f, maxW);
+    }
+
+    public void ConfigureWallPlacement(Renderer wallRenderer, float targetY, float reservedBottom = 0.2f, float padding = 0.05f)
+    {
+        wallRendererRef = wallRenderer;
+        clampToWallBand = (wallRendererRef != null);
+        targetCenterWorldY = targetY;
+        reservedBottomPercent = Mathf.Clamp(reservedBottom, 0f, 0.5f);
+        extraBottomPadding = Mathf.Max(0f, padding);
+    }
+
     private void ResizeFrame(Vector2Int resolution)
     {
         float aspect = resolution.x / (float)resolution.y;
+
+        // quad size BEFORE clamp
         float height = nominalImageHeight;
         float width = height * aspect;
 
@@ -338,10 +384,57 @@ public class FrameController : MonoBehaviour
         EnsureBorders();
         UpdateBorders(width, height);
 
-        // global scale
-        float overall = ComputeResolutionScale(resolution, baseResolution, scaleMode);
+        float overall = ComputeResolutionScale(resolution, baseResolution, scaleMode);  // global scale
+
         transform.localScale = new Vector3(overall, overall, overall);
+
+        if (clampWorldSize)
+        {
+            // current world size of the displayed quad
+            float worldHeight = imageQuadRenderer.bounds.size.y;
+            float worldWidth = imageQuadRenderer.bounds.size.x;
+
+            // ratios needed to fit within limits
+            // NOTE: this will only ever shrink a frame
+            float hRatio = (worldHeight > maxWorldHeight) ? (maxWorldHeight / worldHeight) : 1f;
+            float wRatio = (worldWidth > maxWorldWidth) ? (maxWorldWidth / worldWidth) : 1f;
+
+            float ratio = Mathf.Min(hRatio, wRatio);
+            // takes the bound that exceeds its param by the most then scales it
+            // down at the correct ratio
+            if (ratio < 1f)
+                transform.localScale *= ratio;
+        }
+        ApplyWallClampToTargetY();
     }
+
+    // the point here is to clamp the frame to a specific height if it can go there 
+    // while also leaving room for the text to display below it. The height it is
+    // can be adjusted, it's in the room module script.
+    private void ApplyWallClampToTargetY()
+    {
+        if (!clampToWallBand || wallRendererRef == null) return;
+        if (imageQuadRenderer == null) return;
+
+        Bounds wallB = wallRendererRef.bounds;
+        Bounds frameB = imageQuadRenderer.bounds;
+
+        float wallMinY = wallB.min.y;
+        float wallMaxY = wallB.max.y;
+
+        float reservedBottomY = wallMinY + (wallB.size.y * reservedBottomPercent);
+
+        float halfH = frameB.extents.y;
+
+        float minCenterY = reservedBottomY + extraBottomPadding + halfH;
+        float maxCenterY = wallMaxY - halfH;
+
+        float clampedY = Mathf.Clamp(targetCenterWorldY, minCenterY, maxCenterY);
+
+        var p = transform.position;
+        transform.position = new Vector3(p.x, clampedY, p.z);
+    }
+
 
 
     float ComputeResolutionScale(Vector2Int resolution, Vector2Int baseResolution, ScaleMode scaleMode)
@@ -631,6 +724,7 @@ public class FrameController : MonoBehaviour
                 audioSource.dopplerLevel = 0f;                  // Avoid doppler shift
                 audioSource.loop = false;                       // no looping ever please
                 audioSource.spread = 0f;                        // 0 = more directional  
+                audioSource.volume = GlobalSettings.MASTER_VOLUME;
             }
 
             videoPlayer.audioOutputMode = VideoAudioOutputMode.AudioSource;
@@ -653,5 +747,11 @@ public class FrameController : MonoBehaviour
         isVideoMode = true;
     }
 
-
+    void VolumeChanged()
+    {
+        if (audioSource != null)
+        {
+            audioSource.volume = GlobalSettings.MASTER_VOLUME;
+        }
+    }
 }

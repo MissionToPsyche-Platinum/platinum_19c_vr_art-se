@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -37,11 +38,29 @@ public class ToggleSwitch : MonoBehaviour
         if (slider != null) { return; }
 
         slider = GetComponent<UnityEngine.UI.Slider>();
+
+        CurrentValue = sliderValue > 0 ? true : false;
     }
 
     protected virtual void Awake()
     {
         OnValidate();
+
+        if (sliderValue != 0)
+        {
+            StartCoroutine(InitializeMaterial());
+        }
+    }
+
+    //this is a really scuffed way to do this, but basically if the sliderValue is at 1,
+    // meaning that the property is on at the start (such as skybox rotation), then you
+    // can't actually transition the image on the first frame this object is awake. So
+    // We just wait a frame here and then do it. Works like a charm.
+    private IEnumerator InitializeMaterial()
+    {
+        yield return new WaitForEndOfFrame();
+
+        TransitionImages();
     }
 
     public void Toggle()
@@ -67,7 +86,6 @@ public class ToggleSwitch : MonoBehaviour
 
         animateSliderCoroutine = StartCoroutine(AnimateSlider());
     }
-
 
     private IEnumerator AnimateSlider()
     {

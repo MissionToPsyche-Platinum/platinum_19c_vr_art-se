@@ -34,7 +34,11 @@ public class RoomModule : MonoBehaviour
     [Tooltip("Wall Height is multiplied by this value.")]
     public float wallHeightMod = 1;
     [Tooltip("Whether to center the art displays on the walls automatically.")]
-    public bool centerArtPieces = true;
+    public bool centerArtPieces = false;
+    [SerializeField, Tooltip("Eye-level set at this value")] private float desiredFrameCenterWorldY = 1.6f;
+    [SerializeField, Range(0f, 0.5f),Tooltip("how much of the bottom of the wall is reserved for text placement")] 
+    private float reservedBottomPercent = 0.2f;
+    [SerializeField] private float bottomPadding = 0.05f;
 
     //North is -Z, South is +Z, West is +X, East is -X
     [HideInInspector]
@@ -113,16 +117,41 @@ public class RoomModule : MonoBehaviour
         {
             Transform wallTransform = walls.transform;
 
-            wallTransform.position = new Vector3(wallTransform.position.x, wallTransform.position.y * wallHeightMod, wallTransform.position.z); 
+            wallTransform.position = new Vector3(wallTransform.position.x, wallTransform.position.y * wallHeightMod, wallTransform.position.z);
             wallTransform.localScale = new Vector3(wallTransform.localScale.x, wallTransform.localScale.y, wallTransform.position.y * 100);
 
-            if (centerArtPieces)
+            /***  image-frame world-size clamp logic  ***/
+
+            // measure wall world height
+            var wallRenderer = walls.GetComponentInChildren<Renderer>();
+            if(wallRenderer != null)
             {
+                float wallHeight = wallRenderer.bounds.size.y;
+                float wallWidth = wallRenderer.bounds.size.x;
+                
+                // tuning needs to be done to figure out how much of each wall we want to be able to take up
+                // ideally a frame that takes up most of its wall won't be place right next to another frame
+                // that takes up its whole wall but Murphy's Law and all that
+                float maxFrameHeight = Mathf.Max(0.25f, wallHeight * 0.70f);    // 70% of wall
+                float maxFrameWidth = Mathf.Max(0.25f, wallWidth * 0.85f);      // 85% of wall
+
                 foreach (GameObject g in display.artFrames)
                 {
-                    g.transform.position = new Vector3(g.transform.position.x, wallTransform.position.y + 0.25f, g.transform.position.z);
+                    if (centerArtPieces)
+                    {
+                        g.transform.position = new Vector3(g.transform.position.x, wallTransform.position.y + 0.25f, g.transform.position.z);
+                    }
+
+                    var fC = g.GetComponent<FrameController>();
+                    if (fC != null)
+                    {
+                        fC.SetWorldSizeClamp(maxFrameHeight, maxFrameWidth);
+                        // bottom 20% reserved, eye offset +0.25, tiny padding
+                        fC.ConfigureWallPlacement(wallRenderer, desiredFrameCenterWorldY, reservedBottomPercent, bottomPadding);
+                    }
                 }
             }
+            
         }
     }
        
