@@ -17,6 +17,7 @@ public class MoveTestPlayer : MonoBehaviour
     protected bool toggledSprintAction = false;
     protected Rigidbody rb;
 
+    //TEMP DISABLE 1/14/26 CADE TANNER
     [SerializeField][Tooltip ("Add the SpawnPoint Controller object here")]
     protected SpawnController spawnController;
 
@@ -62,6 +63,7 @@ public class MoveTestPlayer : MonoBehaviour
             descendAction = playerMap.FindAction("Descend", true); //Left Control (FREE CAMERA ONLY)
             interactAction = playerMap.FindAction("Interact", true); //E on Keyboard
             povSwapAction = playerMap.FindAction("POVSwap", true); //Z on Keyboard (Player Only)
+            //Q is swap to different camera perspective!
             
             Debug.Log($"Found moveAction action in map : {moveAction.actionMap.name}");
             moveAction.Enable();
@@ -188,6 +190,7 @@ public class MoveTestPlayer : MonoBehaviour
     //Gives us our current perspective for the camera.
     int CurrentPerspectiveListener()
     {
+        //TEMP DISABLE CADE TANNER 1/14/26 working on the fix
         currentPerspective = spawnController.GetCurrentPerspective();
         return currentPerspective;
     }

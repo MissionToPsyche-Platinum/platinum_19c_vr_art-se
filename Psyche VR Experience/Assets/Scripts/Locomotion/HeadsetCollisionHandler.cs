@@ -7,9 +7,18 @@ public class HeadsetCollisionHandler : MonoBehaviour
     private HeadsetCollisionManager collisionDetector;
     [SerializeField]
     private CharacterController characterController;
-    [SerializeField][Tooltip("The amount of force the wall pushes the player with")]
-    public float knockbackStrength = 1.0f;
+    [SerializeField, Range(0, 2.0f)][Tooltip("The amount of force the wall pushes the player with")]
+    public float knockbackStrength = 1.35f;
     
+    /// <summary>
+    /// Takes the given collider hits and calculates how far the player needs to be pushed to get back into bounds.
+    /// </summary>
+    /// <param name="colliderHits">
+    /// Number of colliders that have been triggered
+    /// </param>
+    /// <returns>
+    /// A calculated normal for knocking the player back into bounds.
+    /// </returns>
     private Vector3 CalculateKnockbackDirection(List<RaycastHit> colliderHits)
     {
         Vector3 combinedNormal = Vector3.zero;

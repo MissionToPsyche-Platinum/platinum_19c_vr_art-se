@@ -34,7 +34,6 @@ public class MuseumManager : MonoBehaviour
     //make sure this is no less than 9 probably
     const int chunkSize = 11;
     const int chunkMid = chunkSize / 2 + 1;
-
     struct SquareRoom
     {
         public int x, y, width, height;
