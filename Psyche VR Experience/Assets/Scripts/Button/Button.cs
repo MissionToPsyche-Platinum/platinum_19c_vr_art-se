@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Button : MonoBehaviour
 {
@@ -10,7 +11,7 @@ public class Button : MonoBehaviour
 
     public Animator animator;
 
-    public event Action<Button> ButtonClickedEvent;
+    [SerializeField] private UnityEvent ButtonClickedEvent;
 
     public bool canBePushed = true;
 
@@ -36,13 +37,13 @@ public class Button : MonoBehaviour
             return;
 
         Unhovered();
-        ButtonClickedEvent?.Invoke(this);
+        ButtonClickedEvent?.Invoke();
 
         animator.Play("Push");
 
         canBePushed = false;
 
-        while(animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
+        while(animator.GetCurrentAnimatorStateInfo(0).IsName("Push"))
         {
             if (this == null)
                 return;
@@ -50,7 +51,6 @@ public class Button : MonoBehaviour
             await Task.Delay(10);
         }
 
-        animator.Play("Idle");
         canBePushed = true;
     }
 

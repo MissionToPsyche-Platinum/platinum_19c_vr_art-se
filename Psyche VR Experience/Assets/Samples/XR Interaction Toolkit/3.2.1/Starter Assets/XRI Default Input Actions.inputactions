@@ -2118,6 +2118,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Settings Menu Interaction",
+                    "type": "Value",
+                    "id": "204baf97-5f36-499c-9030-8f7b5c90842e",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -2431,8 +2440,8 @@
                 },
                 {
                     "name": "",
-                    "id": "76382bb1-2a7d-478a-94f0-02c99e61aaa9",
-                    "path": "<XRController>{RightHand}/{PrimaryTrigger}",
+                    "id": "5567f56d-34d5-41b0-9cec-bbf6f1307135",
+                    "path": "<XRController>{RightHand}/{PrimaryButton}",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -2442,12 +2451,12 @@
                 },
                 {
                     "name": "",
-                    "id": "5567f56d-34d5-41b0-9cec-bbf6f1307135",
-                    "path": "<XRController>{RightHand}/{PrimaryButton}",
+                    "id": "dd0e5f7f-765d-4034-8dc4-2fb42f551752",
+                    "path": "<XRController>{RightHand}/{Primary2DAxis}",
                     "interactions": "",
-                    "processors": "",
+                    "processors": "StickDeadzone(max=1)",
                     "groups": "",
-                    "action": "Menu Select",
+                    "action": "Settings Menu Interaction",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -2615,6 +2624,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "Both Triggers 5 Seconds",
+                    "type": "Button",
+                    "id": "0d3d5fe3-b317-49e8-84b2-8d916ff1d519",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Submit",
                     "type": "Button",
                     "id": "eba98c2e-6268-4233-bb88-946287bc753c",
@@ -2627,7 +2645,7 @@
                     "name": "Cancel",
                     "type": "Button",
                     "id": "448b396b-0885-4543-ac5a-8b3405da6791",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -3028,6 +3046,39 @@
                     "processors": "",
                     "groups": "",
                     "action": "Navigate",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Both Triggers",
+                    "id": "801431e3-9742-44a2-83b7-00409c9f5799",
+                    "path": "OneModifier",
+                    "interactions": "Hold(duration=5)",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Both Triggers 5 Seconds",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "modifier",
+                    "id": "34f39d38-8e82-482e-8e7a-b64a87d73eaf",
+                    "path": "<XRController>{LeftHand}/{TriggerButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Both Triggers 5 Seconds",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "binding",
+                    "id": "57aca411-1f1d-4b9c-9c44-0a5937f91c90",
+                    "path": "<XRController>{RightHand}/{TriggerButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Both Triggers 5 Seconds",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },

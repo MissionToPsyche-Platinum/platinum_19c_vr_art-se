@@ -14,6 +14,7 @@ public class MuseumManager : MonoBehaviour
     const float roomSize = 5;
 
     public RoomModule[][] roomGrid;
+    public Transform firstRoom;
 
     [SerializeField] string dbPathOverride = null;
 
@@ -25,12 +26,14 @@ public class MuseumManager : MonoBehaviour
     [SerializeField] bool asyncPopulate = true;
     [SerializeField] float populateDelay = 0.1f;
 
+    [Tooltip("Generate the museum immediately")]
+    [SerializeField] bool createOnAwake = true;
+
     private int numFrames = 0;
 
     //make sure this is no less than 9 probably
     const int chunkSize = 11;
     const int chunkMid = chunkSize / 2 + 1;
-
     struct SquareRoom
     {
         public int x, y, width, height;
@@ -84,6 +87,11 @@ public class MuseumManager : MonoBehaviour
 
     public async void Awake()
     {
+        if (!createOnAwake)
+        {
+            return;
+        }
+
         System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
         sw.Start();
 
@@ -109,8 +117,6 @@ public class MuseumManager : MonoBehaviour
 
         int chunkCount = (int)(result + 1);
 
-
-
         return chunkCount;
     }
 
@@ -122,6 +128,7 @@ public class MuseumManager : MonoBehaviour
         InitMuseum(chunkSize * numChunks);
 
         Vector2Int startPos = new Vector2Int(numChunks/2, 0);
+        Debug.Log("Starting Position: " + startPos.x + " " + startPos.y);
         bool[][] chunksTraversed = new bool[numChunks][];
 
         for(int i = 0; i < chunksTraversed.Length; i++) { chunksTraversed[i] = new bool[numChunks]; }
@@ -140,8 +147,10 @@ public class MuseumManager : MonoBehaviour
     {
         roomGrid = new RoomModule[size][];
 
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < size; i++) 
+        {
             roomGrid[i] = new RoomModule[size];
+        }
     }
 
     public void AlignAllRooms()
@@ -166,7 +175,6 @@ public class MuseumManager : MonoBehaviour
     {
         int startX = chunkX * chunkSize;
         int startY = chunkY * chunkSize;
-
         int roomIndex = Random.Range(0, patterns.Length);
 
         RoomPattern pattern = patterns[roomIndex];
@@ -369,6 +377,7 @@ public class MuseumManager : MonoBehaviour
         if (!InBounds(x, y, roomGrid.Length) || roomGrid[x][y] != null)
             return;
 
+
         if(roomModulePrefab == null)
         {
             LoadModuleAsset();
@@ -377,6 +386,11 @@ public class MuseumManager : MonoBehaviour
         roomGrid[x][y] = Instantiate(roomModulePrefab);
 
         roomGrid[x][y].transform.position = new Vector3(x * roomSize, 0, y * roomSize);
+
+        if(firstRoom == null)
+        {
+            firstRoom = roomGrid[x][y].transform;
+        }
     }
 
     public void AutoOpening(int x, int y)
