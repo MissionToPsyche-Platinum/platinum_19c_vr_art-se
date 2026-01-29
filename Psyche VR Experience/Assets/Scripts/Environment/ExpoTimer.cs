@@ -51,7 +51,10 @@ public class ExpoTimer : MonoBehaviour
             return;
         }
 
-        secondsLeft -= Time.deltaTime;
+        if (timerRunning)
+            secondsLeft -= Time.deltaTime;
+        else
+            return;
 
         // fire off methods if time is up
         if (secondsLeft < warningSeconds && !warningHappened)

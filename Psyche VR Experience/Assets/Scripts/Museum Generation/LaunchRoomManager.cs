@@ -12,18 +12,27 @@ public class LaunchRoomManager : MonoBehaviour
 
     private bool museumGeneratedAtLeastOnce = false;
 
+    private bool InMuseum = false;
+
     public async void startExpoExperience()
     {
+        if (InMuseum)
+        {
+            return;
+        }
+
+        InMuseum = true;
+
         // generate the museum if we have the generate every time setting or if it hasn't been generated before
         if (true || !museumGeneratedAtLeastOnce)
         {
-            await museumManager.GenerateMuseum(ExpoSettings.MUSEUM_TOUR_DURATION);
+            await museumManager.GenerateMuseum(ExpoSettings.ART_PIECE_COUNT);
             museumGeneratedAtLeastOnce = true;
         }
         // else, just switch the art
         else
         {
-            await museumManager.AssignArt(ExpoSettings.MUSEUM_TOUR_DURATION);
+            await museumManager.AssignArt(ExpoSettings.ART_PIECE_COUNT);
         }
 
         expoTimer.startTimer();
@@ -53,5 +62,7 @@ public class LaunchRoomManager : MonoBehaviour
         {
             playerTransform.position = playerSpawnPosition;
         }
+
+        InMuseum = false;
     }
 }
