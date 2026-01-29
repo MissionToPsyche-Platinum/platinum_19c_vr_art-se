@@ -110,8 +110,8 @@ public class FrameController : MonoBehaviour
         previousIterationSetting = autoIterateOnStart;
 
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
-        fallbackTexture = Resources.Load<Texture2D>("/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png");
-
+        
+        fallbackTexture = LoadImage(ResolveFullPath("Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png"));
         if (fallbackTexture == null)
             Debug.LogError("Fallback image missing! Add it at Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png");
     }
