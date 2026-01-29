@@ -8,12 +8,16 @@ public class Button : MonoBehaviour
     public MeshRenderer buttonRenderer;
     public Material unhovered;
     public Material hovering;
+    public Material pressed;
 
     public Animator animator;
 
     [SerializeField] private UnityEvent ButtonClickedEvent;
 
     public bool canBePushed = true;
+
+    public bool toggleColor = false;
+    bool toggle = false;
 
     public void Hovered()
     {
@@ -25,16 +29,25 @@ public class Button : MonoBehaviour
 
     public void Unhovered()
     {
-        if (!canBePushed)
-            return;
-
-        buttonRenderer.material = unhovered;
+        if (!toggle)
+        {
+            buttonRenderer.material = unhovered;
+        }
+        else
+        {
+            buttonRenderer.material = pressed;
+        }
     }
 
     public async void Pressed()
     {
         if (!canBePushed)
             return;
+
+        if (toggleColor)
+        {
+            toggle = !toggle;
+        }
 
         Unhovered();
         ButtonClickedEvent?.Invoke();

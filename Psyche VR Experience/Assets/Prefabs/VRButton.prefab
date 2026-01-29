@@ -142,11 +142,13 @@ MonoBehaviour:
   buttonRenderer: {fileID: 7723917597560975936}
   unhovered: {fileID: 2100000, guid: b37ee167d76f1cb45bc37e09d8131539, type: 2}
   hovering: {fileID: 2100000, guid: a724385eaa4111345a8d81fd7457bb8b, type: 2}
+  pressed: {fileID: 2100000, guid: aded231a72c11c04abed4b5f81940999, type: 2}
   animator: {fileID: 6651632504114883095}
   ButtonClickedEvent:
     m_PersistentCalls:
       m_Calls: []
   canBePushed: 1
+  toggleColor: 0
 --- !u!95 &6651632504114883095
 Animator:
   serializedVersion: 7
@@ -188,7 +190,7 @@ BoxCollider:
   m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.0000001, y: 0.1, z: 1.0000002}
+  m_Size: {x: 0.75, y: 0.1, z: 0.75}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &7103594821839557414
 Rigidbody:
@@ -362,7 +364,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 90, y: 90, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.012003854, y: 1.0614562}
+  m_AnchoredPosition: {x: 0, y: 1.0614562}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &6088761688797636511
@@ -460,10 +462,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
+  m_fontSize: 35.8
   m_fontSizeBase: 36
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
