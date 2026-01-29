@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Video;
 
@@ -100,6 +101,15 @@ public class FrameController : MonoBehaviour
     [SerializeField] private bool enableAudio = true; //optional toggle 
     [Header("Video Playback")]
     [SerializeField] private bool autoPlayVideoOnLoad = false;
+
+    [Header("Video Proximity Autoplay")]
+    [SerializeField] private bool playVideoOnPlayerProximity = true;
+    [SerializeField] private float videoDwellSeconds = 0.75f;
+    [SerializeField] private bool pauseOnExit = true;
+    // tags that count as the player, I just used "Player" and assigned XR origin, freeroam camera, and playercamera as "Player"
+    [SerializeField] private string collisionTag = "MainCamera";
+    private int insideCount = 0;
+    private Coroutine dwellRoutine;
 
     [SerializeField] private TextBoxController textBoxController;
 
@@ -237,7 +247,7 @@ public class FrameController : MonoBehaviour
         // Ensure valid index or display generic psyche logo instead
         if (mediaPaths == null || mediaPaths.Count == 0)
         {
-            Debug.LogWarning("[FrameController] No media found � using fallback image.");
+            Debug.LogWarning("[FrameController] No media found : using fallback image.");
 
             ShowFallbackImage();
             return;
@@ -629,8 +639,13 @@ public class FrameController : MonoBehaviour
         string ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
         return ext == ".mp3" || ext == ".wav" || ext == ".m4a" || ext == ".ogg" || ext == ".flac";
     }
+    private bool IsCurrentMediaVideo()
+    {
+        if (mediaPaths == null || mediaPaths.Count == 0) return false;
+        string full = ResolveFullPath(mediaPaths[currentMediaIndex]);
+        return IsVideoFile(full);
+    }
 
-    //
     private void OnVideoPrepared(VideoPlayer vp)
     {
         vp.prepareCompleted -= OnVideoPrepared;
@@ -780,11 +795,75 @@ public class FrameController : MonoBehaviour
         isVideoMode = true;
     }
 
+    private IEnumerator VideoDwellThenPlay()
+    {
+        // wait until player has continuously stayed inside for the dwell duration
+        // this prevents the user from triggering the video to start and then leaving
+        // or having any quick passthroughs be the source of the video starting and stopping quickl
+        float t = 0f;
+        while (t < videoDwellSeconds)
+        {
+            if (insideCount <= 0) yield break;   // left before dwell finished
+            t += Time.deltaTime;
+            yield return null;
+        }
+
+        // still inside after dwell? play
+        if (insideCount > 0)
+            PlayPreparedVideo();
+
+        dwellRoutine = null;
+    }
+
     void VolumeChanged()
     {
         if (audioSource != null)
         {
             audioSource.volume = GlobalSettings.MASTER_VOLUME;
+        }
+    }
+
+    /* -------------------------------------------------------------- *
+     *                   Trigger Handling(Colliders)                  *
+     * -------------------------------------------------------------- */
+
+    private bool isCollisionTag(Collider other)
+    {
+        return other.CompareTag(collisionTag);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!playVideoOnPlayerProximity) return;
+        if (!isVideoMode) return;                 // only care if current media is a video
+        if (!isCollisionTag(other)) return;
+
+        insideCount++;
+
+        // start (or restart) dwell timer when someone enters
+        if (dwellRoutine != null) StopCoroutine(dwellRoutine);
+        dwellRoutine = StartCoroutine(VideoDwellThenPlay());
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (!playVideoOnPlayerProximity) return;
+        if (!isVideoMode) return;
+        if (!isCollisionTag(other)) return;
+
+        insideCount = Mathf.Max(0, insideCount - 1);
+
+        // if nobody left inside, cancel dwell + optionally pause
+        if (insideCount == 0)
+        {
+            if (dwellRoutine != null)
+            {
+                StopCoroutine(dwellRoutine);
+                dwellRoutine = null;
+            }
+
+            if (pauseOnExit)
+                PausePreparedVideo();
         }
     }
 }
