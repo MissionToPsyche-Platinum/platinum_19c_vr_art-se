@@ -23,6 +23,11 @@ public class ExpoSettings : MonoBehaviour
         set {expoDuration = value; }
     }
 
+    public void ToggleRegenMuseum()
+    {
+        regenerateMuseum = !regenerateMuseum;
+    }
+
     public void ReadTourDurationInput (string inputString)
     {
         if(int.TryParse(inputString, out expoDuration))
@@ -32,8 +37,7 @@ public class ExpoSettings : MonoBehaviour
             expoDurationInputField.text = expoDuration.ToString();
             freeDurationInputField.text = expoDuration.ToString();
 
-            expoDurationVR.text = expoDuration.ToString();
-            freeDurationVR.text = expoDuration.ToString();
+            durationVR.text = expoDuration.ToString();
         } 
         else
         {
@@ -50,8 +54,7 @@ public class ExpoSettings : MonoBehaviour
             artworkInputField.text = numArtPieces.ToString();
             freeArtworkInputField.text = numArtPieces.ToString();
 
-            expoArtCountVR.text = numArtPieces.ToString();
-            freeArtCountVR.text = numArtPieces.ToString();
+            artCountVR.text = numArtPieces.ToString();
         } 
         else
         {
@@ -74,8 +77,7 @@ public class ExpoSettings : MonoBehaviour
         artworkInputField.text = numArtPieces.ToString();
         freeArtworkInputField.text = numArtPieces.ToString();
 
-        expoArtCountVR.text = numArtPieces.ToString();
-        freeArtCountVR.text = numArtPieces.ToString();
+        artCountVR.text = numArtPieces.ToString();
     }
 
     public void DecrementArtByOne()
@@ -92,8 +94,7 @@ public class ExpoSettings : MonoBehaviour
         artworkInputField.text = numArtPieces.ToString();
         freeArtworkInputField.text = numArtPieces.ToString();
 
-        expoArtCountVR.text = numArtPieces.ToString();
-        freeArtCountVR.text = numArtPieces.ToString();
+        artCountVR.text = numArtPieces.ToString();
     }
 
     public void IncremementArtByTen()
@@ -110,8 +111,7 @@ public class ExpoSettings : MonoBehaviour
         artworkInputField.text = numArtPieces.ToString();
         freeArtworkInputField.text = numArtPieces.ToString();
 
-        expoArtCountVR.text = numArtPieces.ToString();
-        freeArtCountVR.text = numArtPieces.ToString();
+        artCountVR.text = numArtPieces.ToString();
     }
 
     public void DecrementArtByTen()
@@ -128,8 +128,7 @@ public class ExpoSettings : MonoBehaviour
         artworkInputField.text = numArtPieces.ToString();
         freeArtworkInputField.text = numArtPieces.ToString();
 
-        expoArtCountVR.text = numArtPieces.ToString();
-        freeArtCountVR.text = numArtPieces.ToString();
+        artCountVR.text = numArtPieces.ToString();
     }
 
     public void IncrementTimeByOne()
@@ -146,8 +145,7 @@ public class ExpoSettings : MonoBehaviour
         expoDurationInputField.text = expoDuration.ToString();
         freeDurationInputField.text = expoDuration.ToString();
 
-        expoDurationVR.text = expoDuration.ToString();
-        freeDurationVR.text = expoDuration.ToString();
+        durationVR.text = expoDuration.ToString();
     }
 
     public void DecrementTimeByOne()
@@ -164,8 +162,7 @@ public class ExpoSettings : MonoBehaviour
         expoDurationInputField.text = expoDuration.ToString();
         freeDurationInputField.text = expoDuration.ToString();
 
-        expoDurationVR.text = expoDuration.ToString();
-        freeDurationVR.text = expoDuration.ToString();
+        durationVR.text = expoDuration.ToString();
     }
 
     public void IncremementTimeByTen()
@@ -182,8 +179,7 @@ public class ExpoSettings : MonoBehaviour
         expoDurationInputField.text = expoDuration.ToString();
         freeDurationInputField.text = expoDuration.ToString();
 
-        expoDurationVR.text = expoDuration.ToString();
-        freeDurationVR.text = expoDuration.ToString();
+        durationVR.text = expoDuration.ToString();
     }
 
     public void DecrementTimeByTen()
@@ -200,8 +196,11 @@ public class ExpoSettings : MonoBehaviour
         expoDurationInputField.text = expoDuration.ToString();
         freeDurationInputField.text = expoDuration.ToString();
 
-        expoDurationVR.text = expoDuration.ToString();
-        freeDurationVR.text = expoDuration.ToString();
+        if(durationVR == null)
+        {
+            Debug.Log("What the fuck");
+        }
+        durationVR.text = expoDuration.ToString();
     }
 
     public TMP_InputField artworkInputField;
@@ -209,10 +208,8 @@ public class ExpoSettings : MonoBehaviour
     public TMP_InputField freeArtworkInputField;
     public TMP_InputField freeDurationInputField;
 
-    public TMPro.TextMeshProUGUI expoArtCountVR;
-    public TMPro.TextMeshProUGUI freeArtCountVR;
-    public TMPro.TextMeshProUGUI expoDurationVR;
-    public TMPro.TextMeshProUGUI freeDurationVR;
+    public TMPro.TextMeshProUGUI artCountVR;
+    public TMPro.TextMeshProUGUI durationVR;
 
     static int numArtPieces = 30;
     static bool regenerateMuseum = true;

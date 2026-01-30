@@ -50,25 +50,29 @@ public class Button : MonoBehaviour
         }
 
         Unhovered();
-        ButtonClickedEvent?.Invoke();
 
         animator.Play("Push");
 
         canBePushed = false;
+
+        await Task.Delay(100);
 
         while(animator.GetCurrentAnimatorStateInfo(0).IsName("Push"))
         {
             if (this == null)
                 return;
 
-            await Task.Delay(10);
+            await Task.Delay(100);
         }
+
+        ButtonClickedEvent?.Invoke();
 
         canBePushed = true;
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log("PHYSICAL PUSH");
         Pressed();
     }
 }
