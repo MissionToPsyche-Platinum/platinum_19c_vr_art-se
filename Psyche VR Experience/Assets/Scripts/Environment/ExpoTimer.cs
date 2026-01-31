@@ -1,3 +1,4 @@
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
@@ -14,6 +15,7 @@ public class ExpoTimer : MonoBehaviour
     [SerializeField] private AudioSource warningAudio;
 
     [SerializeField] private Image blackScreen;
+    [SerializeField] private TextMeshProUGUI expoEndText;
 
     [SerializeField] private InputActionReference resetEvent;
     [Tooltip("Attach the launch room manager hear to handle when the reset is triggered.")]
@@ -42,10 +44,17 @@ public class ExpoTimer : MonoBehaviour
             // if the screen is not fully black, darken the screen black cover
             if (blackScreen.color.a != 1.0f)
             {
-                Color color = blackScreen.color;
-                color.a += Time.deltaTime;
-                color.a = Mathf.Clamp(color.a, 0, 1);
-                blackScreen.color = color;
+                // screen black
+                Color screenColor = blackScreen.color;
+                screenColor.a += Time.deltaTime;
+                screenColor.a = Mathf.Clamp(screenColor.a, 0, 1);
+                blackScreen.color = screenColor;
+                
+                // instruction text
+                Color textColor = expoEndText.color;
+                textColor.a +=  Time.deltaTime;
+                textColor.a = Mathf.Clamp(textColor.a, 0, 1);
+                expoEndText.color = textColor;
             }
 
             return;
@@ -106,9 +115,14 @@ public class ExpoTimer : MonoBehaviour
         timerDoneHappened = false;
         
         // remove the black screen
-        Color color = blackScreen.color;
-        color.a = 0;
-        blackScreen.color =  color;
+        Color screenColor = blackScreen.color;
+        screenColor.a = 0;
+        blackScreen.color =  screenColor;
+        
+        // remove the ending text
+        Color textColor = expoEndText.color;
+        textColor.a = 0;
+        expoEndText.color = textColor;
 }
 
     public void startTimer()
