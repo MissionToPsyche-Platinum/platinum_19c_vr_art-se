@@ -26,6 +26,7 @@ public class ExpoSettings : MonoBehaviour
     public void ToggleRegenMuseum()
     {
         regenerateMuseum = !regenerateMuseum;
+        Debug.Log("REGENERATE: " + REGENERATE_MUSEUM);
     }
 
     public void ReadTourDurationInput (string inputString)
@@ -196,10 +197,6 @@ public class ExpoSettings : MonoBehaviour
         expoDurationInputField.text = expoDuration.ToString();
         freeDurationInputField.text = expoDuration.ToString();
 
-        if(durationVR == null)
-        {
-            Debug.Log("What the fuck");
-        }
         durationVR.text = expoDuration.ToString();
     }
 
@@ -212,7 +209,7 @@ public class ExpoSettings : MonoBehaviour
     public TMPro.TextMeshProUGUI durationVR;
 
     static int numArtPieces = 30;
-    static bool regenerateMuseum = true;
+    static bool regenerateMuseum = false;
     static int expoDuration = 300;
     
 }

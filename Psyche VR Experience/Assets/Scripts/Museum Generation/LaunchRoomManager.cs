@@ -24,7 +24,7 @@ public class LaunchRoomManager : MonoBehaviour
         InMuseum = true;
 
         // generate the museum if we have the generate every time setting or if it hasn't been generated before
-        if (true || !museumGeneratedAtLeastOnce)
+        if (!museumGeneratedAtLeastOnce)
         {
             await museumManager.GenerateMuseum(ExpoSettings.ART_PIECE_COUNT);
             museumGeneratedAtLeastOnce = true;
@@ -32,7 +32,7 @@ public class LaunchRoomManager : MonoBehaviour
         // else, just switch the art
         else
         {
-            await museumManager.AssignArt(ExpoSettings.ART_PIECE_COUNT);
+            //await museumManager.AssignArt(ExpoSettings.ART_PIECE_COUNT);
         }
 
         expoTimer.startTimer();
@@ -52,6 +52,8 @@ public class LaunchRoomManager : MonoBehaviour
 
     public void ResetExpo()
     {
+        Debug.Log("LAUNCHING WITH REGEN = " + ExpoSettings.REGENERATE_MUSEUM);
+
         // if we generate every time, simply reload the scene
         if (ExpoSettings.REGENERATE_MUSEUM)
         {
