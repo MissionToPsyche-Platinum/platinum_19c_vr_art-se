@@ -26,7 +26,6 @@ public class ExpoSettings : MonoBehaviour
     public void ToggleRegenMuseum()
     {
         regenerateMuseum = !regenerateMuseum;
-        Debug.Log("REGENERATE: " + REGENERATE_MUSEUM);
     }
 
     public void ReadTourDurationInput (string inputString)

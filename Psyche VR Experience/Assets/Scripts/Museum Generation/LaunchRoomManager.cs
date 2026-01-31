@@ -52,8 +52,6 @@ public class LaunchRoomManager : MonoBehaviour
 
     public void ResetExpo()
     {
-        Debug.Log("LAUNCHING WITH REGEN = " + ExpoSettings.REGENERATE_MUSEUM);
-
         // if we generate every time, simply reload the scene
         if (ExpoSettings.REGENERATE_MUSEUM)
         {
