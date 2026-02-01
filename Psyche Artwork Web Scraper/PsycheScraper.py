@@ -14,6 +14,7 @@ from pytubefix import YouTube
 from vimeo_downloader import Vimeo
 from concurrent.futures import ThreadPoolExecutor
 
+import moviepy.editor as mp
 import sqlite3
 import hashlib
 import shutil
@@ -532,6 +533,34 @@ def cleanString(string):
         string = string[colonIndex + 1:]
         string = string.strip()
     return string
+
+#     converts a GIF to MP4 for Unity VideoPlayer compatibility. Returns path to the MP4.
+def convertGIFtoMp4(gif_path: Path, verbose=True) -> Path:
+    mp4_path = gif_path.with_name(gif_path.stem+"_GIF.mp4")
+
+    try:
+        if verbose:
+            print(f"[GIF -> MP4] Converting {gif_path.name}")
+
+        clip = mp.VideoFileClip(str(gif_path))
+        clip.write_videofile(
+            str(mp4_path),
+            codec="libx264",
+            audio=False,
+            fps=clip.fps or 24
+        )
+        clip.close()
+
+        if mp4_path.exists() and mp4_path.stat().st_size > 0:
+            gif_path.unlink()  # delete original gif
+            return mp4_path
+
+    except Exception as e:
+        if verbose:
+            print(f"[GIF → MP4 ERROR] {gif_path}: {e}")
+
+    return gif_path  # fallback
+
 
 # combines all pages of a pdf into one image (png)
 def convertAndDownloadPDF(response, destination, verbose):
