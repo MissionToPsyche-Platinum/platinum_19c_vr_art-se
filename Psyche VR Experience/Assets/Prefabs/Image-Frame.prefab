@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1196509109622901649}
   - component: {fileID: 4209948386074719835}
+  - component: {fileID: 3539333914771748472}
   m_Layer: 0
   m_Name: Image-Frame
   m_TagString: Untagged
@@ -59,11 +60,13 @@ MonoBehaviour:
   scaleMode: 0
   baseResolution: {x: 1920, y: 1080}
   nominalImageHeight: 1
-  clampMaxFrameSize: 1
-  maxFrameScalePercent: 0.97
   clampWorldSize: 1
-  maxWorldHeightMeters: 2.11
-  maxWorldWidthMeters: 2.24
+  maxWorldHeight: 8
+  maxWorldWidth: 6.5
+  clampToWallBand: 1
+  reservedBottomPercent: 0.2
+  targetCenterWorldY: 1.6
+  extraBottomPadding: 0.05
   borderThickness: 0.05
   frameDepth: 0.05
   scriptable: {fileID: 0}
@@ -71,7 +74,29 @@ MonoBehaviour:
   autoIterateOnStart: 0
   autoIterationInterval: 5
   enableAudio: 1
+  autoPlayVideoOnLoad: 0
   textBoxController: {fileID: 6535668632841089042}
+--- !u!65 &3539333914771748472
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1563270452114769424}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.76, y: 1, z: 4.5}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2079116551191390766
 GameObject:
   m_ObjectHideFlags: 0
