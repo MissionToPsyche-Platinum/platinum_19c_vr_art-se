@@ -16,6 +16,7 @@ public class ExpoTimer : MonoBehaviour
 
     [SerializeField] private Image blackScreen;
     [SerializeField] private TextMeshProUGUI expoEndText;
+    [SerializeField] private TextMeshProUGUI expoWarningText;
 
     [SerializeField] private InputActionReference resetEvent;
     [Tooltip("Attach the launch room manager hear to handle when the reset is triggered.")]
@@ -28,6 +29,10 @@ public class ExpoTimer : MonoBehaviour
     // only do the oneMinuteLeft and timerDone "events" once
     private bool warningHappened = false;
     private bool timerDoneHappened = false;
+    private bool timerWarningFinished = false;
+    
+    // track when the timer warning text has fully appeared
+    private bool timerWarningIncreasing = true;
 
     void Start()
     {
@@ -35,6 +40,8 @@ public class ExpoTimer : MonoBehaviour
 
         resetEvent.action.performed += resetEventHappened;
         resetTimer();
+        
+        expoWarningText.text = "You have " + warningSeconds + " seconds remaining before the museum experience ends.";
     }
 
     void Update()
@@ -58,6 +65,33 @@ public class ExpoTimer : MonoBehaviour
             }
 
             return;
+        }
+
+        // if the timer warning went off and the warning text has not finished appearing and disappearing, change it
+        if (warningHappened && !timerWarningFinished)
+        {
+            Color warningColor = expoWarningText.color;
+            
+            // if the opacity is still increasing, increase it more
+            if (timerWarningIncreasing)
+            {
+                warningColor.a += Time.deltaTime;
+                warningColor.a = Mathf.Clamp(warningColor.a, 0, 1);
+                expoWarningText.color = warningColor;
+                // if the opacity has reached 1.0, it's time to decrease
+                if(warningColor.a == 1.0f)
+                    timerWarningIncreasing = false;
+            }
+            // if the opacity is decreasing, decrease it more
+            else
+            {
+                warningColor.a -= Time.deltaTime;
+                warningColor.a = Mathf.Clamp(warningColor.a, 0, 1);
+                expoWarningText.color = warningColor;
+                // if the opacity has reached 0.0, it's time to stop
+                if (warningColor.a == 0f)
+                    timerWarningFinished = true;
+            }
         }
 
         if (timerRunning)
@@ -113,6 +147,8 @@ public class ExpoTimer : MonoBehaviour
         timerRunning = false;
         warningHappened = false;
         timerDoneHappened = false;
+        timerWarningFinished = false;
+        timerWarningIncreasing = true;
         
         // remove the black screen
         Color screenColor = blackScreen.color;
