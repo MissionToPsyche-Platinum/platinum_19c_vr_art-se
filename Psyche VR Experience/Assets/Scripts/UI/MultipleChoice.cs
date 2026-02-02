@@ -65,7 +65,8 @@ public class MultipleChoice : MonoBehaviour
         currIndex -= 1;
         if (needsMusicManaged == true)
         {
-            GetTextFromMusicManager(currIndex);
+            GetTextFromMusicManager();
+            musicManager.PlayNextClip();
         } 
         else
         {
@@ -84,7 +85,8 @@ public class MultipleChoice : MonoBehaviour
         currIndex += 1;
         if (needsMusicManaged == true)
         {
-            GetTextFromMusicManager(currIndex);
+            GetTextFromMusicManager();
+            musicManager.PlayPreviousClip();
         } 
         else
         {
@@ -98,10 +100,9 @@ public class MultipleChoice : MonoBehaviour
         textBox.text = options[index];
     }
 
-    private void GetTextFromMusicManager(int index)
+    private void GetTextFromMusicManager()
     {
         textBox.text = musicManager.getSongName();
-        musicManager.PlayNextClip();
     }
 
     private void buttonPressed()
