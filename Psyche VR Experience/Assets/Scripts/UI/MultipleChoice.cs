@@ -22,8 +22,11 @@ public class MultipleChoice : MonoBehaviour
     [Header("On Change - passes the string that the option is set to")]
     [SerializeField] private UnityEvent<string> onChange;
 
+    [SerializeField] private MusicManager musicManager;
     private int currIndex;
-
+    [Header("Only check this for the Music Change Multiple Choice")]
+    [SerializeField] private bool needsMusicManaged = false;
+    
     protected void OnValidate()
     {
         currIndex = startingIndex;
@@ -60,7 +63,14 @@ public class MultipleChoice : MonoBehaviour
         }
 
         currIndex -= 1;
-        SetTextToIndex(currIndex);
+        if (needsMusicManaged == true)
+        {
+            GetTextFromMusicManager(currIndex);
+        } 
+        else
+        {
+            SetTextToIndex(currIndex);    
+        }
         buttonPressed();
     }
 
@@ -72,13 +82,26 @@ public class MultipleChoice : MonoBehaviour
         }
 
         currIndex += 1;
-        SetTextToIndex(currIndex);
+        if (needsMusicManaged == true)
+        {
+            GetTextFromMusicManager(currIndex);
+        } 
+        else
+        {
+            SetTextToIndex(currIndex);    
+        }
         buttonPressed();
     }
 
     private void SetTextToIndex(int index)
     {
         textBox.text = options[index];
+    }
+
+    private void GetTextFromMusicManager(int index)
+    {
+        textBox.text = musicManager.getSongName();
+        musicManager.PlayNextClip();
     }
 
     private void buttonPressed()

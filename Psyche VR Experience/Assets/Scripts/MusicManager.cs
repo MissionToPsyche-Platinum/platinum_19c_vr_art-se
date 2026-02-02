@@ -1,11 +1,12 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class MusicManager : MonoBehaviour
 {
     AudioSource audioSource;
-    [SerializeField] private AudioClip[] musicPlaylist;
-
+    [SerializeField] public AudioClip[] musicPlaylist;
+    private Stack<int> previousIndexes;
     public bool shuffle = false;
     private int songIndex = 0;
     bool isPlaying;
@@ -16,6 +17,7 @@ public class MusicManager : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         //Ensure the toggle is set to true for the music to play at start-up
         isPlaying = true;
+        audioSource.volume = GlobalSettings.MUSIC_VOLUME;
     }
 
     void Update()
@@ -39,24 +41,13 @@ public class MusicManager : MonoBehaviour
         {
             PlayNextClip();
         }
+        audioSource.volume = GlobalSettings.MUSIC_VOLUME;
     }
 
-    void OnGUI()
-    {
-        //Switch this toggle to activate and deactivate the parent GameObject
-        isPlaying = GUI.Toggle(new Rect(10, 10, 100, 30), isPlaying, "Play Music");
-
-        //Detect if there is a change with the toggle
-        if (GUI.changed)
-        {
-            //Change to true to show that there was just a change in the toggle state
-            togglePlay = true;
-        }
-    }
-
-    void PlayNextClip()
+    public void PlayNextClip()
     {
        Debug.Log("Now playing the next song... ");
+        previousIndexes.Push(songIndex);
         if (shuffle)
         {
             songIndex = Random.Range(0, musicPlaylist.Length);
@@ -70,4 +61,27 @@ public class MusicManager : MonoBehaviour
         Debug.Log(audioSource.clip.name);
         audioSource.Play();
     }
+
+    public void PlayPreviousClip()
+    {
+        songIndex = previousIndexes.Pop();
+        audioSource.clip = musicPlaylist[songIndex];
+        audioSource.Play();
+    }
+    public string getSongName()
+    {
+        return musicPlaylist[songIndex].name;
+    }
+        /*void OnGUI()
+    {
+        //Switch this toggle to activate and deactivate the parent GameObject
+        isPlaying = GUI.Toggle(new Rect(10, 10, 100, 30), isPlaying, "Play Music");
+
+        //Detect if there is a change with the toggle
+        if (GUI.changed)
+        {
+            //Change to true to show that there was just a change in the toggle state
+            togglePlay = true;
+        }
+    }*/
 }
