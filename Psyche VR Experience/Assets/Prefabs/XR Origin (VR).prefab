@@ -1075,6 +1075,7 @@ GameObject:
   - component: {fileID: 4841087437972012586}
   - component: {fileID: 1449260775852610149}
   - component: {fileID: 4637115727723734982}
+  - component: {fileID: 486762804233792554}
   m_Layer: 3
   m_Name: Locomotion Handler
   m_TagString: Untagged
@@ -1188,6 +1189,21 @@ MonoBehaviour:
     m_InputActionReference: {fileID: 6868177321947492843, guid: c348712bda248c246b8c49b3db54643f, type: 3}
     m_ObjectReferenceObject: {fileID: 0}
     m_ManualValue: {x: 0, y: 0}
+--- !u!114 &486762804233792554
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6709354585857568646}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b19c96df864919409dd7a1ac7282e6c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SnapRotation
+  snapRotationInput: {fileID: -2313939267660187392, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+  XRTransform: {fileID: 352839523240806990}
+  rotationAmount: 45
 --- !u!1 &6826867904581329889
 GameObject:
   m_ObjectHideFlags: 0
