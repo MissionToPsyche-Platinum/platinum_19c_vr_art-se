@@ -32,7 +32,7 @@ public class LaunchRoomManager : MonoBehaviour
         // else, just switch the art
         else
         {
-            //await museumManager.AssignArt(ExpoSettings.ART_PIECE_COUNT);
+            await museumManager.AssignArt(ExpoSettings.ART_PIECE_COUNT);
         }
 
         expoTimer.startTimer();
