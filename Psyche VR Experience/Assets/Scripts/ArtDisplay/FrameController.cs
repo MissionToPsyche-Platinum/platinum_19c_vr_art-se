@@ -7,6 +7,9 @@ using UnityEngine.Video;
 
 public class FrameController : MonoBehaviour
 {
+    [Header("Transform of Image Frame to Resize")]
+    public Transform frame;
+
     public enum ScaleMode { LongerSide, PixelArea }
 
     [Header("Scene References")]
@@ -292,17 +295,17 @@ public class FrameController : MonoBehaviour
         _mpb.SetTexture("_MainTex", tex);
         imageQuadRenderer.SetPropertyBlock(_mpb);
 
-        Vector3 scale = transform.localScale; //keep track of this in case it changes
+        //Vector3 scale = transform.localScale; //keep track of this in case it changes
 
         // Sizing based on the current texture
         Vector2Int res = tex ? new(tex.width, tex.height) : baseResolution;
         ResizeFrame(res);
 
         //make sure text controller isn't affected by the scaling (this is a little costly)
-        if(scale != transform.localScale)
-        {
-            textBoxController.ChangeTextSize();
-        }
+        //if(scale != transform.localScale)
+        //{
+        //    textBoxController.ChangeTextSize();
+        //}
     }
 
     /* --------------------------------------------------------------
@@ -344,7 +347,7 @@ public class FrameController : MonoBehaviour
 
     private void ShowFallbackImage()
     {
-        if (fallbackTexture == null)
+        if (fallbackTexture == null || videoPlayer == null)
             return;
 
         videoPlayer.Stop();
@@ -393,12 +396,12 @@ public class FrameController : MonoBehaviour
         quadT.localScale = new Vector3(width, height, 1f);
 
         // rebuild borders
-        EnsureBorders();
-        UpdateBorders(width, height);
+        //EnsureBorders();
+        //UpdateBorders(width, height);
 
         float overall = ComputeResolutionScale(resolution, baseResolution, scaleMode);  // global scale
 
-        transform.localScale = new Vector3(overall, overall, overall);
+        frame.transform.localScale = new Vector3(overall, overall, overall);
 
         if (clampWorldSize)
         {
@@ -415,7 +418,7 @@ public class FrameController : MonoBehaviour
             // takes the bound that exceeds its param by the most then scales it
             // down at the correct ratio
             if (ratio < 1f)
-                transform.localScale *= ratio;
+                frame.transform.localScale *= ratio;
         }
         ApplyWallClampToTargetY();
     }

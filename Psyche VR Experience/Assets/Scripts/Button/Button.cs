@@ -72,7 +72,6 @@ public class Button : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("PHYSICAL PUSH");
         Pressed();
     }
 }
