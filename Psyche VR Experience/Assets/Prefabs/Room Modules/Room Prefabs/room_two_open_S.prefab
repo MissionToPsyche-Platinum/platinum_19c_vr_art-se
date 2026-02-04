@@ -151,6 +151,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: -2357884022608881519, guid: b07b2bc11e2ddaf42811f706e74d4ead, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: fb588634dd1de1040a8b73e945edf2d2, type: 2}
     - target: {fileID: 919132149155446097, guid: b07b2bc11e2ddaf42811f706e74d4ead, type: 3}
       propertyPath: m_Name
       value: room_two_open_S
