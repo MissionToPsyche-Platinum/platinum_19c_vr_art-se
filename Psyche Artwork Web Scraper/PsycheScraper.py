@@ -483,7 +483,12 @@ def getArtInfo(url, verbose):
                     else:
                         with open(absolute_destination, "wb") as f:
                             f.write(response.content)
-
+                        if absolute_destination.suffix.lower() == ".gif":
+                            converted = convertGIFtoMp4(absolute_destination, verbose)
+                            if converted.suffix == ".mp4":
+                                relative_destination = (
+                                        Path("Assets") / "Artwork" / str(project_id) / converted.name
+                                )
                         file_paths.append(str(relative_destination))
                 else:
                     file_paths.append("ERROR: " + link)
