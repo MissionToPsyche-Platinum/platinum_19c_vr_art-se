@@ -24,7 +24,7 @@ public class LaunchRoomManager : MonoBehaviour
         InMuseum = true;
 
         // generate the museum if we have the generate every time setting or if it hasn't been generated before
-        if (true || !museumGeneratedAtLeastOnce)
+        if (!museumGeneratedAtLeastOnce)
         {
             await museumManager.GenerateMuseum(ExpoSettings.ART_PIECE_COUNT);
             museumGeneratedAtLeastOnce = true;
