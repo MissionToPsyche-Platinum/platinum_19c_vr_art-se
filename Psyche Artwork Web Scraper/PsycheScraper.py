@@ -552,7 +552,15 @@ def convertGIFtoMp4(gif_path: Path, verbose=True) -> Path:
             str(mp4_path),
             codec="libx264",
             audio=False,
-            fps=clip.fps or 24
+            fps=clip.fps or 24,
+            ffmpeg_params=[
+                "-pix_fmt", "yuv420p",
+                "-profile:v", "baseline",
+                "-level", "3.0",
+                "-crf", "18",
+                "-preset", "slow",
+                "-movflags", "+faststart"
+            ]
         )
         clip.close()
 
