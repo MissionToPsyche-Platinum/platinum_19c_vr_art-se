@@ -114,7 +114,10 @@ public class FrameController : MonoBehaviour
     private int insideCount = 0;
     private Coroutine dwellRoutine;
 
+    [Header("Component References")]
     [SerializeField] private TextBoxController textBoxController;
+    [SerializeField] private GameObject buttonNext;
+    [SerializeField] private GameObject buttonPrev;
 
     void Awake()
     {
@@ -198,13 +201,36 @@ public class FrameController : MonoBehaviour
 
         // @TODO assign UI text fields
 
-        // if enabled, automatically begin iterating once at least one valid media file is set
-        if (autoIterateOnStart && mediaPaths.Count > 1)
+        if (mediaPaths.Count > 1)
         {
-            StartAutoIteration(autoIterationInterval);
+            // if enabled, automatically begin iterating once at least one valid media file is set
+            if (autoIterateOnStart)
+            {
+                StartAutoIteration(autoIterationInterval);
+            }
+
+            //set buttons active if there's more than one art piece
+            buttonNext.SetActive(true);
+            buttonPrev.SetActive(true);
+        } 
+        else
+        {
+            buttonNext.SetActive(false);
+            buttonPrev.SetActive(false);
         }
     }
     
+    public void RepositionButtons()
+    {
+        float dist = Mathf.Clamp(0.3f + frame.localScale.x * 0.5f, 0.25f, 99f);
+
+        Vector3 posNext = new Vector3(-dist, 0, 0);
+        Vector3 posPrev = new Vector3(dist, 0, 0);
+
+        buttonNext.transform.localPosition = posNext;
+        buttonPrev.transform.localPosition = posPrev;
+    }
+
     public void SetDescText(ArtworkData data)
     {
         string descText = "Title: " + data.artworkName + "\n" +
@@ -226,6 +252,41 @@ public class FrameController : MonoBehaviour
         if (mediaPaths == null || mediaPaths.Count == 0) return;
         currentMediaIndex = Mathf.Clamp(index, 0, mediaPaths.Count - 1);
         ApplyAll();
+    }
+
+    public void ButtonNext()
+    {
+        if(mediaPaths == null || mediaPaths.Count == 0) {
+
+            buttonNext.SetActive(false);
+            buttonPrev.SetActive(false);
+            return; 
+        }
+
+        NextImage();
+
+        //this is necessary to ensure that auto iteration doesn't
+        // get in the way of button iteration, and if a user
+        // is manually iterating, we just want to turn this off
+        StopAutoIteration();
+    }
+
+    public void ButtonPrevious()
+    {
+        if (mediaPaths == null || mediaPaths.Count == 0)
+        {
+
+            buttonNext.SetActive(false);
+            buttonPrev.SetActive(false);
+            return;
+        }
+
+        PreviousImage();
+
+        //this is necessary to ensure that auto iteration doesn't
+        // get in the way of button iteration, and if a user
+        // is manually iterating, we just want to turn this off
+        StopAutoIteration();
     }
 
     public void NextImage()
@@ -421,6 +482,9 @@ public class FrameController : MonoBehaviour
                 frame.transform.localScale *= ratio;
         }
         ApplyWallClampToTargetY();
+
+        //after frame is resized, reposition the buttons
+        RepositionButtons();
     }
 
     // the point here is to clamp the frame to a specific height if it can go there 
@@ -449,8 +513,6 @@ public class FrameController : MonoBehaviour
         var p = transform.position;
         transform.position = new Vector3(p.x, clampedY, p.z);
     }
-
-
 
     float ComputeResolutionScale(Vector2Int resolution, Vector2Int baseResolution, ScaleMode scaleMode)
     {
