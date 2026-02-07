@@ -31,6 +31,11 @@ public class MultipleChoice : MonoBehaviour
     {
         currIndex = startingIndex;
         SetTextToIndex(currIndex);
+        
+        if (needsMusicManaged == true)
+        {
+            GetTextFromMusicManager();
+        }
 
         if (currIndex == 0)
         {

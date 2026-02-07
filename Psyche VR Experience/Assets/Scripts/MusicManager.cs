@@ -10,7 +10,9 @@ public class MusicManager : MonoBehaviour
     public bool shuffle = false;
     private int songIndex = 0;
     bool isPlaying;
-    bool togglePlay;
+    bool togglePlay = true;
+
+    public SphereCollider artFrameCollider;
 
     void Start()
     {
@@ -41,9 +43,23 @@ public class MusicManager : MonoBehaviour
         {
             PlayNextClip();
         }
-        audioSource.volume = GlobalSettings.MUSIC_VOLUME;
+    }
+    
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.collider == artFrameCollider)
+        {
+            MusicFadeOut();
+        }
     }
 
+    void OnCollisionExit(Collision collision)
+    {
+        if (collision.collider == artFrameCollider)
+        {
+            MusicFadeIn();
+        }
+    }
     public void PlayNextClip()
     {
        Debug.Log("Now playing the next song... ");
@@ -71,6 +87,24 @@ public class MusicManager : MonoBehaviour
     public string getSongName()
     {
         return musicPlaylist[songIndex].name;
+    }
+
+    private IEnumerator MusicFadeOut()
+    {
+        while (audioSource.volume > 0)
+        {
+            yield return new WaitForSeconds(0.1f);
+            audioSource.volume -= 1;
+        }
+    }
+
+    private IEnumerator MusicFadeIn()
+    {
+        while (audioSource.volume < GlobalSettings.MUSIC_VOLUME) 
+        {
+            yield return new WaitForSeconds(0.1f);
+            audioSource.volume += 1;    
+        }
     }
         /*void OnGUI()
     {
