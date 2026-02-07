@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -130,6 +131,8 @@ public class FrameController : MonoBehaviour
         fallbackTexture = LoadImage(ResolveFullPath("Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png"));
         if (fallbackTexture == null)
             Debug.LogError("Fallback image missing! Add it at Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png");
+
+        SettingsManager.m_ButtonSizeChanged.AddListener(RepositionButtons_Callback);
     }
 
     void OnValidate()
@@ -220,9 +223,18 @@ public class FrameController : MonoBehaviour
         }
     }
     
+    public async void RepositionButtons_Callback()
+    {
+        //this is just to wait a frame for buttons to be resized
+        await Task.Delay(1);
+
+        RepositionButtons();
+    }
+
     public void RepositionButtons()
     {
-        float dist = Mathf.Clamp(0.3f + frame.localScale.x * 0.5f, 0.25f, 99f);
+        //this calculation assumes that both buttons are the same size
+        float dist = Mathf.Clamp(buttonNext.transform.lossyScale.x / 2 + frame.localScale.x * 0.5f, 0.25f, 99f);
 
         Vector3 posNext = new Vector3(-dist, 0, 0);
         Vector3 posPrev = new Vector3(dist, 0, 0);
@@ -275,7 +287,6 @@ public class FrameController : MonoBehaviour
     {
         if (mediaPaths == null || mediaPaths.Count == 0)
         {
-
             buttonNext.SetActive(false);
             buttonPrev.SetActive(false);
             return;

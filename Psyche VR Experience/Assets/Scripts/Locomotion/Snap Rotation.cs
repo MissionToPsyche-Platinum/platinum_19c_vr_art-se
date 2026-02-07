@@ -20,7 +20,7 @@ public class SnapRotation : MonoBehaviour
     {
         float xInput = snapRotationInput.action.ReadValue<Vector2>().x;
         
-        if (Mathf.Abs(xInput) >= 0.8f && !turned)
+        if (Mathf.Abs(xInput) >= 0.8f && !turned && GlobalSettings.canSnapTurn)
         {
             XRTransform.Rotate(0f, rotationAmount * Mathf.Sign(xInput), 0f, Space.Self);
             turned = true;
