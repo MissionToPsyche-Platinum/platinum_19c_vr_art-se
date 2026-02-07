@@ -674,6 +674,7 @@ public class FrameController : MonoBehaviour
         // Show first frame only
         vp.Play();
         vp.Pause();
+        vp.isLooping = vp.url.Contains("_GIF");
 
         if (enableAudio && audioSource != null)
             audioSource.Pause();
