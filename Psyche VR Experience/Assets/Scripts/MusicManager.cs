@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class MusicManager : MonoBehaviour
 {
-    AudioSource audioSource;
+    [SerializeField] AudioSource audioSource;
     [SerializeField] public AudioClip[] musicPlaylist;
     private Stack<int> previousIndexes;
     public bool shuffle = false;
@@ -20,6 +20,7 @@ public class MusicManager : MonoBehaviour
         //Ensure the toggle is set to true for the music to play at start-up
         isPlaying = true;
         audioSource.volume = GlobalSettings.MUSIC_VOLUME;
+        audioSource.clip = musicPlaylist[songIndex];
     }
 
     void Update()
@@ -27,6 +28,7 @@ public class MusicManager : MonoBehaviour
         //Check to see if you just set the toggle to positive
         if (isPlaying == true && togglePlay == true)
         {
+            Debug.Log("Started playing");
             audioSource.Play();
             //Ensure audio doesn’t play more than once
             togglePlay = false;
@@ -34,6 +36,7 @@ public class MusicManager : MonoBehaviour
         //Check if you just set the toggle to false
         if (isPlaying == false && togglePlay == true)
         {
+            Debug.Log("Stopped Playing");
             audioSource.Stop();
             //Ensure audio doesn’t play more than once
             togglePlay = false;
@@ -44,7 +47,7 @@ public class MusicManager : MonoBehaviour
             PlayNextClip();
         }
     }
-    
+
     void OnCollisionEnter(Collision collision)
     {
         if (collision.collider == artFrameCollider)
@@ -60,9 +63,10 @@ public class MusicManager : MonoBehaviour
             MusicFadeIn();
         }
     }
+
     public void PlayNextClip()
     {
-       Debug.Log("Now playing the next song... ");
+        Debug.Log("Now playing the next song... ");
         previousIndexes.Push(songIndex);
         if (shuffle)
         {
@@ -80,6 +84,7 @@ public class MusicManager : MonoBehaviour
 
     public void PlayPreviousClip()
     {
+        Debug.Log("Playing the previous Clip");
         songIndex = previousIndexes.Pop();
         audioSource.clip = musicPlaylist[songIndex];
         audioSource.Play();
@@ -91,6 +96,7 @@ public class MusicManager : MonoBehaviour
 
     private IEnumerator MusicFadeOut()
     {
+        Debug.Log("Music is fading out");
         while (audioSource.volume > 0)
         {
             yield return new WaitForSeconds(0.1f);
@@ -100,22 +106,11 @@ public class MusicManager : MonoBehaviour
 
     private IEnumerator MusicFadeIn()
     {
+        Debug.Log("Music is fading in");
         while (audioSource.volume < GlobalSettings.MUSIC_VOLUME) 
         {
             yield return new WaitForSeconds(0.1f);
             audioSource.volume += 1;    
         }
     }
-        /*void OnGUI()
-    {
-        //Switch this toggle to activate and deactivate the parent GameObject
-        isPlaying = GUI.Toggle(new Rect(10, 10, 100, 30), isPlaying, "Play Music");
-
-        //Detect if there is a change with the toggle
-        if (GUI.changed)
-        {
-            //Change to true to show that there was just a change in the toggle state
-            togglePlay = true;
-        }
-    }*/
 }
