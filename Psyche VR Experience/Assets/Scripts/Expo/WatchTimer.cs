@@ -16,6 +16,11 @@ public class WatchTimer : MonoBehaviour
     void Update()
     {
         float seconds = expoTimer.getSecondsLeft();
+        if (seconds <= 0)
+        {
+            seconds = 0f;
+        }
+
         watchText.text = ((int) seconds).ToString();
     }
 }
