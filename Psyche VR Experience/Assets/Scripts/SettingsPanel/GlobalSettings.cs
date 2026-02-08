@@ -50,4 +50,5 @@ public static class GlobalSettings
     private static float textSizeMultplier = 1f;
     private static float interactionSizeMultplier = 1f;
     private static bool projectIterate = false;
+    public static bool canSnapTurn = true;
 }
