@@ -344,7 +344,7 @@ public class FrameController : MonoBehaviour
 
     private void ShowFallbackImage()
     {
-        if (fallbackTexture == null)
+        if (fallbackTexture == null || videoPlayer == null)
             return;
 
         videoPlayer.Stop();
