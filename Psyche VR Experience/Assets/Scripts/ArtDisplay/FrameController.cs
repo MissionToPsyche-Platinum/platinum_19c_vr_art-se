@@ -24,8 +24,6 @@ public class FrameController : MonoBehaviour
     [SerializeField] TextMeshProUGUI artDesc;
 
     [Header("Images")]
-    [Tooltip("All images this frame can show. Only one is visible at a time. API is available.")]
-    [SerializeField] List<Texture2D> images = new List<Texture2D>();
     [SerializeField] private List<string> mediaPaths = new List<string>();
     private Texture2D lastLoadedImage = null; // for use in unloading previous texture from memory
 
