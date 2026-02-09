@@ -14,6 +14,7 @@ from pytubefix import YouTube
 from vimeo_downloader import Vimeo
 from concurrent.futures import ThreadPoolExecutor
 
+import moviepy.editor as mp
 import sqlite3
 import hashlib
 import shutil
@@ -482,7 +483,12 @@ def getArtInfo(url, verbose):
                     else:
                         with open(absolute_destination, "wb") as f:
                             f.write(response.content)
-
+                        if absolute_destination.suffix.lower() == ".gif":
+                            converted = convertGIFtoMp4(absolute_destination, verbose)
+                            if converted.suffix == ".mp4":
+                                relative_destination = (
+                                        Path("Assets") / "Artwork" / str(project_id) / converted.name
+                                )
                         file_paths.append(str(relative_destination))
                 else:
                     file_paths.append("ERROR: " + link)
@@ -532,6 +538,66 @@ def cleanString(string):
         string = string[colonIndex + 1:]
         string = string.strip()
     return string
+
+#     converts a GIF to MP4 for Unity VideoPlayer compatibility handles rec.709 and other compatibility issues
+#     returns path to MP4.
+def convertGIFtoMp4(gif_path: Path, verbose=True) -> Path:
+    gif_path = Path(gif_path)
+    mp4_path = gif_path.with_name(gif_path.stem+"_GIF.mp4")
+    fps = 24
+    try:
+        if verbose:
+            print(f"[GIF→MP4] {gif_path.name} → {mp4_path.name}")
+
+        # ensure even dimensions and constant fps(windows media support requires this)
+        # scale=trunc(iw/2)*2:trunc(ih/2)*2 forces even width/height.
+        vf = f"fps={fps},scale=trunc(iw/2)*2:trunc(ih/2)*2:flags=lanczos"
+
+        (
+            ffmpeg
+            .input(str(gif_path))
+            .output(
+                str(mp4_path),
+                vcodec="libx264",
+                pix_fmt="yuv420p",
+                vf=vf,
+                r=fps,  # enforce CFR
+                vsync="cfr",
+                an=None,  # no audio
+                movflags="+faststart",
+                **{
+                    "profile:v": "baseline",
+                    "level": "3.0",
+                    "crf": "18",
+                    "preset": "slow",
+                    "color_primaries": "bt709",
+                    "color_trc": "bt709",
+                    "colorspace": "bt709",
+                    "tag:v": "avc1"
+                }
+            )
+            .overwrite_output()
+            .run(quiet=not verbose)
+        )
+
+        # if conversion succeeds, remove original GIF
+        if mp4_path.exists() and mp4_path.stat().st_size > 0:
+            try:
+                gif_path.unlink()
+            except Exception as e:
+                if verbose:
+                    print(f"[GIF→MP4] Warning: couldn't delete {gif_path.name}: {e}")
+            return mp4_path
+
+        if verbose:
+            print("[GIF→MP4] Output missing/empty, keeping GIF.")
+        return gif_path
+
+    except Exception as e:
+        if verbose:
+            print(f"[GIF→MP4ERROR] {gif_path}: {e}")
+        return gif_path
+
 
 # combines all pages of a pdf into one image (png)
 def convertAndDownloadPDF(response, destination, verbose):

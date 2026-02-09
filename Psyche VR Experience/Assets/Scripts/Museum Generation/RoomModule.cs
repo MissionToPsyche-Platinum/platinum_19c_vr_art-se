@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO.IsolatedStorage;
 using System.Linq;
@@ -25,6 +26,8 @@ public class RoomModule : MonoBehaviour
     public RoomType roomType = RoomType.OneOpen;
 
     public GameObject[] roomModels;
+    [SerializeField, Range(0f, 1f), Tooltip("Number between 0 and 1.  The higher it is, the higher the chance of spawning a decoration in an empty spot.")]
+    public float decorationLikelihood;
     [HideInInspector]
     public GameObject room;
     [HideInInspector]
@@ -100,6 +103,8 @@ public class RoomModule : MonoBehaviour
     //number of openings in each room
     int[] roomOpeningCounts = new int[(int)RoomType.SIZE];
 
+    public GameObject decoration;
+
     void CreateRoom()
     {
         if (room != null)
@@ -110,48 +115,61 @@ public class RoomModule : MonoBehaviour
         room = Instantiate(roomModels[(int)roomType], transform);
         display = room.GetComponent<ArtDisplayList>();
 
-        //this is a weird way to do this, as it requires part of the module to be named "Room"
+        //this is a weird way to do this, as it requires all the walls to be in an empty named "Room"
         GameObject walls = room.GetNamedChild("Room");
 
         if (walls != null)
         {
-            Transform wallTransform = walls.transform;
-
-            wallTransform.position = new Vector3(wallTransform.position.x, wallTransform.position.y * wallHeightMod, wallTransform.position.z);
-            wallTransform.localScale = new Vector3(wallTransform.localScale.x, wallTransform.localScale.y, wallTransform.position.y * 100);
-
-            /***  image-frame world-size clamp logic  ***/
-
-            // measure wall world height
-            var wallRenderer = walls.GetComponentInChildren<Renderer>();
-            if(wallRenderer != null)
+            int wallCount = walls.transform.childCount;
+            for (int i = 0; i < wallCount; i++)
             {
-                float wallHeight = wallRenderer.bounds.size.y;
-                float wallWidth = wallRenderer.bounds.size.x;
+                GameObject wall = walls.transform.GetChild(i).gameObject;
                 
-                // tuning needs to be done to figure out how much of each wall we want to be able to take up
-                // ideally a frame that takes up most of its wall won't be place right next to another frame
-                // that takes up its whole wall but Murphy's Law and all that
-                float maxFrameHeight = Mathf.Max(0.25f, wallHeight * 0.70f);    // 70% of wall
-                float maxFrameWidth = Mathf.Max(0.25f, wallWidth * 0.85f);      // 85% of wall
-
-                foreach (GameObject g in display.artFrames)
+                Transform wallTransform = wall.transform;
+                
+                wallTransform.position = new Vector3(wallTransform.position.x, wallTransform.position.y * wallHeightMod, wallTransform.position.z);
+                wallTransform.localScale = new Vector3(wallTransform.localScale.x, wallTransform.localScale.y, wallTransform.position.y * 100);
+    
+                /***  image-frame world-size clamp logic  ***/
+    
+                // measure wall world height
+                var wallRenderer = wall.GetComponentInChildren<Renderer>();
+                if(wallRenderer != null)
                 {
-                    if (centerArtPieces)
+                    float wallHeight = wallRenderer.bounds.size.y;
+                    float wallWidth = wallRenderer.bounds.size.x;
+                    
+                    // tuning needs to be done to figure out how much of each wall we want to be able to take up
+                    // ideally a frame that takes up most of its wall won't be place right next to another frame
+                    // that takes up its whole wall but Murphy's Law and all that
+                    float maxFrameHeight = Mathf.Max(0.25f, wallHeight * 0.70f);    // 70% of wall
+                    float maxFrameWidth = Mathf.Max(0.25f, wallWidth * 0.85f);      // 85% of wall
+    
+                    foreach (GameObject g in display.artFrames)
                     {
-                        g.transform.position = new Vector3(g.transform.position.x, wallTransform.position.y + 0.25f, g.transform.position.z);
-                    }
-
-                    var fC = g.GetComponent<FrameController>();
-                    if (fC != null)
-                    {
-                        fC.SetWorldSizeClamp(maxFrameHeight, maxFrameWidth);
-                        // bottom 20% reserved, eye offset +0.25, tiny padding
-                        fC.ConfigureWallPlacement(wallRenderer, desiredFrameCenterWorldY, reservedBottomPercent, bottomPadding);
+                        if (centerArtPieces)
+                        {
+                            g.transform.position = new Vector3(g.transform.position.x, wallTransform.position.y + 0.25f, g.transform.position.z);
+                        }
+    
+                        var fC = g.GetComponent<FrameController>();
+                        if (fC != null)
+                        {
+                            fC.SetWorldSizeClamp(maxFrameHeight, maxFrameWidth);
+                            // bottom 20% reserved, eye offset +0.25, tiny padding
+                            fC.ConfigureWallPlacement(wallRenderer, desiredFrameCenterWorldY, reservedBottomPercent, bottomPadding);
+                        }
                     }
                 }
             }
-            
+        }
+        
+        // add decorations if the room is a certain type
+        float dieRoll = UnityEngine.Random.Range(0f, 1f);
+        if ((roomType == RoomType.FourOpen || roomType == RoomType.FlatOpen) && dieRoll < decorationLikelihood)
+        {
+            decoration = room.transform.GetChild(UnityEngine.Random.Range(1, 5)).gameObject;
+            decoration.SetActive(true);
         }
     }
        

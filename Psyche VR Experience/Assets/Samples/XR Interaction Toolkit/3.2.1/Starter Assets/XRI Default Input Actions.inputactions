@@ -2524,10 +2524,19 @@
                     "name": "Jump",
                     "type": "Button",
                     "id": "01c7fda4-9c15-4167-8b87-58024f21d903",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Snap Rotate",
+                    "type": "Value",
+                    "id": "648ce47d-1a36-4580-b684-652bb90efc54",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -2605,6 +2614,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f2a00cee-39b2-4410-a840-fc259d2d37fd",
+                    "path": "<XRController>{RightHand}/{Primary2DAxis}",
+                    "interactions": "Sector(directions=12,pressPoint=0.8)",
+                    "processors": "StickDeadzone(min=0.8,max=1)",
+                    "groups": "",
+                    "action": "Snap Rotate",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
