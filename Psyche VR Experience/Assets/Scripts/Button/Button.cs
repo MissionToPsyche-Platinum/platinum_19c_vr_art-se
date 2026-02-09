@@ -19,6 +19,24 @@ public class Button : MonoBehaviour
     public bool toggleColor = false;
     bool toggle = false;
 
+    public bool canBeResized = true;
+
+    private float scale;
+
+    public void Awake()
+    {
+        if (canBeResized)
+        {
+            scale = transform.localScale.x; //store initial scale (assume it's the same across x, y, and z
+            SettingsManager.m_ButtonSizeChanged.AddListener(ResizeSelf);
+        }
+    }
+
+    void ResizeSelf()
+    {
+        transform.localScale = Vector3.one * GlobalSettings.INTERACTION_SIZE_MULTIPLER * scale;
+    }
+
     public void Hovered()
     {
         if (!canBePushed)
@@ -72,7 +90,6 @@ public class Button : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("PHYSICAL PUSH");
         Pressed();
     }
 }
