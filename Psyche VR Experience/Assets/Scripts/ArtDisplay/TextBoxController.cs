@@ -16,9 +16,9 @@ public class TextBoxController : MonoBehaviour
 
     public void ChangeTextSize()
     {
-        Transform parent = transform.parent; 
-        transform.SetParent(null);
+        //Transform parent = transform.parent; 
+        //transform.SetParent(null);
         transform.localScale = Vector3.one * GlobalSettings.TEXT_SIZE_MULTIPLIER;
-        transform.SetParent(parent);
+        //transform.SetParent(parent);
     }
 }

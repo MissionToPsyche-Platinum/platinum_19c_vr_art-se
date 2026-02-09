@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -7,6 +8,9 @@ using UnityEngine.Video;
 
 public class FrameController : MonoBehaviour
 {
+    [Header("Transform of Image Frame to Resize")]
+    public Transform frame;
+
     public enum ScaleMode { LongerSide, PixelArea }
 
     [Header("Scene References")]
@@ -111,7 +115,10 @@ public class FrameController : MonoBehaviour
     private int insideCount = 0;
     private Coroutine dwellRoutine;
 
+    [Header("Component References")]
     [SerializeField] private TextBoxController textBoxController;
+    [SerializeField] private GameObject buttonNext;
+    [SerializeField] private GameObject buttonPrev;
 
     void Awake()
     {
@@ -124,6 +131,8 @@ public class FrameController : MonoBehaviour
         fallbackTexture = LoadImage(ResolveFullPath("Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png"));
         if (fallbackTexture == null)
             Debug.LogError("Fallback image missing! Add it at Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png");
+
+        SettingsManager.m_ButtonSizeChanged.AddListener(RepositionButtons_Callback);
     }
 
     void OnValidate()
@@ -195,13 +204,45 @@ public class FrameController : MonoBehaviour
 
         // @TODO assign UI text fields
 
-        // if enabled, automatically begin iterating once at least one valid media file is set
-        if (autoIterateOnStart && mediaPaths.Count > 1)
+        if (mediaPaths.Count > 1)
         {
-            StartAutoIteration(autoIterationInterval);
+            // if enabled, automatically begin iterating once at least one valid media file is set
+            if (autoIterateOnStart)
+            {
+                StartAutoIteration(autoIterationInterval);
+            }
+
+            //set buttons active if there's more than one art piece
+            buttonNext.SetActive(true);
+            buttonPrev.SetActive(true);
+        } 
+        else
+        {
+            buttonNext.SetActive(false);
+            buttonPrev.SetActive(false);
         }
     }
     
+    public async void RepositionButtons_Callback()
+    {
+        //this is just to wait a frame for buttons to be resized
+        await Task.Delay(1);
+
+        RepositionButtons();
+    }
+
+    public void RepositionButtons()
+    {
+        //this calculation assumes that both buttons are the same size
+        float dist = Mathf.Clamp(buttonNext.transform.lossyScale.x / 2 + frame.localScale.x * 0.5f, 0.25f, 99f);
+
+        Vector3 posNext = new Vector3(-dist, 0, 0);
+        Vector3 posPrev = new Vector3(dist, 0, 0);
+
+        buttonNext.transform.localPosition = posNext;
+        buttonPrev.transform.localPosition = posPrev;
+    }
+
     public void SetDescText(ArtworkData data)
     {
         string descText = "Title: " + data.artworkName + "\n" +
@@ -223,6 +264,40 @@ public class FrameController : MonoBehaviour
         if (mediaPaths == null || mediaPaths.Count == 0) return;
         currentMediaIndex = Mathf.Clamp(index, 0, mediaPaths.Count - 1);
         ApplyAll();
+    }
+
+    public void ButtonNext()
+    {
+        if(mediaPaths == null || mediaPaths.Count == 0) {
+
+            buttonNext.SetActive(false);
+            buttonPrev.SetActive(false);
+            return; 
+        }
+
+        NextImage();
+
+        //this is necessary to ensure that auto iteration doesn't
+        // get in the way of button iteration, and if a user
+        // is manually iterating, we just want to turn this off
+        StopAutoIteration();
+    }
+
+    public void ButtonPrevious()
+    {
+        if (mediaPaths == null || mediaPaths.Count == 0)
+        {
+            buttonNext.SetActive(false);
+            buttonPrev.SetActive(false);
+            return;
+        }
+
+        PreviousImage();
+
+        //this is necessary to ensure that auto iteration doesn't
+        // get in the way of button iteration, and if a user
+        // is manually iterating, we just want to turn this off
+        StopAutoIteration();
     }
 
     public void NextImage()
@@ -292,17 +367,17 @@ public class FrameController : MonoBehaviour
         _mpb.SetTexture("_MainTex", tex);
         imageQuadRenderer.SetPropertyBlock(_mpb);
 
-        Vector3 scale = transform.localScale; //keep track of this in case it changes
+        //Vector3 scale = transform.localScale; //keep track of this in case it changes
 
         // Sizing based on the current texture
         Vector2Int res = tex ? new(tex.width, tex.height) : baseResolution;
         ResizeFrame(res);
 
         //make sure text controller isn't affected by the scaling (this is a little costly)
-        if(scale != transform.localScale)
-        {
-            textBoxController.ChangeTextSize();
-        }
+        //if(scale != transform.localScale)
+        //{
+        //    textBoxController.ChangeTextSize();
+        //}
     }
 
     /* --------------------------------------------------------------
@@ -393,12 +468,12 @@ public class FrameController : MonoBehaviour
         quadT.localScale = new Vector3(width, height, 1f);
 
         // rebuild borders
-        EnsureBorders();
-        UpdateBorders(width, height);
+        //EnsureBorders();
+        //UpdateBorders(width, height);
 
         float overall = ComputeResolutionScale(resolution, baseResolution, scaleMode);  // global scale
 
-        transform.localScale = new Vector3(overall, overall, overall);
+        frame.transform.localScale = new Vector3(overall, overall, overall);
 
         if (clampWorldSize)
         {
@@ -415,9 +490,12 @@ public class FrameController : MonoBehaviour
             // takes the bound that exceeds its param by the most then scales it
             // down at the correct ratio
             if (ratio < 1f)
-                transform.localScale *= ratio;
+                frame.transform.localScale *= ratio;
         }
         ApplyWallClampToTargetY();
+
+        //after frame is resized, reposition the buttons
+        RepositionButtons();
     }
 
     // the point here is to clamp the frame to a specific height if it can go there 
@@ -446,8 +524,6 @@ public class FrameController : MonoBehaviour
         var p = transform.position;
         transform.position = new Vector3(p.x, clampedY, p.z);
     }
-
-
 
     float ComputeResolutionScale(Vector2Int resolution, Vector2Int baseResolution, ScaleMode scaleMode)
     {
