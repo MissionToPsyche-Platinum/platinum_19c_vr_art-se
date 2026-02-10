@@ -775,6 +775,10 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -1439730007547781893, guid: 6b4f3c8ac521c3442926e835bf7133eb, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 0761277d72d78534491bb677103be723, type: 2}
     - target: {fileID: 919132149155446097, guid: 6b4f3c8ac521c3442926e835bf7133eb, type: 3}
       propertyPath: m_Name
       value: PsycheAsteroidStatue
@@ -783,6 +787,18 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5643154740854221635, guid: 6b4f3c8ac521c3442926e835bf7133eb, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 1b8bb574102618c4fa74907d8a0a8a00, type: 2}
+    - target: {fileID: 7071182760956848314, guid: 6b4f3c8ac521c3442926e835bf7133eb, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 1b8bb574102618c4fa74907d8a0a8a00, type: 2}
+    - target: {fileID: 7202271454713460447, guid: 6b4f3c8ac521c3442926e835bf7133eb, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 1b8bb574102618c4fa74907d8a0a8a00, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 65702495048144492, guid: 6b4f3c8ac521c3442926e835bf7133eb, type: 3}
