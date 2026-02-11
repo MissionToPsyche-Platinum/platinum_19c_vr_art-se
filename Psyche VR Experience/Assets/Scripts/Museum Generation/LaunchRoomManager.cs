@@ -14,6 +14,12 @@ public class LaunchRoomManager : MonoBehaviour
 
     private bool InMuseum = false;
 
+    public void Awake()
+    {
+        startExpoExperience();
+        Debug.LogError("DELETE THIS BEFORE MERGING");
+    }
+
     public async void startExpoExperience()
     {
         if (InMuseum)
