@@ -314,11 +314,12 @@ public class MuseumManager : MonoBehaviour
             if (spotsFilled < requestCount)
             {
                 numToFill = Random.Range(1, roomsWithFrameControllers[index].GetNumArtDisplays() + 1);
+                await roomsWithFrameControllers[index].SetArtDisplays(numToFill, items, spotsFilled, asyncPopulate, populateDelay);
+                spotsFilled += numToFill;
+                continue;
             }
-            Debug.Log("Assigning room at index " + index + " with " + numToFill + " art displays");
-            await roomsWithFrameControllers[index].SetArtDisplays(numToFill, items, spotsFilled, asyncPopulate, populateDelay);
 
-            spotsFilled += numToFill;
+            await roomsWithFrameControllers[index].SetArtDisplays(0);
         }
 
         //for (int x = 0; x < roomGrid.Length; x++)

@@ -171,7 +171,10 @@ public class FrameController : MonoBehaviour
     /*  PUBLIC API  */
     public void SetArtwork(ArtworkData data)
     {
-        if (data == null) return;
+        if (data.artworkCount == 0)
+        {
+            return;
+        }
 
         // store the paths for potential video playback as well
         // while filtering out missing files(in case db got some bad entries)
