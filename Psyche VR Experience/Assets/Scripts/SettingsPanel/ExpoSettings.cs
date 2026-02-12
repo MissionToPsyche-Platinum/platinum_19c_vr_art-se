@@ -142,10 +142,10 @@ public class ExpoSettings : MonoBehaviour
             expoDuration = 3600;
         }
 
-        expoDurationInputField.text = expoDuration.ToString();
-        freeDurationInputField.text = expoDuration.ToString();
+        expoDurationInputField.text = ConvertSecondsToTime(expoDuration);
+        freeDurationInputField.text = ConvertSecondsToTime(expoDuration);
 
-        durationVR.text = expoDuration.ToString();
+        durationVR.text = ConvertSecondsToTime(expoDuration);
     }
 
     public void DecrementTimeByOne()
@@ -159,10 +159,10 @@ public class ExpoSettings : MonoBehaviour
             expoDuration = 0;
         }
 
-        expoDurationInputField.text = expoDuration.ToString();
-        freeDurationInputField.text = expoDuration.ToString();
+        expoDurationInputField.text = ConvertSecondsToTime(expoDuration);
+        freeDurationInputField.text = ConvertSecondsToTime(expoDuration);
 
-        durationVR.text = expoDuration.ToString();
+        durationVR.text = ConvertSecondsToTime(expoDuration);
     }
 
     public void IncremementTimeByTen()
@@ -176,10 +176,10 @@ public class ExpoSettings : MonoBehaviour
             expoDuration = 150;
         }
 
-        expoDurationInputField.text = expoDuration.ToString();
-        freeDurationInputField.text = expoDuration.ToString();
+        expoDurationInputField.text = ConvertSecondsToTime(expoDuration);
+        freeDurationInputField.text = ConvertSecondsToTime(expoDuration);
 
-        durationVR.text = expoDuration.ToString();
+        durationVR.text = ConvertSecondsToTime(expoDuration);
     }
 
     public void DecrementTimeByTen()
@@ -193,10 +193,41 @@ public class ExpoSettings : MonoBehaviour
             expoDuration = 0;
         }
 
-        expoDurationInputField.text = expoDuration.ToString();
-        freeDurationInputField.text = expoDuration.ToString();
+        expoDurationInputField.text = ConvertSecondsToTime(expoDuration);
+        freeDurationInputField.text = ConvertSecondsToTime(expoDuration);
 
-        durationVR.text = expoDuration.ToString();
+        durationVR.text = ConvertSecondsToTime(expoDuration);
+    }
+
+    public void SetShortExpoTime()
+    {
+        expoDuration = 180;
+        expoDurationInputField.text = ConvertSecondsToTime(expoDuration);
+        durationVR.text = ConvertSecondsToTime(expoDuration);
+    }
+
+    public void SetMediumExpoTime()
+    {
+        expoDuration = 300;
+        expoDurationInputField.text = ConvertSecondsToTime(expoDuration);
+        durationVR.text = ConvertSecondsToTime(expoDuration);
+    }
+
+    public void SetLongExpoTime()
+    {
+        expoDuration = 420;
+        expoDurationInputField.text = ConvertSecondsToTime(expoDuration);
+        durationVR.text = ConvertSecondsToTime(expoDuration);
+
+        
+    }
+
+    public string ConvertSecondsToTime(int duration)
+    {
+        int minutes = duration / 60;
+        int seconds = duration % 60;
+        string timeFormatted = string.Format("{0:D2}:{1:D2}", minutes, seconds);
+        return timeFormatted;
     }
 
     public TMP_InputField artworkInputField;
