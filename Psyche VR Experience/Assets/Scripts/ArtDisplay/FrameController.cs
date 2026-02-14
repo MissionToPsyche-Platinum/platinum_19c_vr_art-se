@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -65,7 +66,7 @@ public class FrameController : MonoBehaviour
 
     [Header("Scriptable Object(Artwork)")]
     [Tooltip("The scriptable object containing the piece's path and data. (This is not included in functionality nor in the API atm)")]
-    [SerializeField] Object scriptable = null;
+    [SerializeField] UnityEngine.Object scriptable = null;
 
     [Header("Fallback Texture")]
     [Tooltip("An image to display if the frame has nothing to display within itself due to errors or the media being audio only")]
@@ -243,18 +244,35 @@ public class FrameController : MonoBehaviour
 
     public void SetDescText(ArtworkData data)
     {
-        string descText = "Title: " + data.artworkName + "\n" +
-                          "Artist's Name: " + data.artistName + "\n" +
-                          "Date: " + data.artworkDate + "\n" +
-                          "Artist's Major: " + data.artistMajor + "\n" +
-                          "Art Genre/Medium: " + data.genre + "\n" +
-                          "About the Work: " + data.artworkDescription;
-        artDesc.text = descText;
+        string boxText = data.artistName + "\n\n" +
+                          data.artworkName + " - " + formatArtworkDataDate(data.artworkDate) + "\n\n" +
+                          data.genre + "\n";
+
+        // string descriptionText = "Artist Major: " + data.artistMajor + "\n\n" + data.artworkDescription;
+        
+        artDesc.text = boxText;
         artDesc.color = Color.black;
         artDesc.autoSizeTextContainer = false;
         // artDesc.transform.localScale = new Vector3(1, .5f, 1);
         artDesc.GetComponent<RectTransform>().sizeDelta = new Vector2(artDesc.GetComponent<RectTransform>().sizeDelta.x * 5, artDesc.GetComponent<RectTransform>().sizeDelta.y * 5);
         // artDesc.alignment = TextAlignmentOptions.Right;
+    }
+
+    // method to make date from ArtworkData more readable
+    private string formatArtworkDataDate(string date)
+    {
+        if (date == null)
+            throw new ArgumentNullException(nameof(date));
+
+        string[] parts = date.Split(
+            new[] { " - " },
+            3, // maximum number of substrings
+            StringSplitOptions.None);
+
+        if (parts.Length != 3)
+            throw new FormatException("Input string does not contain exactly two ' - ' delimiters.");
+
+        return parts[0] + " " + parts[1] + ", " + parts[2]; // month day, year
     }
 
     public void SetImageIndex(int index)
