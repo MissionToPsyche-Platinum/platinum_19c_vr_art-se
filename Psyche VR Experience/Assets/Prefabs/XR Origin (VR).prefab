@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 7626248279004998098}
   - component: {fileID: 2547039604840461017}
   - component: {fileID: 4734638546647951386}
+  - component: {fileID: 52868383734395000}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -299,6 +300,21 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &52868383734395000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 775054438645192288}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 059c9231ce5dfd24ca9be0527cdc987b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HeadsetCollisionHandler
+  collisionDetector: {fileID: 8439801560630786619}
+  characterController: {fileID: 4904238810493003439}
+  knockbackStrength: 1.35
 --- !u!1 &1450729026315874006
 GameObject:
   m_ObjectHideFlags: 0
@@ -669,6 +685,7 @@ GameObject:
   - component: {fileID: 352839523240806990}
   - component: {fileID: 4514834091348339466}
   - component: {fileID: 5918975738570322914}
+  - component: {fileID: 4904238810493003439}
   m_Layer: 0
   m_Name: XR Origin (VR)
   m_TagString: Untagged
@@ -726,6 +743,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_ActionAssets:
   - {fileID: -944628639613478452, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+--- !u!143 &4904238810493003439
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3618679737214569059}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &4244747939317442857
 GameObject:
   m_ObjectHideFlags: 0
