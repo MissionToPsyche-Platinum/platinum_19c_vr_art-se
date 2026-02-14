@@ -164,11 +164,25 @@ public class RoomModule : MonoBehaviour
             }
         }
         
-        // add decorations if the room is a certain type
+        // chance to add decorations if the room is a certain type
         float dieRoll = UnityEngine.Random.Range(0f, 1f);
         if ((roomType == RoomType.FourOpen || roomType == RoomType.FlatOpen) && dieRoll < decorationLikelihood)
         {
-            decoration = room.transform.GetChild(UnityEngine.Random.Range(1, 5)).gameObject;
+            dieRoll = UnityEngine.Random.Range(0f, 1f);
+            // bench and plant (50% chance)
+            if (dieRoll < .5f)
+                decoration = room.transform.GetChild(2).gameObject;
+            // fountain (20% chance)
+            else if (dieRoll < .7f)
+                decoration = room.transform.GetChild(3).gameObject;
+            // satellite statue (15% chance)
+            else if (dieRoll < .85f)
+                decoration = room.transform.GetChild(4).gameObject;
+            // asteroid statue (15% chance)
+            else
+                decoration = room.transform.GetChild(5).gameObject;
+
+            // decoration = room.transform.GetChild(UnityEngine.Random.Range(1, 5)).gameObject;
             decoration.SetActive(true);
         }
     }
