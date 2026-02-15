@@ -199,21 +199,21 @@ public class ExpoSettings : MonoBehaviour
         durationVR.text = ConvertSecondsToTime(expoDuration);
     }
 
-    public void SetShortExpoTime()
+    public void SetShortExpoTime() //Sets duration to 3 minutes
     {
         expoDuration = 180;
         expoDurationInputField.text = ConvertSecondsToTime(expoDuration);
         durationVR.text = ConvertSecondsToTime(expoDuration);
     }
 
-    public void SetMediumExpoTime()
+    public void SetMediumExpoTime() //Sets duration to 5 minutes
     {
         expoDuration = 300;
         expoDurationInputField.text = ConvertSecondsToTime(expoDuration);
         durationVR.text = ConvertSecondsToTime(expoDuration);
     }
 
-    public void SetLongExpoTime()
+    public void SetLongExpoTime() //Sets duration to 7 minutes
     {
         expoDuration = 420;
         expoDurationInputField.text = ConvertSecondsToTime(expoDuration);
@@ -222,7 +222,7 @@ public class ExpoSettings : MonoBehaviour
         
     }
 
-    public string ConvertSecondsToTime(int duration)
+    public string ConvertSecondsToTime(int duration) //Converts time in seconds to a 00:00 format
     {
         int minutes = duration / 60;
         int seconds = duration % 60;
