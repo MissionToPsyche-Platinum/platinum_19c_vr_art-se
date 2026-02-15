@@ -20,9 +20,6 @@ public class FrameController : MonoBehaviour
 
     [Tooltip("Material for the frame borders (4 extruded squares to make up edges).")]
     [SerializeField] Material frameMaterial;
-    
-    [Tooltip("The text field that shows the art description.")]
-    [SerializeField] TextMeshProUGUI artDesc;
 
     [Header("Images")]
     [SerializeField] private List<string> mediaPaths = new List<string>();
@@ -220,6 +217,8 @@ public class FrameController : MonoBehaviour
             buttonNext.SetActive(false);
             buttonPrev.SetActive(false);
         }
+
+        textBoxController.SetDescText(data);
     }
     
     public async void RepositionButtons_Callback()
@@ -240,39 +239,6 @@ public class FrameController : MonoBehaviour
 
         buttonNext.transform.localPosition = posNext;
         buttonPrev.transform.localPosition = posPrev;
-    }
-
-    public void SetDescText(ArtworkData data)
-    {
-        string boxText = data.artistName + "\n\n" +
-                          data.artworkName + " - " + formatArtworkDataDate(data.artworkDate) + "\n\n" +
-                          data.genre + "\n";
-
-        // string descriptionText = "Artist Major: " + data.artistMajor + "\n\n" + data.artworkDescription;
-        
-        artDesc.text = boxText;
-        artDesc.color = Color.black;
-        artDesc.autoSizeTextContainer = false;
-        // artDesc.transform.localScale = new Vector3(1, .5f, 1);
-        artDesc.GetComponent<RectTransform>().sizeDelta = new Vector2(artDesc.GetComponent<RectTransform>().sizeDelta.x * 5, artDesc.GetComponent<RectTransform>().sizeDelta.y * 5);
-        // artDesc.alignment = TextAlignmentOptions.Right;
-    }
-
-    // method to make date from ArtworkData more readable
-    private string formatArtworkDataDate(string date)
-    {
-        if (date == null)
-            throw new ArgumentNullException(nameof(date));
-
-        string[] parts = date.Split(
-            new[] { " - " },
-            3, // maximum number of substrings
-            StringSplitOptions.None);
-
-        if (parts.Length != 3)
-            throw new FormatException("Input string does not contain exactly two ' - ' delimiters.");
-
-        return parts[0] + " " + parts[1] + ", " + parts[2]; // month day, year
     }
 
     public void SetImageIndex(int index)
@@ -321,6 +287,7 @@ public class FrameController : MonoBehaviour
         if (mediaPaths == null || mediaPaths.Count == 0) return;
         currentMediaIndex = (currentMediaIndex + 1) % mediaPaths.Count;
         ApplyAll();
+        textBoxController.UpdateTextLocation();
     }
 
     public void PreviousImage()
@@ -328,6 +295,7 @@ public class FrameController : MonoBehaviour
         if (mediaPaths == null || mediaPaths.Count == 0) return;
         currentMediaIndex = (currentMediaIndex - 1 + mediaPaths.Count) % mediaPaths.Count;
         ApplyAll();
+        textBoxController.UpdateTextLocation();
     }
 
     void ApplyAll()
