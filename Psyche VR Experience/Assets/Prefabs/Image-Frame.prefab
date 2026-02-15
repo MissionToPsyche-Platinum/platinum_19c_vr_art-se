@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 71774748357794221}
   - component: {fileID: 4378577154170103496}
   m_Layer: 0
-  m_Name: Container
+  m_Name: Plaque Container
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
