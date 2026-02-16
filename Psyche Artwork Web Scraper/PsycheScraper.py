@@ -14,7 +14,6 @@ from pytubefix import YouTube
 from vimeo_downloader import Vimeo
 from concurrent.futures import ThreadPoolExecutor
 
-import moviepy.editor as mp
 import sqlite3
 import hashlib
 import shutil
