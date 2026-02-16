@@ -11,19 +11,23 @@ public class TextBoxController : MonoBehaviour
 {
     [Tooltip("The text will appear to the right of this frame part.")]
     [SerializeField] private Transform frameTransform;
+    [Tooltip("This transform is used to find the height of componenets.")]
+    [SerializeField] private Transform textAlign;
 
-    [Tooltip("Transform of this object")]
-    [SerializeField] private RectTransform rectTransform;
-
+    [Header("Image Components")]
     [Tooltip("The text field that shows the art description.")]
-    [SerializeField] private TextMeshProUGUI artDesc;
+    [SerializeField] private TextMeshProUGUI artDescription;
+    [Tooltip("The transform of the button .")]
+    [SerializeField] private Transform descriptionButtonTransform;
+    [Tooltip("The transform of the plaque container.")]
+    [SerializeField] private Transform plaqueContainerTransform;
 
     private float defaultFontSize;
 
     /* Credit to @zbarlow FrameController for some of the base setup functionality*/
     public void Awake()
     {
-        defaultFontSize = artDesc.fontSize;
+        defaultFontSize = artDescription.fontSize;
         SettingsManager.m_TextSizeChanged.AddListener(ChangeTextSize);
         ChangeTextSize();
         UpdateTextLocation();
@@ -31,13 +35,27 @@ public class TextBoxController : MonoBehaviour
 
     public void ChangeTextSize()
     {
-        artDesc.fontSize = defaultFontSize * GlobalSettings.TEXT_SIZE_MULTIPLIER;
+        artDescription.fontSize = defaultFontSize * GlobalSettings.TEXT_SIZE_MULTIPLIER;
     }
 
     public void UpdateTextLocation()
     {
-        rectTransform.transform.eulerAngles = new Vector3(0, frameTransform.transform.eulerAngles.y + 180f, 0);
-        rectTransform.position = frameTransform.position + frameTransform.right * 0.8f - frameTransform.up * 0.5f;
+        // rotate properly
+        transform.eulerAngles = new Vector3(0, frameTransform.transform.eulerAngles.y + 180f, 0);
+
+        // align plaque
+        plaqueContainerTransform.position = textAlign.position + textAlign.right * 0.05f;
+
+        // align button
+        float width = artDescription.rectTransform.rect.width;
+        float margin = 0.15f;
+        descriptionButtonTransform.position = textAlign.position + textAlign.right * (width + margin);
+    }
+
+    // TODO: This is probably a performance sink but otherwise the button wasn't lining up
+    public void Update()
+    {
+        UpdateTextLocation();
     }
 
     public void SetDescText(ArtworkData data)
@@ -58,7 +76,7 @@ public class TextBoxController : MonoBehaviour
         // TODO: Add this to scrolling textbox
         // string descriptionText = "Artist Major: " + data.artistMajor + "\n\n" + data.artworkDescription;
 
-        artDesc.text = organizedText;
+        artDescription.text = organizedText;
         UpdateTextLocation();
     }
 
