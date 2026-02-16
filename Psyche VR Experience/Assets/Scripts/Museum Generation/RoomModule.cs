@@ -145,8 +145,10 @@ public class RoomModule : MonoBehaviour
                     float maxFrameHeight = Mathf.Max(0.25f, wallHeight * 0.70f);    // 70% of wall
                     float maxFrameWidth = Mathf.Max(0.25f, wallWidth * 0.85f);      // 85% of wall
     
-                    foreach (GameObject g in display.artFrames)
+                    foreach (FrameController fc in display.frameControllers)
                     {
+                        GameObject g = fc.gameObject;
+
                         if (centerArtPieces)
                         {
                             g.transform.position = new Vector3(g.transform.position.x, wallTransform.position.y + 0.25f, g.transform.position.z);
@@ -387,20 +389,18 @@ public class RoomModule : MonoBehaviour
     /// <returns>Number of art displays set.</returns>
     public async Awaitable SetArtDisplays(int numSet, List<ArtworkData> art = null, int start_index = 0, bool async = false, float delay = 0.1f)
     {
-        for (int i = 0; i < display.artFrames.Length; i++)
+        for (int i = 0; i < display.frameControllers.Length; i++)
         {
             if(i < numSet)
             {
-                GameObject frameObject = display.artFrames[i];
-                FrameController frame = frameObject.GetComponent<FrameController>();
-                // TextBoxController textbox =  frameObject.GetComponent<TextBoxController>();
+                FrameController frame = display.frameControllers[i];
 
-                frame.SetArtwork(art[start_index + i]);
-                frame.SetDescText(art[start_index + i]);
+                frame.SetArtwork(art[(start_index + i) % art.Count]);
+                frame.SetDescText(art[(start_index + i) % art.Count]);
             }
-            else if(display.artFrames.Length > i)
+            else if(display.frameControllers.Length > i)
             {
-                GameObject frameObject = display.artFrames[i];
+                GameObject frameObject = display.frameControllers[i].gameObject;
 
                 if(frameObject != null)
                     frameObject.gameObject.SetActive(false);
