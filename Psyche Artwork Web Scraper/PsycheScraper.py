@@ -586,6 +586,8 @@ def convertGIFtoMp4(gif_path: Path, verbose=True) -> Path:
             except Exception as e:
                 if verbose:
                     print(f"[GIF→MP4] Warning: couldn't delete {gif_path.name}: {e}")
+            # this forces the color primaries if they fail to apply(they usually do)
+            forceRec709(mp4_path, verbose=verbose, fps=fps)
             return mp4_path
 
         if verbose:
@@ -596,6 +598,70 @@ def convertGIFtoMp4(gif_path: Path, verbose=True) -> Path:
         if verbose:
             print(f"[GIF→MP4ERROR] {gif_path}: {e}")
         return gif_path
+
+# second pass for mp4 files that need forced color primaries/trc/colorspace.
+# re-encodes to H.264 baseline + yuv420p + CFR + faststart + avc1 + bt709 metadata.
+# writes to a temp file then swaps in-place.
+def forceRec709(mp4_path: Path, verbose=True, fps: int = 24) -> Path:
+    mp4_path = Path(mp4_path)
+    if mp4_path.suffix.lower() != ".mp4":
+        return mp4_path
+
+    temp = mp4_path.with_name(mp4_path.stem + "_rec709fix_temp.mp4")
+
+    try:
+        if verbose:
+            print(f"[REC709 FIX] {mp4_path.name} → {temp.name}")
+
+        vf = f"fps={fps},scale=trunc(iw/2)*2:trunc(ih/2)*2"
+
+        (
+            ffmpeg
+            .input(str(mp4_path))
+            .output(
+                str(temp),
+                vcodec="libx264",
+                pix_fmt="yuv420p",
+                vf=vf,
+                r=fps,
+                vsync="cfr",
+                an=None,
+                movflags="+faststart",
+                **{
+                    "profile:v": "baseline",
+                    "level": "3.0",
+                    "crf": "18",
+                    "preset": "slow",
+                    "color_primaries": "bt709",
+                    "color_trc": "bt709",
+                    "colorspace": "bt709",
+                    "color_range": "tv",
+                    "tag:v": "avc1"
+                }
+            )
+            .overwrite_output()
+            .run(quiet=not verbose)
+        )
+
+        if temp.exists() and temp.stat().st_size > 0:
+            os.remove(mp4_path)
+            temp.rename(mp4_path)
+            if verbose:
+                print(f"[REC709 FIX] Applied bt709 to {mp4_path.name}")
+        else:
+            if verbose:
+                print(f"[REC709 FIX] Temp output missing/empty for {mp4_path.name}")
+
+    except Exception as e:
+        if verbose:
+            print(f"[REC709 FIX ERROR] {mp4_path.name}: {e}")
+        try:
+            if temp.exists():
+                temp.unlink()
+        except Exception:
+            pass
+
+    return mp4_path
 
 
 # combines all pages of a pdf into one image (png)
@@ -1055,4 +1121,4 @@ def repair_media(verbose=True):
         
 init_db()
 scrapePsyche(verbose=True)
-repair_media(verbose=True)
+# repair_media(verbose=True)
