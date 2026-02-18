@@ -75,7 +75,7 @@ public class Button : MonoBehaviour
 
         await Task.Delay(100);
 
-        while(animator.GetCurrentAnimatorStateInfo(0).IsName("Push"))
+        while(this != null && animator.GetCurrentAnimatorStateInfo(0).IsName("Push"))
         {
             if (this == null)
                 return;
