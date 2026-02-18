@@ -396,7 +396,6 @@ public class RoomModule : MonoBehaviour
                 FrameController frame = display.frameControllers[i];
 
                 frame.SetArtwork(art[(start_index + i) % art.Count]);
-                frame.SetDescText(art[(start_index + i) % art.Count]);
             }
             else if(display.frameControllers.Length > i)
             {
