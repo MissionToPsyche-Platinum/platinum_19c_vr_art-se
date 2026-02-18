@@ -50,4 +50,11 @@ pip install -r requirements.txt --upgrade
 ```
 This call requires the requirements.txt file to be in the active directory, so navigate to the project directory and open the command/bash prompt at the following location `(saved_location)/Psyche Artwork Web Scraper`
 
+
+### 4. Run the Command Line Interface:
+Run the following command in the `(saved_location)/Psyche Artwork Web Scraper` directory
+```
+python PsycheArtCLI.py
+```
+
 You should be good to go!
