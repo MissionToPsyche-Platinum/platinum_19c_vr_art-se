@@ -548,6 +548,7 @@ MonoBehaviour:
   frameTransform: {fileID: 5118630030452515780}
   textAlign: {fileID: 9184311001483073054}
   artDescription: {fileID: 9014489875877872290}
+  scrollingTextbox: {fileID: 534107218643966347}
   descriptionButtonTransform: {fileID: 4517881355701157180}
   plaqueContainerTransform: {fileID: 1989669719024610748}
   scrollingContainer: {fileID: 2520970654986798469}
@@ -1335,6 +1336,10 @@ PrefabInstance:
       propertyPath: m_Size
       value: 0.2729928
       objectReference: {fileID: 0}
+    - target: {fileID: 3088757566121871542, guid: ee95eda1207e17b42ae50d546c66319b, type: 3}
+      propertyPath: m_Value
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4807596519966065553, guid: ee95eda1207e17b42ae50d546c66319b, type: 3}
       propertyPath: m_AnchorMax.x
       value: 1
@@ -1368,6 +1373,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ee95eda1207e17b42ae50d546c66319b, type: 3}
+--- !u!114 &534107218643966347 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4491566532198319850, guid: ee95eda1207e17b42ae50d546c66319b, type: 3}
+  m_PrefabInstance: {fileID: 4124374054570827617}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!224 &3185654890711287472 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1515743193618782673, guid: ee95eda1207e17b42ae50d546c66319b, type: 3}
@@ -1531,6 +1547,18 @@ PrefabInstance:
     - target: {fileID: 5858369293345710838, guid: e1a97abf502b674459c868b99f435818, type: 3}
       propertyPath: m_Name
       value: Description Button
+      objectReference: {fileID: 0}
+    - target: {fileID: 8647060729321335561, guid: e1a97abf502b674459c868b99f435818, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.3094
+      objectReference: {fileID: 0}
+    - target: {fileID: 8647060729321335561, guid: e1a97abf502b674459c868b99f435818, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.3094
+      objectReference: {fileID: 0}
+    - target: {fileID: 8647060729321335561, guid: e1a97abf502b674459c868b99f435818, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.3094
       objectReference: {fileID: 0}
     - target: {fileID: 8647060729321335561, guid: e1a97abf502b674459c868b99f435818, type: 3}
       propertyPath: m_LocalPosition.x

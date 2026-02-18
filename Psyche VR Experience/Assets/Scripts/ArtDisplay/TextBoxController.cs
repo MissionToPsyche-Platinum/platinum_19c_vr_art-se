@@ -12,6 +12,8 @@ public class TextBoxController : MonoBehaviour
     [Header("Image Components")]
     [Tooltip("The text field that shows the art description.")]
     [SerializeField] private TextMeshProUGUI artDescription;
+    [Tooltip("The text field that shows the art description.")]
+    [SerializeField] private TextMeshProUGUI scrollingTextbox;
     [Tooltip("The transform of the button .")]
     [SerializeField] private Transform descriptionButtonTransform;
     [Tooltip("The transform of the plaque container.")]
@@ -74,10 +76,12 @@ public class TextBoxController : MonoBehaviour
                                "\n\n<b>" + artTitle + "</b> - " + artDate +
                                "\n\n\n<i>" + genreString + "</i>";
 
-        // TODO: Add this to scrolling textbox
-        // string descriptionText = "Artist Major: " + data.artistMajor + "\n\n" + data.artworkDescription;
-
         artDescription.text = organizedText;
+
+        string scrollingText = "<b>Artist Major: </b>" + capitalizeFirstLetterOfEachWord(data.artistMajor) + 
+                               "\n\n<b>About the Work: </b>" + data.artworkDescription;
+        scrollingTextbox.text = scrollingText;
+
         UpdateTextLocation();
     }
 
