@@ -60,7 +60,9 @@ public class MuseumManager : MonoBehaviour
         {
             this.squares = squares;
 
+            // the minus X here is to account for variance when rooms get smashed together
             numArtSpaces = CalculateArtSpacesForRoom();
+            numArtSpaces = (int)(numArtSpaces * 0.75f);
         }
 
         int CalculateArtSpacesForRoom()
@@ -170,7 +172,7 @@ public class MuseumManager : MonoBehaviour
         })
     };
 
-    public async void Awake()
+    public async void Start()
     {
         if (!createOnAwake)
         {
@@ -207,6 +209,8 @@ public class MuseumManager : MonoBehaviour
 
     public async Awaitable GenerateMuseum(int numArtPieces)
     {
+        this.numArtPieces = numArtPieces;
+        Debug.Log("NUM ART PIECES SHOULD BE: " + numArtPieces);
         int size = (int)(numArtPieces);
         int numChunks = ChunkCountForArtPieces(numArtPieces);
         
@@ -229,13 +233,6 @@ public class MuseumManager : MonoBehaviour
         RecurseChunks(startPos, numArtPieces, ref chunksTraversed);
 
         AlignAllRooms();
-
-        //if we didn't get enough frames, regen museum with additional chunk
-        if (numFrames < numArtPieces)
-        {
-            await GenerateMuseumByChunks(numChunks + 1, numArtPieces);
-            return;
-        }
 
         //Debug.Log("Count: " + CountArtSpots());
 
@@ -290,6 +287,8 @@ public class MuseumManager : MonoBehaviour
                 }
             }
         }
+
+        Debug.Log("ACTUAL NUMBER OF FRAMES = " + numFrames);
     }
 
     public void GenerateRandomRoomPattern(int chunkX, int chunkY)
@@ -321,7 +320,10 @@ public class MuseumManager : MonoBehaviour
     bool RecurseChunks(Vector2Int startPos, int numArtworks, ref bool[][] chunksTraversed)
     {
         if (numFrames >= numArtworks)
+        {
+            Debug.Log("NUM FRAMES IS: " + numFrames + " vs " + numArtworks);
             return false;
+        }
 
         GenerateRandomRoomPattern(startPos.x, startPos.y);
 
@@ -338,11 +340,7 @@ public class MuseumManager : MonoBehaviour
             if (InBounds(nextPos.x, nextPos.y, chunksTraversed.Length) && !chunksTraversed[nextPos.x][nextPos.y])
             {
                 chunksTraversed[nextPos.x][nextPos.y] = true;
-
                 bool generated = RecurseChunks(nextPos, numArtPieces, ref chunksTraversed);
-
-                if (!generated)
-                    return true;
 
                 //connect the two chunk
 
