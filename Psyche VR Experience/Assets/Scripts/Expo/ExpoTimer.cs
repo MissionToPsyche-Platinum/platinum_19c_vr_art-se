@@ -1,12 +1,10 @@
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Audio;
 using UnityEngine.Events;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Readers;
-using System.Collections;
+using UnityEngine.InputSystem;
 
 public class ExpoTimer : MonoBehaviour
 {
@@ -116,8 +114,9 @@ public class ExpoTimer : MonoBehaviour
     public void warning()
     {
         Debug.Log(warningSeconds + " seconds left on the expo timer!");
+        warningAudio.Play();
+
         warningHappened = true;
-        StartCoroutine(PlayWarningNTimes(4));
     }
 
     public void timerDone()
@@ -178,17 +177,6 @@ public class ExpoTimer : MonoBehaviour
         {
             resetTimer();
             launchRoomManager.ResetExpo();
-        }
-    }
-
-    IEnumerator PlayWarningNTimes(int num)
-    {
-        Debug.Log("Here!");
-        for (int i = 0; i < num; i++)
-        {
-            Debug.Log("Here!");
-            warningAudio.Play();
-            yield return new WaitForSeconds(warningAudio.clip.length);
         }
     }
 }

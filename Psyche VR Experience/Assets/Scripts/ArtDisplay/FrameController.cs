@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -20,6 +19,9 @@ public class FrameController : MonoBehaviour
 
     [Tooltip("Material for the frame borders (4 extruded squares to make up edges).")]
     [SerializeField] Material frameMaterial;
+    
+    [Tooltip("The text field that shows the art description.")]
+    [SerializeField] TextMeshProUGUI artDesc;
 
     [Header("Images")]
     [SerializeField] private List<string> mediaPaths = new List<string>();
@@ -63,7 +65,7 @@ public class FrameController : MonoBehaviour
 
     [Header("Scriptable Object(Artwork)")]
     [Tooltip("The scriptable object containing the piece's path and data. (This is not included in functionality nor in the API atm)")]
-    [SerializeField] UnityEngine.Object scriptable = null;
+    [SerializeField] Object scriptable = null;
 
     [Header("Fallback Texture")]
     [Tooltip("An image to display if the frame has nothing to display within itself due to errors or the media being audio only")]
@@ -169,10 +171,7 @@ public class FrameController : MonoBehaviour
     /*  PUBLIC API  */
     public void SetArtwork(ArtworkData data)
     {
-        if (data.artworkCount == 0)
-        {
-            return;
-        }
+        if (data == null) return;
 
         // store the paths for potential video playback as well
         // while filtering out missing files(in case db got some bad entries)
@@ -220,8 +219,6 @@ public class FrameController : MonoBehaviour
             buttonNext.SetActive(false);
             buttonPrev.SetActive(false);
         }
-
-        textBoxController.SetDescText(data);
     }
     
     public async void RepositionButtons_Callback()
@@ -242,6 +239,22 @@ public class FrameController : MonoBehaviour
 
         buttonNext.transform.localPosition = posNext;
         buttonPrev.transform.localPosition = posPrev;
+    }
+
+    public void SetDescText(ArtworkData data)
+    {
+        string descText = "Title: " + data.artworkName + "\n" +
+                          "Artist's Name: " + data.artistName + "\n" +
+                          "Date: " + data.artworkDate + "\n" +
+                          "Artist's Major: " + data.artistMajor + "\n" +
+                          "Art Genre/Medium: " + data.genre + "\n" +
+                          "About the Work: " + data.artworkDescription;
+        artDesc.text = descText;
+        artDesc.color = Color.black;
+        artDesc.autoSizeTextContainer = false;
+        // artDesc.transform.localScale = new Vector3(1, .5f, 1);
+        artDesc.GetComponent<RectTransform>().sizeDelta = new Vector2(artDesc.GetComponent<RectTransform>().sizeDelta.x * 5, artDesc.GetComponent<RectTransform>().sizeDelta.y * 5);
+        // artDesc.alignment = TextAlignmentOptions.Right;
     }
 
     public void SetImageIndex(int index)
@@ -290,7 +303,6 @@ public class FrameController : MonoBehaviour
         if (mediaPaths == null || mediaPaths.Count == 0) return;
         currentMediaIndex = (currentMediaIndex + 1) % mediaPaths.Count;
         ApplyAll();
-        textBoxController.UpdateTextLocation();
     }
 
     public void PreviousImage()
@@ -298,7 +310,6 @@ public class FrameController : MonoBehaviour
         if (mediaPaths == null || mediaPaths.Count == 0) return;
         currentMediaIndex = (currentMediaIndex - 1 + mediaPaths.Count) % mediaPaths.Count;
         ApplyAll();
-        textBoxController.UpdateTextLocation();
     }
 
     void ApplyAll()

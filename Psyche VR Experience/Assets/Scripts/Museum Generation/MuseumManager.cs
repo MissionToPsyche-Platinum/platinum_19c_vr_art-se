@@ -30,7 +30,6 @@ public class MuseumManager : MonoBehaviour
     [SerializeField] bool createOnAwake = true;
 
     private int numFrames = 0;
-    private List<RoomModule> roomsWithFrameControllers = new List<RoomModule>();
 
     //make sure this is no less than 9 probably
     const int chunkSize = 11;
@@ -124,8 +123,6 @@ public class MuseumManager : MonoBehaviour
     public async Awaitable GenerateMuseum(int numArtPieces)
     {
         numFrames = 0;
-        roomsWithFrameControllers = new List<RoomModule>();
-
         int size = (int)(numArtPieces);
         int numChunks = ChunkCountForArtPieces(numArtPieces); //TODO: Figure out the math for this
         InitMuseum(chunkSize * numChunks);
@@ -144,8 +141,6 @@ public class MuseumManager : MonoBehaviour
 
         if(populateArt)
             await AssignArt(numArtPieces);
-
-        roomsWithFrameControllers = new List<RoomModule>();
     }
 
     public void InitMuseum(int size)
@@ -169,13 +164,7 @@ public class MuseumManager : MonoBehaviour
 
                 AutoOpening(x, y);
 
-                int roomFrames = roomGrid[x][y].GetNumArtDisplays();
-                numFrames += roomFrames;
-                
-                //keep track of all our frame controllers
-                if (roomFrames != 0) {
-                    roomsWithFrameControllers.Add(roomGrid[x][y]);
-                }
+                numFrames += roomGrid[x][y].GetNumArtDisplays();
             }
         }
 
@@ -280,7 +269,6 @@ public class MuseumManager : MonoBehaviour
     {
         //int numSpots = CountArtSpots();
         int numSpots = numFrames;
-        int numRooms = roomsWithFrameControllers.Count;
 
         //take the minimum between the two, we can't request more art than we have spots for
         int requestCount = Mathf.Min(numSpots, numArtPieces);
@@ -294,72 +282,52 @@ public class MuseumManager : MonoBehaviour
 
         int spotsFilled = 0;
 
-        //int numSpaces = (numSpots / numArtPieces) - 2;
-        //int n = 0;
+        int numSpaces = (numSpots / numArtPieces) - 2;
+        int n = 0;
 
-        //if (numSpaces == 0)
-        //{
-        //    numSpaces = 1;
-        //}
-
-        int index = 0;
-        int numVisits = 0;
-        while (spotsFilled < requestCount || numVisits < numRooms)
+        if (numSpaces == 0)
         {
-            index = (index + 11) % numRooms;
-            numVisits++;
-
-            int numToFill = 0;
-
-            if (spotsFilled < requestCount)
-            {
-                numToFill = Random.Range(1, roomsWithFrameControllers[index].GetNumArtDisplays() + 1);
-                await roomsWithFrameControllers[index].SetArtDisplays(numToFill, items, spotsFilled, asyncPopulate, populateDelay);
-                spotsFilled += numToFill;
-                continue;
-            }
-
-            await roomsWithFrameControllers[index].SetArtDisplays(0);
+            numSpaces = 1;
         }
+        
+        for (int x = 0; x < roomGrid.Length; x++)
+        {
+            for (int y = 0; y < roomGrid[x].Length; y++)
+            {
+                if (roomGrid[x][y] != null)
+                {
+                    if (spotsFilled >= numArtPieces)
+                    {
+                        await roomGrid[x][y].SetArtDisplays(0);
+                        continue;
+                    }
 
-        //for (int x = 0; x < roomGrid.Length; x++)
-        //{
-        //    for (int y = 0; y < roomGrid[x].Length; y++)
-        //    {
-        //        if (roomGrid[x][y] != null)
-        //        {
-        //            if (spotsFilled >= numArtPieces)
-        //            {
-        //                await roomGrid[x][y].SetArtDisplays(0);
-        //                continue;
-        //            }
+                    int numSet = roomGrid[x][y].GetNumArtDisplays();
 
-        //            int numSet = roomGrid[x][y].GetNumArtDisplays();
+                    if (numSet >= 1)
+                    {
+                        if (numSpots - spotsFilled > numArtPieces * 2)
+                        {
+                            if (n != 0)
+                                numSet = 0;
+                            else
+                                numSet = 1;
 
-        //            if (numSet >= 1)
-        //            {
-        //                if (numSpots - spotsFilled > numArtPieces * 2)
-        //                {
-        //                    if (n != 0)
-        //                        numSet = 0;
-        //                    else
-        //                        numSet = 1;
+                                n++;
+                            n %= numSpaces;
+                        }
+                        else if(spotsFilled + numSet > numArtPieces)
+                        {
+                            numSet = numArtPieces - spotsFilled;
+                        }
+                    }
 
-        //                        n++;
-        //                    n %= numSpaces;
-        //                }
-        //                else if(spotsFilled + numSet > numArtPieces)
-        //                {
-        //                    numSet = numArtPieces - spotsFilled;
-        //                }
-        //            }
+                    await roomGrid[x][y].SetArtDisplays(numSet, items, spotsFilled, asyncPopulate, populateDelay);
 
-        //            await roomGrid[x][y].SetArtDisplays(numSet, items, spotsFilled, asyncPopulate, populateDelay);
-
-        //            spotsFilled += numSet;
-        //        }
-        //    }
-        //}
+                    spotsFilled += numSet;
+                }
+            }
+        }
 
         //Debug.Log("SpotsFilled: " + spotsFilled + " NumArtPieces: " + numArtPieces);
     }

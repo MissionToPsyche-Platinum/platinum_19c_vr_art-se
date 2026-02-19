@@ -12,14 +12,9 @@ Open a terminal (or command prompt) and check that both Python and pip are insta
 python --version
 pip --version
 ```
+If nothing shows up or an error occurs, ensure you installed python properly
 
-
-### 2. Install Dependencies
-Once verified, install the required libraries by running the following commands:
-```bash
-pip install -r requirements.txt
-```
-### 3. FFMPEG Installation
+### 2. FFMPEG Installation
 ffmpeg requires a bit more work to get functioning.\
 Windows-
 1. Download the ffmpeg labeled "latest git master branch build" from the following site (https://www.gyan.dev/ffmpeg/builds/). Simply using pip install ffmpeg WILL NOT WORK, as it does not contain the executable file required.
@@ -32,10 +27,34 @@ Windows-
 8. Return to the 'Edit Enviroment Variables window that is open, and click New. This should highlight a new row, and allow you to paste the path into it (Ctrl + V).
 9. Make sure to hit 'OK' on both windows to set the paths.
 10. In your terminal, run the command `pip install ffmpeg-python`
-11. Try rerunning the program. You may need to reboot the terminal for the new path to take effect.
+11. Now, to ensure it installed correctly, run the command `pip show ffmpeg-python`
+    There should be a return that resembles the following:
+```
+Name: ffmpeg-python
+Version: 0.2.0
+Summary: Python bindings for FFmpeg - with complex filtering support
+Home-page: https://github.com/kkroening/ffmpeg-python
+Author: Karl Kroening
+Author-email: karlk@kralnet.us
+License: UNKNOWN
+Location: C:\Users\user\AppData\Roaming\Python\Python314\site-packages
+``` 
+12. Navigate to the "Location" returned and find the `ffmpeg` directory.
+    You are looking for a file named `_run.py`
+    If it is present, no further work is necessary for this portion. If not, manually delete the ffmpeg directory and return to step 10.
 
-MacOS-
+### 3. Install Dependencies
+Once verified, install the required libraries by running the following commands:
+```bash
+pip install -r requirements.txt --upgrade
+```
+This call requires the requirements.txt file to be in the active directory, so navigate to the project directory and open the command/bash prompt at the following location `(saved_location)/Psyche Artwork Web Scraper`
 
-Linux-
+
+### 4. Run the Command Line Interface:
+Run the following command in the `(saved_location)/Psyche Artwork Web Scraper` directory
+```
+python PsycheArtCLI.py
+```
 
 You should be good to go!
