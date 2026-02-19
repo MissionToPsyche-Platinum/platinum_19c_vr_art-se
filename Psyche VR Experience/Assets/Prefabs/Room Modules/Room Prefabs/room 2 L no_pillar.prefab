@@ -344,11 +344,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c1ccfc815417d024cb82df0fd508003b, type: 3}
---- !u!1 &2328571217798387105 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1563270452114769424, guid: c1ccfc815417d024cb82df0fd508003b, type: 3}
+--- !u!114 &1120790332553717226 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4209948386074719835, guid: c1ccfc815417d024cb82df0fd508003b, type: 3}
   m_PrefabInstance: {fileID: 3882495537541813169}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8227346de5c8a1b4d94ad71824a5af28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &2700963150696519712 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1196509109622901649, guid: c1ccfc815417d024cb82df0fd508003b, type: 3}
@@ -448,11 +454,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1196509109622901649, guid: c1ccfc815417d024cb82df0fd508003b, type: 3}
   m_PrefabInstance: {fileID: 4877569978106136373}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &6197311789677019429 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1563270452114769424, guid: c1ccfc815417d024cb82df0fd508003b, type: 3}
+--- !u!114 &8780930537861034350 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4209948386074719835, guid: c1ccfc815417d024cb82df0fd508003b, type: 3}
   m_PrefabInstance: {fileID: 4877569978106136373}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8227346de5c8a1b4d94ad71824a5af28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &7927407083104005857
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -535,9 +547,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45ddd4b7bcb94d85aba358c429fd37ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ImageFrameList
-  artFrames:
-  - {fileID: 6197311789677019429}
-  - {fileID: 2328571217798387105}
+  frameControllers:
+  - {fileID: 8780930537861034350}
+  - {fileID: 1120790332553717226}
 --- !u!4 &7604741115881261322 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: c30397b615635e24ab27cc710383459a, type: 3}
