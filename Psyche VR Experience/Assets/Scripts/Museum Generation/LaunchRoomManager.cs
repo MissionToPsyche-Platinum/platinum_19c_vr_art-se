@@ -14,11 +14,6 @@ public class LaunchRoomManager : MonoBehaviour
 
     private bool InMuseum = false;
 
-    public void Awake()
-    {
-        startExpoExperience();    
-    }
-
     public async void startExpoExperience()
     {
         if (InMuseum)
