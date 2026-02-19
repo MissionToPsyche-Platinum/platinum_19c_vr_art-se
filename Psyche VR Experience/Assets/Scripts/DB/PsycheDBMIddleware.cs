@@ -14,13 +14,13 @@ public static class PsycheDBMiddleware
     // relative to Application.dataPath (which is .../Psyche VR Experience/Assets)
     public static string GetDefaultDbPath()
     {
-        var assetsDir = Application.streamingAssetsPath;                     // .../Psyche VR Experience/Assets
+        var assetsDir = Application.dataPath;                     // .../Psyche VR Experience/Assets
         var projectRoot = Directory.GetParent(assetsDir)?.FullName;
 
         if (string.IsNullOrEmpty(projectRoot))
             throw new Exception("Could not resolve project root from Application.streamingAssetsPath.");
 
-        var dbPath = Path.Combine(Application.streamingAssetsPath, "Database", "psyche.db");
+        var dbPath = Path.Combine(assetsDir, "Database", "psyche.db");
         return dbPath;
     }
 
