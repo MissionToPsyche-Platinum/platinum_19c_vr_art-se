@@ -1,3 +1,4 @@
+using System;
 using System.Xml;
 using TMPro;
 using UnityEngine;
@@ -65,8 +66,16 @@ public class CurvedText : MonoBehaviour
 
         for (int i = 0; i < textInfo.meshInfo.Length; i++)
         {
-            textInfo.meshInfo[i].mesh.vertices = textInfo.meshInfo[i].vertices;
-            text.UpdateGeometry(textInfo.meshInfo[i].mesh, i);
+            // look into this occasional error when validating
+            try
+            {
+                textInfo.meshInfo[i].mesh.vertices = textInfo.meshInfo[i].vertices;
+                text.UpdateGeometry(textInfo.meshInfo[i].mesh, i);
+            } catch (NullReferenceException e)
+            {
+                return;
+            }
+            
         }
     }
 }
