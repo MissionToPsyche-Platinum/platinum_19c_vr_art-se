@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Readers;
 
 public class ControllerButtonLaser : MonoBehaviour
@@ -10,6 +11,11 @@ public class ControllerButtonLaser : MonoBehaviour
 
     [SerializeField]
     XRInputButtonReader triggerInput;
+
+    [SerializeField]
+    private XRInputValueReader<Vector2> scrollInput;
+
+    private float scrollSpeed = 0.33f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -53,10 +59,21 @@ public class ControllerButtonLaser : MonoBehaviour
 
         if (hover == null)
         {
-            if (target != null)
-                target.Unhovered();
-            laserObject.gameObject.SetActive(false);
-            target = null;
+            ScrollRect scroll = info.collider.transform.gameObject.GetComponent<ScrollRect>();
+            // activate laser if looking at scroll box
+            if (scroll != null)
+            {
+                PointLaserAtTarget(info.point, info.distance);
+                Vector2 input = scrollInput.ReadValue();
+                scroll.verticalNormalizedPosition += input.y * scrollSpeed * Time.deltaTime;
+            }
+            else
+            {
+                if (target != null)
+                    target.Unhovered();
+                laserObject.gameObject.SetActive(false);
+                target = null;
+            }
             return;
         }
 

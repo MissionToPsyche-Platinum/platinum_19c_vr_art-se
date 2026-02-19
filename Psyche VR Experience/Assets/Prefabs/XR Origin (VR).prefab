@@ -2588,6 +2588,20 @@ MonoBehaviour:
     m_ManualQueueWasCompletedThisFrame: 0
     m_ManualQueueValue: 0
     m_ManualQueueTargetFrame: 0
+  scrollInput:
+    m_InputSourceMode: 2
+    m_InputAction:
+      m_Name: 
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: d8d82b1b-859a-4498-b6b3-37084762d443
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_InputActionReference: {fileID: -6756787485274679044, guid: 57285e2e38f8c814da5337fc71a44378, type: 3}
+    m_ObjectReferenceObject: {fileID: 0}
+    m_ManualValue: {x: 0, y: 0}
 --- !u!1001 &808715509004300303
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3046,6 +3060,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 6832890421587408133}
     - target: {fileID: 4452541809785065732, guid: 528afb116d1809d4d8dc86c0a17a6340, type: 3}
+      propertyPath: warningAudio
+      value: 
+      objectReference: {fileID: 5416897476960394114}
+    - target: {fileID: 4452541809785065732, guid: 528afb116d1809d4d8dc86c0a17a6340, type: 3}
       propertyPath: expoWarningText
       value: 
       objectReference: {fileID: 8965406310170890724}
@@ -3182,6 +3200,11 @@ PrefabInstance:
 --- !u!4 &593252358098929420 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4338735144482441652, guid: ddf721cbfa8d6f24b89b206fecdab107, type: 3}
+  m_PrefabInstance: {fileID: 3750917123762245304}
+  m_PrefabAsset: {fileID: 0}
+--- !u!82 &5416897476960394114 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 9160674371044922682, guid: ddf721cbfa8d6f24b89b206fecdab107, type: 3}
   m_PrefabInstance: {fileID: 3750917123762245304}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5056220961725793252
