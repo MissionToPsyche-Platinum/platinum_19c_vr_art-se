@@ -180,7 +180,6 @@ public class FrameController : MonoBehaviour
         var validated = new List<string>();
         foreach (string relPath in data.artworkURLs)
         {
-            Debug.Log("relPath = " + relPath);
             string full = ResolveFullPath(relPath);
             if (!string.IsNullOrEmpty(full) && System.IO.File.Exists(full))
             {
@@ -385,12 +384,10 @@ public class FrameController : MonoBehaviour
         if (raw.StartsWith("Assets/"))
         {
             string relative = raw.Substring("Assets/".Length);
-            Debug.Log("PATH = " + System.IO.Path.Combine(Application.streamingAssetsPath, relative));
-            return System.IO.Path.Combine(Application.streamingAssetsPath, relative);
+            return System.IO.Path.Combine(Application.dataPath, relative);
         }
 
-        Debug.Log("PATH = " + System.IO.Path.Combine(Application.streamingAssetsPath, raw));
-        return System.IO.Path.Combine(Application.streamingAssetsPath, raw);
+        return System.IO.Path.Combine(Application.dataPath, raw);
     }
 
 
