@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using Unity.VisualScripting;
@@ -53,10 +54,95 @@ public class MuseumManager : MonoBehaviour
     class RoomPattern
     {
         public SquareRoom[] squares;
+        public int numArtSpaces = 0;
 
         public RoomPattern(SquareRoom[] squares)
         {
             this.squares = squares;
+
+            // the minus X here is to account for variance when rooms get smashed together
+            numArtSpaces = CalculateArtSpacesForRoom();
+            numArtSpaces = (int)(numArtSpaces * 0.75f);
+        }
+
+        int CalculateArtSpacesForRoom()
+        {
+            bool[][] rooms = new bool[chunkSize][];
+
+            for (int i = 0; i < chunkSize; i++)
+            {
+                rooms[i] = new bool[chunkSize];
+                for (int j = 0; j < chunkSize; j++)
+                {
+                    rooms[i][j] = false;
+                }
+            }
+
+            for (int i = 0; i < squares.Length; i++)
+            {
+                SquareRoom square = squares[i];
+                if (square.add)
+                {
+                    for (int x = square.x; x < square.x + square.width; x++)
+                    {
+                        for (int y = square.y; y < square.y + square.height; y++)
+                        {
+                            if (!MuseumManager.InBounds(x, y, chunkSize))
+                                continue;
+
+                            rooms[x][y] = true;
+                        }
+                    }
+                }
+                else
+                {
+                    for (int x = square.x; x < square.x + square.width; x++)
+                    {
+                        for (int y = square.y; y < square.y + square.height; y++)
+                        {
+                            if (!MuseumManager.InBounds(x, y, chunkSize))
+                                continue;
+
+                            rooms[x][y] = false;
+                        }
+                    }
+                }
+            }
+
+            int artSpaces = 0;
+            for (int i = 0; i < chunkSize; i++)
+            {
+                string line = "";
+                for (int j = 0; j < chunkSize; j++)
+                {
+                    line += " [" + rooms[i][j] + "] ";
+                    if (rooms[i][j])
+                        artSpaces += GetNumArtSpaces(i, j, rooms);
+                }
+            }
+
+            return artSpaces;
+        }
+
+        int GetNumArtSpaces(int x, int y, bool[][] roomGrid)
+        {
+            bool openNorth = y > 0 && roomGrid[x][y - 1];
+            bool openSouth = y < roomGrid.Length - 1 && roomGrid[x][y + 1];
+            bool openWest = x < roomGrid.Length - 1 && roomGrid[x + 1][y];
+            bool openEast = x > 0 && roomGrid[x - 1][y];
+
+            int numOpenings = 0;
+
+            if (openNorth)
+                numOpenings++;
+            if (openSouth)
+                numOpenings++;
+            if (openWest)
+                numOpenings++;
+            if (openEast)
+                numOpenings++;
+
+            return 4 - numOpenings;
         }
     }
 
@@ -71,12 +157,12 @@ public class MuseumManager : MonoBehaviour
         new RoomPattern(new SquareRoom[]
         {
             new SquareRoom(2, chunkMid, chunkSize - 2, 1),
-            new SquareRoom(chunkMid, chunkMid - 1, 1, 1)
+            new SquareRoom(chunkMid, chunkMid - 2, 2, 2)
         }),
 
         new RoomPattern(new SquareRoom[]
         {
-            new SquareRoom(-2, 1, chunkSize + 4, chunkSize - 2),
+            new SquareRoom(0, 1, chunkSize, chunkSize - 2),
             new SquareRoom(chunkSize / 3, chunkMid - 1, 2, 2, false)
         }),
 
@@ -86,7 +172,7 @@ public class MuseumManager : MonoBehaviour
         })
     };
 
-    public async void Awake()
+    public async void Start()
     {
         if (!createOnAwake)
         {
@@ -116,33 +202,41 @@ public class MuseumManager : MonoBehaviour
         float result = 12226f + (0.0014f - 12226f) / (1 + Mathf.Pow(numArtPieces / 377528.4f, 0.5f));
         result /= 100;
 
-        int chunkCount = (int)(result + 1);
+        int chunkCount = (int)(result);
 
         return chunkCount;
     }
 
     public async Awaitable GenerateMuseum(int numArtPieces)
     {
+        this.numArtPieces = numArtPieces;
+        Debug.Log("NUM ART PIECES SHOULD BE: " + numArtPieces);
+        int size = (int)(numArtPieces);
+        int numChunks = ChunkCountForArtPieces(numArtPieces);
+        
+        await GenerateMuseumByChunks(numChunks, size);
+    }
+
+    public async Awaitable GenerateMuseumByChunks(int numChunks, int numArtPieces)
+    {
         numFrames = 0;
         roomsWithFrameControllers = new List<RoomModule>();
 
-        int size = (int)(numArtPieces);
-        int numChunks = ChunkCountForArtPieces(numArtPieces); //TODO: Figure out the math for this
         InitMuseum(chunkSize * numChunks);
 
-        Vector2Int startPos = new Vector2Int(numChunks/2, 0);
+        Vector2Int startPos = new Vector2Int(numChunks / 2, 0);
         Debug.Log("Starting Position: " + startPos.x + " " + startPos.y);
         bool[][] chunksTraversed = new bool[numChunks][];
 
-        for(int i = 0; i < chunksTraversed.Length; i++) { chunksTraversed[i] = new bool[numChunks]; }
+        for (int i = 0; i < chunksTraversed.Length; i++) { chunksTraversed[i] = new bool[numChunks]; }
 
-        RecurseChunks(startPos, ref chunksTraversed);
+        RecurseChunks(startPos, numArtPieces, ref chunksTraversed);
 
         AlignAllRooms();
 
         //Debug.Log("Count: " + CountArtSpots());
 
-        if(populateArt)
+        if (populateArt)
             await AssignArt(numArtPieces);
 
         roomsWithFrameControllers = new List<RoomModule>();
@@ -150,6 +244,19 @@ public class MuseumManager : MonoBehaviour
 
     public void InitMuseum(int size)
     {
+        if (roomGrid != null && roomGrid.Length > 0)
+        {
+            firstRoom = null;
+            for (int x = 0; x < roomGrid.Length; x++)
+            {
+                for (int y = 0; y < roomGrid[x].Length; y++)
+                {
+                    if(roomGrid[x][y] != null)
+                        Destroy(roomGrid[x][y].gameObject);
+                }
+            }
+        }
+
         roomGrid = new RoomModule[size][];
 
         for (int i = 0; i < size; i++) 
@@ -160,6 +267,8 @@ public class MuseumManager : MonoBehaviour
 
     public void AlignAllRooms()
     {
+        numFrames = 0;
+
         for (int x = 0; x < roomGrid.Length; x++)
         {
             for (int y = 0; y < roomGrid.Length; y++)
@@ -179,7 +288,7 @@ public class MuseumManager : MonoBehaviour
             }
         }
 
-        Debug.Log("numFrames = " + numFrames);
+        Debug.Log("ACTUAL NUMBER OF FRAMES = " + numFrames);
     }
 
     public void GenerateRandomRoomPattern(int chunkX, int chunkY)
@@ -204,10 +313,18 @@ public class MuseumManager : MonoBehaviour
                 RemoveSquare(square.x + startX, square.y + startY, square.width, square.height);
             }
         }
+
+        numFrames += pattern.numArtSpaces;
     }
 
-    void RecurseChunks(Vector2Int startPos, ref bool[][] chunksTraversed)
+    bool RecurseChunks(Vector2Int startPos, int numArtworks, ref bool[][] chunksTraversed)
     {
+        if (numFrames >= numArtworks)
+        {
+            Debug.Log("NUM FRAMES IS: " + numFrames + " vs " + numArtworks);
+            return false;
+        }
+
         GenerateRandomRoomPattern(startPos.x, startPos.y);
 
         List<Vector2Int> directions = new List<Vector2Int>() { new Vector2Int(1, 0), new Vector2Int(-1, 0), new Vector2Int(0, 1), new Vector2Int(0, -1) };
@@ -223,8 +340,7 @@ public class MuseumManager : MonoBehaviour
             if (InBounds(nextPos.x, nextPos.y, chunksTraversed.Length) && !chunksTraversed[nextPos.x][nextPos.y])
             {
                 chunksTraversed[nextPos.x][nextPos.y] = true;
-
-                RecurseChunks(nextPos, ref chunksTraversed);
+                bool generated = RecurseChunks(nextPos, numArtPieces, ref chunksTraversed);
 
                 //connect the two chunk
 
@@ -256,6 +372,8 @@ public class MuseumManager : MonoBehaviour
                 }
             }
         }
+
+        return true;
     }
 
     public int CountArtSpots()
@@ -321,47 +439,6 @@ public class MuseumManager : MonoBehaviour
 
             await roomsWithFrameControllers[index].SetArtDisplays(0);
         }
-
-        //for (int x = 0; x < roomGrid.Length; x++)
-        //{
-        //    for (int y = 0; y < roomGrid[x].Length; y++)
-        //    {
-        //        if (roomGrid[x][y] != null)
-        //        {
-        //            if (spotsFilled >= numArtPieces)
-        //            {
-        //                await roomGrid[x][y].SetArtDisplays(0);
-        //                continue;
-        //            }
-
-        //            int numSet = roomGrid[x][y].GetNumArtDisplays();
-
-        //            if (numSet >= 1)
-        //            {
-        //                if (numSpots - spotsFilled > numArtPieces * 2)
-        //                {
-        //                    if (n != 0)
-        //                        numSet = 0;
-        //                    else
-        //                        numSet = 1;
-
-        //                        n++;
-        //                    n %= numSpaces;
-        //                }
-        //                else if(spotsFilled + numSet > numArtPieces)
-        //                {
-        //                    numSet = numArtPieces - spotsFilled;
-        //                }
-        //            }
-
-        //            await roomGrid[x][y].SetArtDisplays(numSet, items, spotsFilled, asyncPopulate, populateDelay);
-
-        //            spotsFilled += numSet;
-        //        }
-        //    }
-        //}
-
-        //Debug.Log("SpotsFilled: " + spotsFilled + " NumArtPieces: " + numArtPieces);
     }
 
     public void LoadModuleAsset()
@@ -370,7 +447,7 @@ public class MuseumManager : MonoBehaviour
         roomModulePrefab = funny.GetComponent<RoomModule>();
     }
 
-    public bool InBounds(int x, int y, int size)
+    public static bool InBounds(int x, int y, int size)
     {
         return x >= 0 && x < size && y >= 0 && y < size;
     }
