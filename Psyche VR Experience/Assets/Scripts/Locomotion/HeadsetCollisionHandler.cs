@@ -40,9 +40,6 @@ public class HeadsetCollisionHandler : MonoBehaviour
         Vector3 knockbackDirection = CalculateKnockbackDirection(collisionDetector.DetectedColliderHits);
         
         characterController.Move(knockbackDirection.normalized * knockbackStrength * Time.deltaTime);
-        Vector3 position = characterController.transform.position;
-        position.y = 0;
-        characterController.transform.position = position;
         Debug.Log("I threw you back inside the gameworld!");
     }
 }

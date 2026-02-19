@@ -145,10 +145,8 @@ public class RoomModule : MonoBehaviour
                     float maxFrameHeight = Mathf.Max(0.25f, wallHeight * 0.70f);    // 70% of wall
                     float maxFrameWidth = Mathf.Max(0.25f, wallWidth * 0.85f);      // 85% of wall
     
-                    foreach (FrameController fc in display.frameControllers)
+                    foreach (GameObject g in display.artFrames)
                     {
-                        GameObject g = fc.gameObject;
-
                         if (centerArtPieces)
                         {
                             g.transform.position = new Vector3(g.transform.position.x, wallTransform.position.y + 0.25f, g.transform.position.z);
@@ -166,25 +164,11 @@ public class RoomModule : MonoBehaviour
             }
         }
         
-        // chance to add decorations if the room is a certain type
+        // add decorations if the room is a certain type
         float dieRoll = UnityEngine.Random.Range(0f, 1f);
         if ((roomType == RoomType.FourOpen || roomType == RoomType.FlatOpen) && dieRoll < decorationLikelihood)
         {
-            dieRoll = UnityEngine.Random.Range(0f, 1f);
-            // bench and plant (50% chance)
-            if (dieRoll < .5f)
-                decoration = room.transform.GetChild(2).gameObject;
-            // fountain (20% chance)
-            else if (dieRoll < .7f)
-                decoration = room.transform.GetChild(3).gameObject;
-            // satellite statue (15% chance)
-            else if (dieRoll < .85f)
-                decoration = room.transform.GetChild(4).gameObject;
-            // asteroid statue (15% chance)
-            else
-                decoration = room.transform.GetChild(5).gameObject;
-
-            // decoration = room.transform.GetChild(UnityEngine.Random.Range(1, 5)).gameObject;
+            decoration = room.transform.GetChild(UnityEngine.Random.Range(1, 5)).gameObject;
             decoration.SetActive(true);
         }
     }
@@ -389,17 +373,20 @@ public class RoomModule : MonoBehaviour
     /// <returns>Number of art displays set.</returns>
     public async Awaitable SetArtDisplays(int numSet, List<ArtworkData> art = null, int start_index = 0, bool async = false, float delay = 0.1f)
     {
-        for (int i = 0; i < display.frameControllers.Length; i++)
+        for (int i = 0; i < display.artFrames.Length; i++)
         {
             if(i < numSet)
             {
-                FrameController frame = display.frameControllers[i];
+                GameObject frameObject = display.artFrames[i];
+                FrameController frame = frameObject.GetComponent<FrameController>();
+                // TextBoxController textbox =  frameObject.GetComponent<TextBoxController>();
 
-                frame.SetArtwork(art[(start_index + i) % art.Count]);
+                frame.SetArtwork(art[start_index + i]);
+                frame.SetDescText(art[start_index + i]);
             }
-            else if(display.frameControllers.Length > i)
+            else if(display.artFrames.Length > i)
             {
-                GameObject frameObject = display.frameControllers[i].gameObject;
+                GameObject frameObject = display.artFrames[i];
 
                 if(frameObject != null)
                     frameObject.gameObject.SetActive(false);

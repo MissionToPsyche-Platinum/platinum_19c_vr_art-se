@@ -2,5 +2,5 @@
 
 public class ArtDisplayList : MonoBehaviour
 {
-    public FrameController[] frameControllers;
+    public GameObject[] artFrames;
 }

@@ -61,7 +61,7 @@ MonoBehaviour:
   wallHeightMod: 2
   centerArtPieces: 1
   desiredFrameCenterWorldY: 1.6
-  reservedBottomPercent: 0.1
+  reservedBottomPercent: 0.2
   bottomPadding: 0.05
   openNorth: 0
   openSouth: 0
