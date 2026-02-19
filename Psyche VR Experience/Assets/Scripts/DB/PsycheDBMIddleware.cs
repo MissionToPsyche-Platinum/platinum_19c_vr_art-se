@@ -10,12 +10,29 @@ using static PsycheDBMiddleware;
 
 public static class PsycheDBMiddleware
 {
+    public static void KyleTestWriteThing(string data)
+    {
+        string path = Path.Combine(Application.dataPath, "funny.txt");
+        try
+        {
+            File.WriteAllText(path, data + "\n");
+            Debug.Log("Data saved to: " + path);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("Failed to save data: " + e.Message);
+        }
+    }
+
     // resolve the default DB path: ../Psyche VR Experience/Assets/Database/psyche.db
     // relative to Application.dataPath (which is .../Psyche VR Experience/Assets)
     public static string GetDefaultDbPath()
     {
         var assetsDir = Application.dataPath;                     // .../Psyche VR Experience/Assets
         var projectRoot = Directory.GetParent(assetsDir)?.FullName;
+
+        KyleTestWriteThing(assetsDir);
+
         if (string.IsNullOrEmpty(projectRoot))
             throw new Exception("Could not resolve project root from Application.dataPath.");
 
@@ -111,7 +128,10 @@ public static class PsycheDBMiddleware
                             // I stored the relative paths(EX: "Assets/Artwork/<project_id>/<file>"), should be fine
                             var filepath = reader["filepath"] as string;
                             if (!string.IsNullOrEmpty(filepath))
+                            {
                                 mediaPaths.Add(filepath);
+                                KyleTestWriteThing("ART: " + filepath);
+                            }
                         }
                     }
                 }

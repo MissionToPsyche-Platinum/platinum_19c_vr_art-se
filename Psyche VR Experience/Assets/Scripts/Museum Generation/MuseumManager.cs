@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Unity.VisualScripting;
-using UnityEditor;
-using UnityEditor.VersionControl;
+//using UnityEditor;
+//using UnityEditor.VersionControl;
 using UnityEngine;
 
 
@@ -364,11 +364,11 @@ public class MuseumManager : MonoBehaviour
         //Debug.Log("SpotsFilled: " + spotsFilled + " NumArtPieces: " + numArtPieces);
     }
 
-    public void LoadModuleAsset()
-    {
-        GameObject funny = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Room Modules/Room_Module.prefab");
-        roomModulePrefab = funny.GetComponent<RoomModule>();
-    }
+    //public void LoadModuleAsset()
+    //{
+    //    GameObject funny = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Room Modules/Room_Module.prefab");
+    //    roomModulePrefab = funny.GetComponent<RoomModule>();
+    //}
 
     public bool InBounds(int x, int y, int size)
     {
@@ -410,10 +410,10 @@ public class MuseumManager : MonoBehaviour
             return;
 
 
-        if(roomModulePrefab == null)
-        {
-            LoadModuleAsset();
-        }
+        //if(roomModulePrefab == null)
+        //{
+        //    LoadModuleAsset();
+        //}
 
         roomGrid[x][y] = Instantiate(roomModulePrefab);
 
