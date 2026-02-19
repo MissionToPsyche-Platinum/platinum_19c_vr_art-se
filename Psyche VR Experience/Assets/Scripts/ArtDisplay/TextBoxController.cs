@@ -1,11 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Windows;
-using Object = UnityEngine.Object;
 
 public class TextBoxController : MonoBehaviour
 {
@@ -17,10 +12,14 @@ public class TextBoxController : MonoBehaviour
     [Header("Image Components")]
     [Tooltip("The text field that shows the art description.")]
     [SerializeField] private TextMeshProUGUI artDescription;
+    [Tooltip("The text field that shows the art description.")]
+    [SerializeField] private TextMeshProUGUI scrollingTextbox;
     [Tooltip("The transform of the button .")]
     [SerializeField] private Transform descriptionButtonTransform;
     [Tooltip("The transform of the plaque container.")]
     [SerializeField] private Transform plaqueContainerTransform;
+    [Tooltip("The scrolling textbox container.")]
+    [SerializeField] private GameObject scrollingContainer;
 
     private float defaultFontSize;
 
@@ -50,6 +49,10 @@ public class TextBoxController : MonoBehaviour
         float width = artDescription.rectTransform.rect.width;
         float margin = 0.15f;
         descriptionButtonTransform.position = textAlign.position + textAlign.right * (width + margin);
+
+        // align scrolling textbox
+        scrollingContainer.transform.position = descriptionButtonTransform.position + descriptionButtonTransform.right * -0.5f;
+        scrollingContainer.transform.position = scrollingContainer.transform.position + descriptionButtonTransform.forward * 0.05f;
     }
 
     // TODO: This is probably a performance sink but otherwise the button wasn't lining up
@@ -73,11 +76,18 @@ public class TextBoxController : MonoBehaviour
                                "\n\n<b>" + artTitle + "</b> - " + artDate +
                                "\n\n\n<i>" + genreString + "</i>";
 
-        // TODO: Add this to scrolling textbox
-        // string descriptionText = "Artist Major: " + data.artistMajor + "\n\n" + data.artworkDescription;
-
         artDescription.text = organizedText;
+
+        string scrollingText = "<b>Artist Major: </b>" + capitalizeFirstLetterOfEachWord(data.artistMajor) + 
+                               "\n\n<b>About the Work: </b>" + data.artworkDescription;
+        scrollingTextbox.text = scrollingText;
+
         UpdateTextLocation();
+    }
+
+    public void ToggleScrollingDescription()
+    {
+        scrollingContainer.SetActive(!scrollingContainer.activeSelf);
     }
 
     // method to make date from ArtworkData more readable
