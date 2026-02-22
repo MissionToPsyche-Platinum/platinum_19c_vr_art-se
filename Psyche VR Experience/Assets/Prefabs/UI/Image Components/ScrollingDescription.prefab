@@ -120,8 +120,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1379498880188079440}
   m_HandleRect: {fileID: 4807596519966065553}
   m_Direction: 2
-  m_Value: 1.0000018
-  m_Size: 0.27299437
+  m_Value: 1
+  m_Size: 0.21738894
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -646,8 +646,8 @@ MonoBehaviour:
     This is a lengthy artwork description. This is a lengthy artwork description.
     This is a lengthy artwork description. This is a lengthy artwork description. '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fbcc8ac60ef674b4d9ad9322d3fcd88f, type: 2}
+  m_sharedMaterial: {fileID: 1264072914936414287, guid: fbcc8ac60ef674b4d9ad9322d3fcd88f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
