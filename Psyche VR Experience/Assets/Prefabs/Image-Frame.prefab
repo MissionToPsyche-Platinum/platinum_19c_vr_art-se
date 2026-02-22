@@ -1183,6 +1183,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Plaque
       objectReference: {fileID: 0}
+    - target: {fileID: 5690524167329620169, guid: 142faad66e44fbe43beb79ed661b4125, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6422993878894437657, guid: 142faad66e44fbe43beb79ed661b4125, type: 3}
       propertyPath: m_SizeDelta.x
       value: 0

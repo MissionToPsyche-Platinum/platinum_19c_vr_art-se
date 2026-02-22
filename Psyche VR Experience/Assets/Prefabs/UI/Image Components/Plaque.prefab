@@ -75,8 +75,8 @@ MonoBehaviour:
     <i>Watercolor
     and Earth Metals</i>'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fbcc8ac60ef674b4d9ad9322d3fcd88f, type: 2}
+  m_sharedMaterial: {fileID: 1264072914936414287, guid: fbcc8ac60ef674b4d9ad9322d3fcd88f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
