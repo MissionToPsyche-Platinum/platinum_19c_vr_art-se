@@ -1,10 +1,12 @@
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.Events;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Readers;
-using UnityEngine.InputSystem;
+using System.Collections;
 
 public class ExpoTimer : MonoBehaviour
 {
@@ -41,7 +43,7 @@ public class ExpoTimer : MonoBehaviour
         resetEvent.action.performed += resetEventHappened;
         resetTimer();
         
-        expoWarningText.text = "You have " + warningSeconds + " seconds remaining before the museum experience ends.";
+        expoWarningText.text = ""; // TODO: Decide whether to fully remove or replace somehow
         expoEndText.text = "Museum Experience has Ended.\nHand the headset back to the technician.\nHold down both triggers for 5 seconds to reset.";
     }
 
@@ -114,9 +116,8 @@ public class ExpoTimer : MonoBehaviour
     public void warning()
     {
         Debug.Log(warningSeconds + " seconds left on the expo timer!");
-        warningAudio.Play();
-
         warningHappened = true;
+        StartCoroutine(PlayWarningNTimes(4));
     }
 
     public void timerDone()
@@ -177,6 +178,17 @@ public class ExpoTimer : MonoBehaviour
         {
             resetTimer();
             launchRoomManager.ResetExpo();
+        }
+    }
+
+    IEnumerator PlayWarningNTimes(int num)
+    {
+        Debug.Log("Here!");
+        for (int i = 0; i < num; i++)
+        {
+            Debug.Log("Here!");
+            warningAudio.Play();
+            yield return new WaitForSeconds(warningAudio.clip.length);
         }
     }
 }
