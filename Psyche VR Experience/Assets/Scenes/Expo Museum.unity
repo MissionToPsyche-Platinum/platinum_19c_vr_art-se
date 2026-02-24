@@ -296,7 +296,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 352839523240806990, guid: 85438223dd7ea324c90e34e5e2af9c46, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -50
+      value: -49.7
       objectReference: {fileID: 0}
     - target: {fileID: 352839523240806990, guid: 85438223dd7ea324c90e34e5e2af9c46, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1545,18 +1545,7 @@ Material:
     m_Colors: []
   m_BuildTextureStacks: []
   m_AllowLocking: 1
---- !u!114 &1857295263 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2018407149880274070, guid: 85438223dd7ea324c90e34e5e2af9c46, type: 3}
-  m_PrefabInstance: {fileID: 469626909}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9bc8868352eb1e4fa4d84d1fbcbcbf8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ExpoTimer
---- !u!21 &2108427572
+--- !u!21 &2145379051
 Material:
   serializedVersion: 8
   m_ObjectHideFlags: 0
