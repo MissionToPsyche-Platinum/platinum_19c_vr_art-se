@@ -18,9 +18,9 @@ public static class PsycheDBMiddleware
         var projectRoot = Directory.GetParent(assetsDir)?.FullName;
 
         if (string.IsNullOrEmpty(projectRoot))
-            throw new Exception("Could not resolve project root from Application.dataPath.");
+            throw new Exception("Could not resolve project root from Application.streamingAssetsPath.");
 
-        var dbPath = Path.Combine(Application.dataPath, "Database", "psyche.db");
+        var dbPath = Path.Combine(assetsDir, "Database", "psyche.db");
         return dbPath;
     }
 

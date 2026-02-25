@@ -43,7 +43,7 @@ public class ExpoTimer : MonoBehaviour
         resetEvent.action.performed += resetEventHappened;
         resetTimer();
         
-        expoWarningText.text = "You have " + warningSeconds + " seconds remaining before the museum experience ends.";
+        expoWarningText.text = ""; // TODO: Decide whether to fully remove or replace somehow
         expoEndText.text = "Museum Experience has Ended.\nHand the headset back to the technician.\nHold down both triggers for 5 seconds to reset.";
     }
 

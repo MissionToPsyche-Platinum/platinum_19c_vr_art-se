@@ -62,7 +62,7 @@ public class MuseumManager : MonoBehaviour
 
             // the minus X here is to account for variance when rooms get smashed together
             numArtSpaces = CalculateArtSpacesForRoom();
-            numArtSpaces = (int)(numArtSpaces * 0.75f);
+            numArtSpaces = (int)(numArtSpaces * 0.8f);
         }
 
         int CalculateArtSpacesForRoom()
@@ -119,8 +119,10 @@ public class MuseumManager : MonoBehaviour
                     if (rooms[i][j])
                         artSpaces += GetNumArtSpaces(i, j, rooms);
                 }
+                //Debug.Log(line);
             }
 
+            //Debug.Log("NUM ART SPACES = " + artSpaces);
             return artSpaces;
         }
 
@@ -211,10 +213,9 @@ public class MuseumManager : MonoBehaviour
     {
         this.numArtPieces = numArtPieces;
         Debug.Log("NUM ART PIECES SHOULD BE: " + numArtPieces);
-        int size = (int)(numArtPieces);
-        int numChunks = ChunkCountForArtPieces(numArtPieces);
+        //int numChunks = ChunkCountForArtPieces(numArtPieces);
         
-        await GenerateMuseumByChunks(numChunks, size);
+        await GenerateMuseumByChunks(4, numArtPieces);
     }
 
     public async Awaitable GenerateMuseumByChunks(int numChunks, int numArtPieces)
@@ -329,10 +330,12 @@ public class MuseumManager : MonoBehaviour
 
         List<Vector2Int> directions = new List<Vector2Int>() { new Vector2Int(1, 0), new Vector2Int(-1, 0), new Vector2Int(0, 1), new Vector2Int(0, -1) };
 
+        int startInd = Random.Range(0, 4);
+
         //loop over every direction we checked in the first loop
         for (int i = 0; i < directions.Count; i++)
         {
-            Vector2Int dir = directions[i];
+            Vector2Int dir = directions[(startInd + i) % 4];
 
             Vector2Int nextPos = startPos + dir;
 
@@ -340,7 +343,10 @@ public class MuseumManager : MonoBehaviour
             if (InBounds(nextPos.x, nextPos.y, chunksTraversed.Length) && !chunksTraversed[nextPos.x][nextPos.y])
             {
                 chunksTraversed[nextPos.x][nextPos.y] = true;
-                bool generated = RecurseChunks(nextPos, numArtPieces, ref chunksTraversed);
+                bool generated = RecurseChunks(nextPos, numArtworks, ref chunksTraversed);
+
+                if (!generated)
+                    return true;
 
                 //connect the two chunk
 
@@ -422,9 +428,10 @@ public class MuseumManager : MonoBehaviour
 
         int index = 0;
         int numVisits = 0;
+        int factor = numRooms % 2 == 0 ? 1 : 2;
         while (spotsFilled < requestCount || numVisits < numRooms)
         {
-            index = (index + 11) % numRooms;
+            index = (index + 7 + factor) % numRooms;
             numVisits++;
 
             int numToFill = 0;
