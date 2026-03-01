@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+//using System.Numerics;
+using System.Threading.Tasks.Dataflow;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -25,7 +27,8 @@ public class HeadsetCollisionManager : MonoBehaviour
     {
         List<RaycastHit> detectedHits = new();
 
-        List<Vector3> directions = new() { transform.forward, transform.right, -transform.right };
+        //List of all current ray casts
+        List<Vector3> directions = new() { transform.forward, -transform.forward, transform.right, -transform.right, Vector3.down };
 
         RaycastHit hit;
         foreach (var dir in directions)
