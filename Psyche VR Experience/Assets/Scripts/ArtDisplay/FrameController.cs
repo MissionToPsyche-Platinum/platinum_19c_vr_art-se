@@ -62,10 +62,6 @@ public class FrameController : MonoBehaviour
     [Tooltip("Frame depth (how far the border extends along the relative z-axis(front to back)).")]
     [SerializeField] float frameDepth = 0.05f;
 
-    [Header("Scriptable Object(Artwork)")]
-    [Tooltip("The scriptable object containing the piece's path and data. (This is not included in functionality nor in the API atm)")]
-    [SerializeField] UnityEngine.Object scriptable = null;
-
     [Header("Fallback Texture")]
     [Tooltip("An image to display if the frame has nothing to display within itself due to errors or the media being audio only")]
     [SerializeField] Texture2D fallbackTexture;
@@ -154,11 +150,6 @@ public class FrameController : MonoBehaviour
 
     void Update()
     {
-        if (previousIterationSetting != GlobalSettings.AUTO_ITERATE_ON)
-        {
-            previousIterationSetting = GlobalSettings.AUTO_ITERATE_ON;
-            ToggleAutoIteration();
-        }
 #if UNITY_EDITOR
         if (!Application.isPlaying)
         {
