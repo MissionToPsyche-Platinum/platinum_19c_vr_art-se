@@ -21,6 +21,11 @@ public class TeleportLocomotion : MonoBehaviour
     [SerializeField]
     public TeleportVisual teleportVisual;
 
+    [Header("Damping Value (0 - 1)")]
+    public float dampingValue = 0.25f;
+    private bool teleValid = false;
+    private Vector3 telePos = Vector3.zero;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -56,6 +61,8 @@ public class TeleportLocomotion : MonoBehaviour
             case TELESTATE.IDLE:
                 if (teleportPressed)
                 {
+                    teleValid = false;
+                    telePos = new Vector3();
                     state = TELESTATE.TELEPORTHELD;
                     return;
                 }
@@ -132,13 +139,28 @@ public class TeleportLocomotion : MonoBehaviour
 
     TeleportData FindTeleportPoint()
     {
+        TeleportData teleData;
+
         if (Physics.Raycast(new Ray(transform.position, transform.forward), out RaycastHit hit, Mathf.Infinity, (1 << 6)))
         {
-            return new TeleportData(true, hit.point);
+            teleData = new TeleportData(true, hit.point);
         } else
         {
-            return new TeleportData(false, Vector3.zero);
+            teleData = new TeleportData(false, Vector3.zero);
         }
+
+        if(!teleValid && teleData.valid)
+        {
+            teleValid = true;
+            telePos = teleData.position;
+        }
+        else if (teleData.valid)
+        {
+            telePos = Vector3.MoveTowards(telePos, teleData.position, Vector3.Distance(telePos, teleData.position) * dampingValue);
+        }
+        
+
+        return new TeleportData(teleValid, telePos);
     }
 
     public void TeleportToPoint()
