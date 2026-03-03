@@ -141,7 +141,11 @@ public class TeleportLocomotion : MonoBehaviour
     {
         TeleportData teleData;
 
-        if (Physics.Raycast(new Ray(transform.position, transform.forward), out RaycastHit hit, Mathf.Infinity, (1 << 6)))
+        Vector3 direction = transform.forward;
+
+        direction.y = Mathf.Min(-Mathf.Abs(direction.y), -0.05f);
+
+        if (Physics.Raycast(new Ray(transform.position, direction), out RaycastHit hit, Mathf.Infinity, (1 << 6)))
         {
             teleData = new TeleportData(true, hit.point);
         } else
