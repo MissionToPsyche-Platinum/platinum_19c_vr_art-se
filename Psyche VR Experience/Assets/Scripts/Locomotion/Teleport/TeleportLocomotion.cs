@@ -103,23 +103,26 @@ public class TeleportLocomotion : MonoBehaviour
 
     async void TeleportAction(TeleportData data)
     {
-        if (LocomotionSettings.TELEPORT_FADE_TO_BLACK)
+        if (data.valid)
         {
-            state = TELESTATE.TELEPORTING;
-            teleportVisual.FadeOut();
-
-            while(teleportVisual.blackScreen.color.a < 1f)
+            if (LocomotionSettings.TELEPORT_FADE_TO_BLACK)
             {
-                await Task.Delay(10);
+                state = TELESTATE.TELEPORTING;
+                teleportVisual.FadeOut();
+
+                while (teleportVisual.blackScreen.color.a < 1f)
+                {
+                    await Task.Delay(10);
+                }
             }
-        }
 
-        teleportVisual.Unvisualize();
-        TeleportToPoint(data);
+            teleportVisual.Unvisualize();
+            TeleportToPoint(data);
 
-        while (teleportVisual.fadeState != TeleportVisual.FadeState.IDLE)
-        {
-            await Task.Delay(100);
+            while (teleportVisual.fadeState != TeleportVisual.FadeState.IDLE)
+            {
+                await Task.Delay(100);
+            }
         }
 
         state = TELESTATE.IDLE;
