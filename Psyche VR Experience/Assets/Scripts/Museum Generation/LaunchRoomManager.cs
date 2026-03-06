@@ -14,11 +14,6 @@ public class LaunchRoomManager : MonoBehaviour
 
     private bool InMuseum = false;
 
-    private void Awake()
-    {
-        startExpoExperience();
-    }
-
     public async void startExpoExperience()
     {
         if (InMuseum)
@@ -50,7 +45,7 @@ public class LaunchRoomManager : MonoBehaviour
         Vector3 spawnPosition = museumManager.firstRoom.position;
         if (spawnPosition != null)
         {
-            Vector3 playerSpawnPosition = new Vector3(spawnPosition.x, 1f, spawnPosition.z);
+            Vector3 playerSpawnPosition = new Vector3(spawnPosition.x, 0, spawnPosition.z);
             playerTransform.position = playerSpawnPosition;
         }
     }
