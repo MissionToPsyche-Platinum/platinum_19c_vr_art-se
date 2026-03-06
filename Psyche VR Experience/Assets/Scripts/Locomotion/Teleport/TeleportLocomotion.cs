@@ -148,10 +148,23 @@ public class TeleportLocomotion : MonoBehaviour
 
         direction.y = Mathf.Min(-Mathf.Abs(direction.y), -0.05f);
 
-        if (Physics.Raycast(new Ray(transform.position, direction), out RaycastHit hit, Mathf.Infinity, (1 << 6)))
+        direction.Normalize();
+
+        if (Physics.Raycast(new Ray(transform.position, direction), out RaycastHit hit, Mathf.Infinity, (1 << 6) | (1 << 8)))
         {
-            teleData = new TeleportData(true, hit.point);
-        } else
+            Vector3 p = hit.point;
+            //this means we've probably hit a wall
+            if (hit.point.y != 0)
+            {
+                //pull back so we're not INSIDE the wall
+                p += hit.normal;
+
+                p.y = 0;
+            }
+
+            teleData = new TeleportData(true, p);
+        } 
+        else
         {
             teleData = new TeleportData(false, Vector3.zero);
         }
