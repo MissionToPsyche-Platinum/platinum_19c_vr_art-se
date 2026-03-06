@@ -158,16 +158,6 @@ public class SettingsManager : MonoBehaviour
         m_TextSizeChanged?.Invoke();
     }
 
-    public void AutoIterateOn()
-    {
-        GlobalSettings.AUTO_ITERATE_ON = true;
-    }
-
-    public void AutoIterateOff()
-    {
-        GlobalSettings.AUTO_ITERATE_ON = false;
-    }
-
     public void AdjustTeleportFade(float val)
     {
         if (val > 0f)
