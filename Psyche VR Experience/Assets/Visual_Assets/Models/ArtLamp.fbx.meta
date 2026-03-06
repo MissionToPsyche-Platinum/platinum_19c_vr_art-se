@@ -3,42 +3,7 @@ guid: d05978401b1406e4d83a146d337b16f6
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: FabricPlainNaturalSheer009_COL_2K
-    second: {fileID: 2800000, guid: 08189e13d95d2824fbe0b08e8142b4d9, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: FabricPlainNaturalSheer009_GLOSS_2K
-    second: {fileID: 2800000, guid: eebbb4fd791395e4b98d6d86aede36f7, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: FabricPlainNaturalSheer009_NRM_2K
-    second: {fileID: 2800000, guid: d3dee221adf26fe42b4d232f1f4a6cc9, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: Poliigon_MetalSteelBrushed_7174_BaseColor
-    second: {fileID: 2800000, guid: 6fbbbc67ff5a85f449381a0f048eb1af, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: Poliigon_MetalSteelBrushed_7174_Metallic
-    second: {fileID: 2800000, guid: 3ce27c8d2dfd1e546bafcecee616cc3c, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: Poliigon_MetalSteelBrushed_7174_Normal
-    second: {fileID: 2800000, guid: 633f39709213beb43b2e68b890853f13, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: Poliigon_MetalSteelBrushed_7174_Roughness
-    second: {fileID: 2800000, guid: 1d59a5e42f178144bab6618851f2f997, type: 3}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0
