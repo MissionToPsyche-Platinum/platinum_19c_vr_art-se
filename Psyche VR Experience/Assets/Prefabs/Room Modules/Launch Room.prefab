@@ -1708,7 +1708,7 @@ MonoBehaviour:
   expoTimer: {fileID: 0}
   museumManager: {fileID: 0}
   playerTransform: {fileID: 0}
-  playerSpawnPosition: {x: -1, y: -50, z: 0}
+  playerSpawnPosition: {x: -1, y: -50, z: -4.5}
 --- !u!1 &3805386973274063494
 GameObject:
   m_ObjectHideFlags: 0
