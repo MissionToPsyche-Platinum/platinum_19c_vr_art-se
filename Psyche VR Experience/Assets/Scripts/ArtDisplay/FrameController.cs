@@ -109,6 +109,7 @@ public class FrameController : MonoBehaviour
     [SerializeField] private bool pauseOnExit = true;
     // tags that count as the player, I just used "Player" and assigned XR origin, freeroam camera, and playercamera as "Player"
     [SerializeField] private string collisionTag = "MainCamera";
+    private GameObject pauseSymbol = null;
     private int insideCount = 0;
     private Coroutine dwellRoutine;
 
@@ -128,6 +129,8 @@ public class FrameController : MonoBehaviour
         fallbackTexture = LoadImage(ResolveFullPath("Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png"));
         if (fallbackTexture == null)
             Debug.LogError("Fallback image missing! Add it at Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png");
+
+        pauseSymbol = this.gameObject.transform.Find("ImageQuad").transform.Find("PauseSymbol").gameObject;
 
         SettingsManager.m_ButtonSizeChanged.AddListener(RepositionButtons_Callback);
     }
@@ -739,10 +742,11 @@ public class FrameController : MonoBehaviour
         vp.Play();
         vp.Pause();
         vp.isLooping = vp.url.Contains("_GIF");
+        pauseSymbol.SetActive(true);
 
         if (enableAudio && audioSource != null)
             audioSource.Pause();
-        
+
         // auto-play if explicitly enabled
         if (autoPlayVideoOnLoad)
         {
@@ -762,6 +766,8 @@ public class FrameController : MonoBehaviour
 
         if (enableAudio && audioSource != null)
             audioSource.Play();
+        pauseSymbol.SetActive(false);
+
     }
 
     // will be used for proximity triggering and for pausing videos.
@@ -770,6 +776,7 @@ public class FrameController : MonoBehaviour
     {
         if (videoPlayer != null) videoPlayer.Pause();
         if (audioSource != null) audioSource.Pause();
+        pauseSymbol.SetActive(true);
     }
 
 

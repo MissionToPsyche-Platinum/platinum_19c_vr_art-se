@@ -431,7 +431,7 @@ public class MuseumManager : MonoBehaviour
         int factor = numRooms % 2 == 0 ? 1 : 2;
         while (spotsFilled < requestCount || numVisits < numRooms)
         {
-            index = (index + 7 + factor) % numRooms;
+            index = (index + 6 + factor) % numRooms;
             numVisits++;
 
             int numToFill = 0;
