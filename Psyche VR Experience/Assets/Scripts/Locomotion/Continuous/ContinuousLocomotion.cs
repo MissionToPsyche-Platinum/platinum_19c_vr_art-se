@@ -36,7 +36,6 @@ public class ContinuousLocomotion : MonoBehaviour
         // skip if there is not much input
         if (input.magnitude > 0.01f)
         {
-            Debug.Log("INPUT: " + input.magnitude);
             Vector3 movementDirection = new Vector3(input.x, 0f, input.y);
             Vector3 cameraDirection = new Vector3(cameraTransform.forward.x, 0f, cameraTransform.forward.z).normalized;
             
