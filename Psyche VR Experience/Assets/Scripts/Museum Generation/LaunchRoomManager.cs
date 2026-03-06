@@ -50,16 +50,18 @@ public class LaunchRoomManager : MonoBehaviour
         }
     }
 
-    public void ResetExpo()
+    public async void ResetExpo()
     {
         // if we generate every time, simply reload the scene
         if (ExpoSettings.REGENERATE_MUSEUM)
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            await museumManager.GenerateMuseum(ExpoSettings.ART_PIECE_COUNT);
         }
         // else, bring the player back to the launch room 
         else
         {
+            await museumManager.AssignArt(ExpoSettings.ART_PIECE_COUNT);
             playerTransform.position = playerSpawnPosition;
         }
 
