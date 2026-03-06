@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Events;
 
 public class LaunchRoomManager : MonoBehaviour
 {
@@ -62,6 +63,20 @@ public class LaunchRoomManager : MonoBehaviour
         {
             playerTransform.position = playerSpawnPosition;
         }
+        
+        // reset all settings back to defaults
+        LocomotionSettings.LOCOMOTION_MODE = LocomotionSettings.LocomotionMode.TELEPORT;
+        GlobalSettings.MASTER_VOLUME = 1;
+        SettingsManager.m_VideoVolumeChanged?.Invoke();
+        GlobalSettings.MUSIC_VOLUME = 1;
+        GlobalSettings.TEXT_SIZE_MULTIPLIER = 1;
+        SettingsManager.m_TextSizeChanged.Invoke();
+        LocomotionSettings.CONTINUOUS_VIGNETTE = false;
+        LocomotionSettings.TELEPORT_FADE_TIME = 0.5f;
+        LocomotionSettings.TELEPORT_FADE_WAIT = 0.5f;
+        GlobalSettings.INTERACTION_SIZE_MULTIPLER = 1;
+        SettingsManager.m_ButtonSizeChanged.Invoke();
+        GlobalSettings.SKYBOX_ROTATION_ON = 1f;
 
         InMuseum = false;
     }
