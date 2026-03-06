@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -29,6 +30,8 @@ public class ToggleSwitch : MonoBehaviour
     private Material localCopyOfBackgroundMaterial;
 
     protected Action transitionEffect;
+    
+    private float defaultSliderVal;
 
     protected virtual void OnValidate()
     {
@@ -44,6 +47,8 @@ public class ToggleSwitch : MonoBehaviour
 
     protected virtual void Awake()
     {
+        // set default value to currently set value
+        defaultSliderVal = sliderValue;
         OnValidate();
 
         if (sliderValue != 0)
@@ -114,5 +119,13 @@ public class ToggleSwitch : MonoBehaviour
     private void TransitionImages()
     {
         backgroundImage.material.SetFloat("_MixValue", sliderValue);
+    }
+    
+    public void Reset()
+    {
+        if (slider.value != defaultSliderVal)
+        {
+            Toggle();
+        }
     }
 }

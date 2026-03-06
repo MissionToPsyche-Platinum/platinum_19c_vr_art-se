@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class LaunchRoomManager : MonoBehaviour
 {
@@ -10,6 +10,16 @@ public class LaunchRoomManager : MonoBehaviour
 
     [Tooltip("Where the player will spawn")]
     [SerializeField] private Vector3 playerSpawnPosition;
+    
+    [Header("Settings Controls")]
+    [SerializeField] private ToggleSwitch locomotionToggle;
+    [SerializeField] private Slider masterVolSlider;
+    [SerializeField] private Slider musicVolSlider;
+    [SerializeField] private MultipleChoice textSizeChoice;
+    [SerializeField] private ToggleSwitch vignetteToggle;
+    [SerializeField] private Slider teleportFadeSlider;
+    [SerializeField] private MultipleChoice buttonSizeChoice;
+    [SerializeField] private ToggleSwitch rotationToggle;
 
     private bool museumGeneratedAtLeastOnce = false;
 
@@ -77,6 +87,16 @@ public class LaunchRoomManager : MonoBehaviour
         GlobalSettings.INTERACTION_SIZE_MULTIPLER = 1;
         SettingsManager.m_ButtonSizeChanged.Invoke();
         GlobalSettings.SKYBOX_ROTATION_ON = 1f;
+        
+        // set all menu visuals back to defaults
+        locomotionToggle.Reset();
+        masterVolSlider.value = 1;
+        musicVolSlider.value = 1;
+        textSizeChoice.ResetChoice();
+        vignetteToggle.Reset();
+        teleportFadeSlider.value = 0.5f;
+        buttonSizeChoice.ResetChoice();
+        rotationToggle.Reset();
 
         InMuseum = false;
     }
