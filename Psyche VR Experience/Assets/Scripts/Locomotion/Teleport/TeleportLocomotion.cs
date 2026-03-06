@@ -154,12 +154,13 @@ public class TeleportLocomotion : MonoBehaviour
         {
             Vector3 p = hit.point;
             //this means we've probably hit a wall
-            if (hit.point.y != 0)
+            //note: if we do anything with height, this probably needs to change
+            if (hit.point.y != rig.position.y)
             {
                 //pull back so we're not INSIDE the wall
                 p += hit.normal;
 
-                p.y = 0;
+                p.y = rig.position.y;
             }
 
             teleData = new TeleportData(true, p);
