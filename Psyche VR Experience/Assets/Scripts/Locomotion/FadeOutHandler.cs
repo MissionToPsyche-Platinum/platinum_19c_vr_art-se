@@ -1,9 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using Unity Engine;
-
-public class FadeOutHandler : MonoBehavior
+using UnityEngine;
+public class FadeOutHandler : MonoBehaviour
 {
     [SerializeField] private float fadeToBlackDelay = 0.05f;
     private Material material;
@@ -34,12 +32,12 @@ public class FadeOutHandler : MonoBehavior
     {
         float startAlpha = material.GetFloat("Alpha");
         float endAlpha = fadeOut ? 1.0f : 0.0f;
-        float remainingTime = fadeToBlackDelay * Mathf.Abs(endAlpha - StartAlpha);
+        float remainingTime = fadeToBlackDelay * Mathf.Abs(endAlpha - startAlpha);
         float elapsedTime = 0;
         while (elapsedTime < fadeToBlackDelay)
         {
             elapsedTime += Time.deltaTime;
-            float tempVal = MathF.Lerp(startAlpha, endAlpha, elapsedTime / remainingTime);
+            float tempVal = Mathf.Lerp(startAlpha, endAlpha, elapsedTime / remainingTime);
             material.SetFloat("Alpha", tempVal);
             yield return null;
         }
