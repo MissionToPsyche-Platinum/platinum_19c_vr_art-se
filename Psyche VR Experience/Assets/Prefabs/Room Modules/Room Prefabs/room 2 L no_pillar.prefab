@@ -44,6 +44,7 @@ GameObject:
   - component: {fileID: 4025819720030099757}
   - component: {fileID: 2464909905040898816}
   - component: {fileID: 7263586862034215569}
+  - component: {fileID: 480070614343892257}
   m_Layer: 8
   m_Name: Cube.001
   m_TagString: Untagged
@@ -122,6 +123,27 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &480070614343892257
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8620844729189728400}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.02, y: 0.02, z: 0.019999998}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &8915312866440151397
 GameObject:
   m_ObjectHideFlags: 0
@@ -133,6 +155,7 @@ GameObject:
   - component: {fileID: 4728873991189184697}
   - component: {fileID: 2788677210893987664}
   - component: {fileID: 8782085521799292749}
+  - component: {fileID: 7876891954770605548}
   m_Layer: 8
   m_Name: Cube.002
   m_TagString: Untagged
@@ -211,6 +234,27 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &7876891954770605548
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8915312866440151397}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.02, y: 0.02, z: 0.019999998}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &3882495537541813169
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -500,7 +544,7 @@ PrefabInstance:
     - target: {fileID: -7918335002988649766, guid: c30397b615635e24ab27cc710383459a, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 1aab1e49d6826ed4e877710baca80b5a, type: 2}
+      objectReference: {fileID: 2100000, guid: 7ab9401a16649a944863a5e8ccec6a80, type: 2}
     - target: {fileID: -7029948723529949830, guid: c30397b615635e24ab27cc710383459a, type: 3}
       propertyPath: m_Layer
       value: 6

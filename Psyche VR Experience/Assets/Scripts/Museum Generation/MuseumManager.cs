@@ -3,8 +3,10 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using Unity.VisualScripting;
-//using UnityEditor;
-//using UnityEditor.VersionControl;
+#if UNITY_EDITOR
+using UnityEditor;
+using UnityEditor.VersionControl;
+#endif
 using UnityEngine;
 
 
@@ -431,7 +433,7 @@ public class MuseumManager : MonoBehaviour
         int factor = numRooms % 2 == 0 ? 1 : 2;
         while (spotsFilled < requestCount || numVisits < numRooms)
         {
-            index = (index + 7 + factor) % numRooms;
+            index = (index + 6 + factor) % numRooms;
             numVisits++;
 
             int numToFill = 0;
@@ -448,11 +450,13 @@ public class MuseumManager : MonoBehaviour
         }
     }
 
-    //public void LoadModuleAsset()
-    //{
-    //    GameObject funny = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Room Modules/Room_Module.prefab");
-    //    roomModulePrefab = funny.GetComponent<RoomModule>();
-    //}
+#if UNITY_EDITOR
+    public void LoadModuleAsset()
+    {
+        GameObject funny = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Room Modules/Room_Module.prefab");
+        roomModulePrefab = funny.GetComponent<RoomModule>();
+    }
+#endif
 
     public static bool InBounds(int x, int y, int size)
     {
@@ -493,11 +497,12 @@ public class MuseumManager : MonoBehaviour
         if (!InBounds(x, y, roomGrid.Length) || roomGrid[x][y] != null)
             return;
 
-
-        //if(roomModulePrefab == null)
-        //{
-        //    LoadModuleAsset();
-        //}
+#if UNITY_EDITOR
+        if (roomModulePrefab == null)
+        {
+            LoadModuleAsset();
+        }
+#endif
 
         roomGrid[x][y] = Instantiate(roomModulePrefab);
 

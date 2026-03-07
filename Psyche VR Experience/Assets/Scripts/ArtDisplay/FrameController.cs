@@ -62,10 +62,6 @@ public class FrameController : MonoBehaviour
     [Tooltip("Frame depth (how far the border extends along the relative z-axis(front to back)).")]
     [SerializeField] float frameDepth = 0.05f;
 
-    [Header("Scriptable Object(Artwork)")]
-    [Tooltip("The scriptable object containing the piece's path and data. (This is not included in functionality nor in the API atm)")]
-    [SerializeField] UnityEngine.Object scriptable = null;
-
     [Header("Fallback Texture")]
     [Tooltip("An image to display if the frame has nothing to display within itself due to errors or the media being audio only")]
     [SerializeField] Texture2D fallbackTexture;
@@ -85,13 +81,6 @@ public class FrameController : MonoBehaviour
     // per-renderer property block for per-instance textures
     MaterialPropertyBlock _mpb;
 
-    // Auto Iterate stuff.
-    private Coroutine autoIterateRoutine;
-    [SerializeField, Tooltip("Automatically start auto-iteration when play mode begins.")]
-    private bool autoIterateOnStart = false;
-    [SerializeField, Tooltip("Seconds between automatic image switches when auto-iteration is running.")]
-    private float autoIterationInterval = 5f;
-    private bool previousIterationSetting;
 
     // video/audio playback stuff
     private VideoPlayer videoPlayer; 
@@ -109,6 +98,7 @@ public class FrameController : MonoBehaviour
     [SerializeField] private bool pauseOnExit = true;
     // tags that count as the player, I just used "Player" and assigned XR origin, freeroam camera, and playercamera as "Player"
     [SerializeField] private string collisionTag = "MainCamera";
+    private GameObject pauseSymbol = null;
     private int insideCount = 0;
     private Coroutine dwellRoutine;
 
@@ -121,13 +111,13 @@ public class FrameController : MonoBehaviour
     {
         SettingsManager.m_VideoVolumeChanged.AddListener(VolumeChanged);
 
-        previousIterationSetting = autoIterateOnStart;
-
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
         
         fallbackTexture = LoadImage(ResolveFullPath("Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png"));
         if (fallbackTexture == null)
             Debug.LogError("Fallback image missing! Add it at Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png");
+
+        pauseSymbol = this.gameObject.transform.Find("ImageQuad").transform.Find("PauseSymbol").gameObject;
 
         SettingsManager.m_ButtonSizeChanged.AddListener(RepositionButtons_Callback);
     }
@@ -154,11 +144,6 @@ public class FrameController : MonoBehaviour
 
     void Update()
     {
-        if (previousIterationSetting != GlobalSettings.AUTO_ITERATE_ON)
-        {
-            previousIterationSetting = GlobalSettings.AUTO_ITERATE_ON;
-            ToggleAutoIteration();
-        }
 #if UNITY_EDITOR
         if (!Application.isPlaying)
         {
@@ -206,12 +191,6 @@ public class FrameController : MonoBehaviour
 
         if (mediaPaths.Count > 1)
         {
-            // if enabled, automatically begin iterating once at least one valid media file is set
-            if (autoIterateOnStart)
-            {
-                StartAutoIteration(autoIterationInterval);
-            }
-
             //set buttons active if there's more than one art piece
             buttonNext.SetActive(true);
             buttonPrev.SetActive(true);
@@ -266,7 +245,6 @@ public class FrameController : MonoBehaviour
         //this is necessary to ensure that auto iteration doesn't
         // get in the way of button iteration, and if a user
         // is manually iterating, we just want to turn this off
-        StopAutoIteration();
     }
 
     public void ButtonPrevious()
@@ -283,7 +261,6 @@ public class FrameController : MonoBehaviour
         //this is necessary to ensure that auto iteration doesn't
         // get in the way of button iteration, and if a user
         // is manually iterating, we just want to turn this off
-        StopAutoIteration();
     }
 
     public void NextImage()
@@ -613,79 +590,6 @@ public class FrameController : MonoBehaviour
     }
 
     /* --------------------------------------------------------------
-     *                      AUTO ITERATION
-     * -------------------------------------------------------------- */
-
-
-    // safe getter for media paths
-    public string GetMediaPath(int index)
-    {
-        if (mediaPaths == null || index < 0 || index >= mediaPaths.Count)
-            return null;
-        return mediaPaths[index];
-    }
-
-    /// Starts automatic image cycling for this frame.
-    /// <param name="intervalSeconds">time in seconds between each image switch.</param>
-    public void StartAutoIteration(float intervalSeconds = -1f)
-    {
-        // if there isn't more than one art path, don't start the routine.
-        if (!(mediaPaths.Count > 1)) return;
-        // will update the variable, otherwise 5
-        if (intervalSeconds > 0f)
-            autoIterationInterval = intervalSeconds;
-
-        StopAutoIteration(); // ensure no duplicate coroutines
-        autoIterateRoutine = StartCoroutine(AutoIterateCoroutine());
-    }
-
-    // stops auto-iteration if it�s currently active.
-    public void StopAutoIteration()
-    {
-        if (autoIterateRoutine != null)
-        {
-            StopCoroutine(autoIterateRoutine);
-            autoIterateRoutine = null;
-        }
-    }
-
-    // toggles for auto iteration 
-    public void ToggleAutoIteration(float intervalSeconds = -1f)
-    {
-        if (autoIterateRoutine != null)
-        {
-            StopAutoIteration();
-        }
-        else
-        {
-            if(mediaPaths.Count >1) StartAutoIteration(intervalSeconds);
-        }
-    }
-
-    // coroutine instance
-    // (only handles images rn. Need to add video functionality before I add waiting for videos to finish)
-    private IEnumerator AutoIterateCoroutine()
-    {
-        while (true)
-        {
-            // for videos: wait for the video's true length
-            if (isVideoMode && videoPlayer != null && videoPlayer.length > 0)
-            {
-                yield return new WaitForSeconds((float)currentVideoDuration);
-            }
-            else
-            {
-                // For images
-                yield return new WaitForSeconds(autoIterationInterval);
-            }
-
-            currentMediaIndex = (currentMediaIndex + 1) % mediaPaths.Count;
-            ApplyAll();
-        }
-    }
-
-
-    /* --------------------------------------------------------------
     *                   VIDEO AND AUDIO HANDLING
     * -------------------------------------------------------------- */
 
@@ -739,10 +643,11 @@ public class FrameController : MonoBehaviour
         vp.Play();
         vp.Pause();
         vp.isLooping = vp.url.Contains("_GIF");
+        pauseSymbol.SetActive(true);
 
         if (enableAudio && audioSource != null)
             audioSource.Pause();
-        
+
         // auto-play if explicitly enabled
         if (autoPlayVideoOnLoad)
         {
@@ -762,6 +667,8 @@ public class FrameController : MonoBehaviour
 
         if (enableAudio && audioSource != null)
             audioSource.Play();
+        pauseSymbol.SetActive(false);
+
     }
 
     // will be used for proximity triggering and for pausing videos.
@@ -770,6 +677,7 @@ public class FrameController : MonoBehaviour
     {
         if (videoPlayer != null) videoPlayer.Pause();
         if (audioSource != null) audioSource.Pause();
+        pauseSymbol.SetActive(true);
     }
 
 

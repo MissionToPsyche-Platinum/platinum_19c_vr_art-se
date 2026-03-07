@@ -21,6 +21,11 @@ public class TeleportLocomotion : MonoBehaviour
     [SerializeField]
     public TeleportVisual teleportVisual;
 
+    [Header("Damping Value (0 - 1)")]
+    public float dampingValue = 0.25f;
+    private bool teleValid = false;
+    private Vector3 telePos = Vector3.zero;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -56,6 +61,8 @@ public class TeleportLocomotion : MonoBehaviour
             case TELESTATE.IDLE:
                 if (teleportPressed)
                 {
+                    teleValid = false;
+                    telePos = new Vector3();
                     state = TELESTATE.TELEPORTHELD;
                     return;
                 }
@@ -96,23 +103,26 @@ public class TeleportLocomotion : MonoBehaviour
 
     async void TeleportAction(TeleportData data)
     {
-        if (LocomotionSettings.TELEPORT_FADE_TO_BLACK)
+        if (data.valid)
         {
-            state = TELESTATE.TELEPORTING;
-            teleportVisual.FadeOut();
-
-            while(teleportVisual.blackScreen.color.a < 1f)
+            if (LocomotionSettings.TELEPORT_FADE_TO_BLACK)
             {
-                await Task.Delay(10);
+                state = TELESTATE.TELEPORTING;
+                teleportVisual.FadeOut();
+
+                while (teleportVisual.blackScreen.color.a < 1f)
+                {
+                    await Task.Delay(10);
+                }
             }
-        }
 
-        teleportVisual.Unvisualize();
-        TeleportToPoint(data);
+            teleportVisual.Unvisualize();
+            TeleportToPoint(data);
 
-        while (teleportVisual.fadeState != TeleportVisual.FadeState.IDLE)
-        {
-            await Task.Delay(100);
+            while (teleportVisual.fadeState != TeleportVisual.FadeState.IDLE)
+            {
+                await Task.Delay(100);
+            }
         }
 
         state = TELESTATE.IDLE;
@@ -132,13 +142,46 @@ public class TeleportLocomotion : MonoBehaviour
 
     TeleportData FindTeleportPoint()
     {
-        if (Physics.Raycast(new Ray(transform.position, transform.forward), out RaycastHit hit, Mathf.Infinity, (1 << 6)))
+        TeleportData teleData;
+
+        Vector3 direction = transform.forward;
+
+        direction.y = Mathf.Min(-Mathf.Abs(direction.y), -0.05f);
+
+        direction.Normalize();
+
+        if (Physics.Raycast(new Ray(transform.position, direction), out RaycastHit hit, Mathf.Infinity, (1 << 6) | (1 << 8)))
         {
-            return new TeleportData(true, hit.point);
-        } else
+            Vector3 p = hit.point;
+            //this means we've probably hit a wall
+            //note: if we do anything with height, this probably needs to change
+            if (hit.point.y != rig.position.y)
+            {
+                //pull back so we're not INSIDE the wall
+                p += hit.normal;
+
+                p.y = rig.position.y;
+            }
+
+            teleData = new TeleportData(true, p);
+        } 
+        else
         {
-            return new TeleportData(false, Vector3.zero);
+            teleData = new TeleportData(false, Vector3.zero);
         }
+
+        if(!teleValid && teleData.valid)
+        {
+            teleValid = true;
+            telePos = teleData.position;
+        }
+        else if (teleData.valid)
+        {
+            telePos = Vector3.MoveTowards(telePos, teleData.position, Vector3.Distance(telePos, teleData.position) * dampingValue);
+        }
+        
+
+        return new TeleportData(teleValid, telePos);
     }
 
     public void TeleportToPoint()
