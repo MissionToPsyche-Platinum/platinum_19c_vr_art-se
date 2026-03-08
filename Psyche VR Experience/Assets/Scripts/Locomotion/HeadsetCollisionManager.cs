@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class HeadsetCollisionManager : MonoBehaviour
@@ -7,9 +9,10 @@ public class HeadsetCollisionManager : MonoBehaviour
     private float detectionDelay = 0.05f;
     [SerializeField, Range(0, 0.3f)][Tooltip("The range at which the collision is measured for pushing back")]
     private float detectionDistance = 0.25f;
-    [SerializeField]
-    private LayerMask detectionLayers;
+    [SerializeField] private LayerMask detectionLayers;
+    [SerializeField] private LayerMask teleportationLayer;
     public List<RaycastHit> DetectedColliderHits {get; private set; }
+    private float searchRadius = 25f;
     private float currentTime = 0;
     
     /// <summary>
@@ -54,5 +57,27 @@ public class HeadsetCollisionManager : MonoBehaviour
             currentTime = 0;
             DetectedColliderHits = DetectCollisions(transform.position, detectionDistance, detectionLayers);
         }
+
+        if (GetNearestTeleportable() > -1)
+        {
+            Debug.Log("You have fallen out of bounds, resetting your position!");
+            transform.position = new Vector3(transform.position.x, 0.1f, transform.position.z);
+
+        }
+    }
+
+    public float GetNearestTeleportable()
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position, searchRadius, teleportationLayer);
+        float minimumDistance = Mathf.Infinity;
+
+        foreach (Collider c in hits)
+        {
+            float distance = Vector3.Distance(transform.position, c.transform.position);
+            if (distance < minimumDistance) {
+                minimumDistance = distance;
+            }
+        }
+        return minimumDistance == Mathf.Infinity ? -1 : minimumDistance;
     }
 }
