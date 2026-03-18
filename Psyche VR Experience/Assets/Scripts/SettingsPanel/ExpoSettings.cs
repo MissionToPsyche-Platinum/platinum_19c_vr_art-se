@@ -208,7 +208,7 @@ public class ExpoSettings : MonoBehaviour
     public TMPro.TextMeshProUGUI durationVR;
 
     static int numArtPieces = 30;
-    static bool regenerateMuseum = false;
+    static bool regenerateMuseum = true;
     static int expoDuration = 300;
     
 }
