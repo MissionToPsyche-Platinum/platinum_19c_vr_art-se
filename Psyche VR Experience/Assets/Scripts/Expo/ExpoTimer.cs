@@ -174,7 +174,7 @@ public class ExpoTimer : MonoBehaviour
     {
         Debug.Log("Reset Event Performed!");
 
-        if (!timerRunning && timerDoneHappened)
+        if (timerRunning || timerDoneHappened)
         {
             resetTimer();
             launchRoomManager.ResetExpo();
