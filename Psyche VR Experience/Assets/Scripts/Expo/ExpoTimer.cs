@@ -213,7 +213,7 @@ public class ExpoTimer : MonoBehaviour
         if (timerRunning || timerDoneHappened)
         {
             resetTimer();
-            launchRoomManager.ResetExpo();
+            launchRoomManager.ReloadSceneAndPrepareMuseum();
         }
     }
 
