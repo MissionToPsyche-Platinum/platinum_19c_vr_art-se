@@ -1,5 +1,8 @@
+using Unity.VisualScripting;
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class LaunchRoomManager : MonoBehaviour
 {
@@ -11,12 +14,27 @@ public class LaunchRoomManager : MonoBehaviour
     [SerializeField] private Vector3 playerSpawnPosition;
 
     private bool museumGeneratedAtLeastOnce = false;
-
+    private bool museumPrepared = false;
     private bool InMuseum = false;
+    private bool preparationInProgress = false;
+
+    // survives scene reload because static
+    public static bool PrepareMuseumAfterReload = false;
+
+    public async void Start()
+    {
+        // if previous scene requested a preload, do it now
+        if (PrepareMuseumAfterReload)
+        {
+            PrepareMuseumAfterReload = false;
+            await PrepareNextMuseum();
+        }
+    }
+
 
     public async void startExpoExperience()
     {
-        if (InMuseum)
+        if (InMuseum || preparationInProgress)
         {
             return;
         }
@@ -24,21 +42,45 @@ public class LaunchRoomManager : MonoBehaviour
         InMuseum = true;
 
         // generate the museum if we have the generate every time setting or if it hasn't been generated before
-        if (!museumGeneratedAtLeastOnce)
+        if (!museumPrepared)
         {
-            await museumManager.GenerateMuseum(ExpoSettings.ART_PIECE_COUNT);
-            museumGeneratedAtLeastOnce = true;
-        }
-        // else, just switch the art
-        else
-        {
-            await museumManager.AssignArt(ExpoSettings.ART_PIECE_COUNT);
+            await PrepareNextMuseum();
         }
 
         expoTimer.startTimer();
         teleportPlayerToMuseum();
     }
 
+    public async Awaitable PrepareNextMuseum()
+    {
+        if (preparationInProgress)
+            return;
+
+        preparationInProgress = true;
+        museumPrepared = false;
+
+        // first ever generation
+        if (!museumGeneratedAtLeastOnce)
+        {
+            await museumManager.GenerateMuseum(ExpoSettings.ART_PIECE_COUNT);
+            museumGeneratedAtLeastOnce = true;
+        }
+        else
+        {
+            // regenerate layout if setting says so, otherwise just refresh art
+            if (ExpoSettings.REGENERATE_MUSEUM)
+            {
+                await museumManager.GenerateMuseum(ExpoSettings.ART_PIECE_COUNT);
+            }
+            else
+            {
+                await museumManager.AssignArt(ExpoSettings.ART_PIECE_COUNT);
+            }
+        }
+
+        museumPrepared = true;
+        preparationInProgress = false;
+    }
     // stolen code from SpawnController.cs >:)
     private void teleportPlayerToMuseum()
     {
@@ -50,19 +92,9 @@ public class LaunchRoomManager : MonoBehaviour
         }
     }
 
-    public void ResetExpo()
+    public void ReloadSceneAndPrepareMuseum()
     {
-        // if we generate every time, simply reload the scene
-        if (ExpoSettings.REGENERATE_MUSEUM)
-        {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        }
-        // else, bring the player back to the launch room 
-        else
-        {
-            playerTransform.position = playerSpawnPosition;
-        }
-
-        InMuseum = false;
+        PrepareMuseumAfterReload = true;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

@@ -23,6 +23,16 @@ public class ExpoTimer : MonoBehaviour
     [SerializeField] private InputActionReference resetEvent;
     [Tooltip("Attach the launch room manager hear to handle when the reset is triggered.")]
     [SerializeField] private LaunchRoomManager launchRoomManager;
+    
+    [Header("Settings to reset")]
+    [SerializeField] private ToggleSwitch locomotionToggle;
+    [SerializeField] private Slider masterVolSlider;
+    [SerializeField] private Slider musicVolSlider;
+    [SerializeField] private MultipleChoice textSizeChoice;
+    [SerializeField] private ToggleSwitch vignetteToggle;
+    [SerializeField] private Slider teleportFadeSlider;
+    [SerializeField] private MultipleChoice buttonSizeChoice;
+    [SerializeField] private ToggleSwitch rotationToggle;
 
     // use these to actually run the timer
     private float secondsLeft;
@@ -126,6 +136,32 @@ public class ExpoTimer : MonoBehaviour
 
         timerRunning = false;
         timerDoneHappened = true;
+        
+        Debug.Log("Reset time");
+        
+        // reset all settings back to defaults
+        LocomotionSettings.LOCOMOTION_MODE = LocomotionSettings.LocomotionMode.TELEPORT;
+        GlobalSettings.MASTER_VOLUME = 1;
+        SettingsManager.m_VideoVolumeChanged?.Invoke();
+        GlobalSettings.MUSIC_VOLUME = 1;
+        GlobalSettings.TEXT_SIZE_MULTIPLIER = 1;
+        SettingsManager.m_TextSizeChanged.Invoke();
+        LocomotionSettings.CONTINUOUS_VIGNETTE = false;
+        LocomotionSettings.TELEPORT_FADE_TIME = 0.5f;
+        LocomotionSettings.TELEPORT_FADE_WAIT = 0.5f;
+        GlobalSettings.INTERACTION_SIZE_MULTIPLER = 1;
+        SettingsManager.m_ButtonSizeChanged.Invoke();
+        GlobalSettings.SKYBOX_ROTATION_ON = 1f;
+        
+        // set all menu visuals back to defaults
+        locomotionToggle.Reset();
+        masterVolSlider.normalizedValue = 1;
+        musicVolSlider.normalizedValue = 1;
+        textSizeChoice.ResetChoice();
+        vignetteToggle.Reset();
+        teleportFadeSlider.normalizedValue = 0.5f;
+        buttonSizeChoice.ResetChoice();
+        rotationToggle.Reset();
     }
 
     public float getSecondsLeft()
@@ -177,7 +213,7 @@ public class ExpoTimer : MonoBehaviour
         if (timerRunning || timerDoneHappened)
         {
             resetTimer();
-            launchRoomManager.ResetExpo();
+            launchRoomManager.ReloadSceneAndPrepareMuseum();
         }
     }
 

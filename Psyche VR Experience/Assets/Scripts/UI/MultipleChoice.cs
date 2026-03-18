@@ -102,4 +102,9 @@ public class MultipleChoice : MonoBehaviour
 
         onChange?.Invoke(options[currIndex]);
     }
+
+    public void ResetChoice()
+    {
+        OnValidate();
+    }
 }
