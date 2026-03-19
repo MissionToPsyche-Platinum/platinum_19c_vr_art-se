@@ -1,4 +1,5 @@
 import os.path
+import os
 from datetime import datetime
 import re
 import sys
@@ -22,10 +23,13 @@ import yt_dlp
 from pathlib import Path
 from contextlib import contextmanager
 from typing import Optional
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # art folder director
 HERE = Path(__file__).resolve().parent
-ARTWORK_DIR = (HERE / ".." / "Psyche VR Experience" / "Assets" / "Artwork").resolve()
+ARTWORK_DIR = Path(os.getenv('ARTWORK_DIR'))
 ARTWORK_DIR.mkdir(parents=True, exist_ok=True)
 ALLOWED_FILE_EXTENSIONS = [".bmp", ".exr", ".gif", ".hdr", ".iff", ".jpeg", ".jpg", ".pct", ".pic", ".pict", ".png", ".psd", ".tga", ".tif", ".tiff"]
 HANDLED_FILE_EXTENSIONS = [".pdf"]
@@ -500,7 +504,7 @@ def getArtInfo(url, verbose):
     # remove any file paths pointing to files that no longer exist(video_only/audio/.mp4)
     cleaned_paths = []
     for p in file_paths:
-        abs_path = ARTWORK_DIR.parent.parent / p  # convert relative to absolute
+        abs_path = ARTWORK_DIR / p  # convert relative to absolute
         if abs_path.exists():
             cleaned_paths.append(p)
         else:
@@ -743,7 +747,7 @@ def standardizeDate(date):
 
 # *** DB path: one directory up - Psyche VR Experience/Assets/Database/psyche.db ***
 HERE = Path(__file__).resolve().parent
-DB_DIR = (HERE / ".." / "Psyche VR Experience" / "Assets" / "Database").resolve()
+DB_DIR = Path(os.getenv('DB_DIR'))
 DB_DIR.mkdir(parents=True, exist_ok=True)
 DB_PATH = DB_DIR / "psyche.db"
 

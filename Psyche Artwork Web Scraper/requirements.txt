@@ -6,3 +6,4 @@ pytubefix
 Requests
 vimeo_downloader
 yt_dlp
+python-dotenv

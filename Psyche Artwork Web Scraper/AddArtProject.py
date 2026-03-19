@@ -1,7 +1,7 @@
 import shutil
 from pathlib import Path
 
-from PsycheScraper import upsert_artist, upsert_project, upsert_media, make_artist_id, make_project_id, detect_media_type, make_media_id
+from PsycheScraper import upsert_artist, upsert_project, upsert_media, make_artist_id, make_project_id, detect_media_type, make_media_id, ARTWORK_DIR
 from datetime import datetime
 import os
 
@@ -21,7 +21,7 @@ def addArtProject(artInfo):
     upsert_project(project_id, art_title, description, date_iso,genre_medium, artist_id)
 
     # create project directory
-    dst_dir_abs_path = (Path(__file__).resolve().parent / ".." / "Psyche VR Experience" / "Assets" / "Artwork").resolve() / str(project_id)
+    dst_dir_abs_path = ARTWORK_DIR / str(project_id)
     os.makedirs(dst_dir_abs_path, exist_ok=True)
 
     # media hash and upsert
@@ -29,7 +29,7 @@ def addArtProject(artInfo):
         # create absolute path and relative path
         file_name = filepath.split("\\")[-1]
         dst_abs_path = dst_dir_abs_path / file_name
-        dst_rel_path = Path("Assets") / "Artwork" / str(project_id) / file_name
+        dst_rel_path = Path(str(project_id)) / file_name
         # copy file to new destination
         shutil.copy(filepath, dst_abs_path)
 
