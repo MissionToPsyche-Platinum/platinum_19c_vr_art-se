@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Threading.Tasks;
 using Mono.Data.Sqlite;       // assumes sqlite dlls and mono.data.sqlite is already included in plugins folder
 using UnityEditor.XR.LegacyInputHelpers;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using static PsycheDBMiddleware;
 
 public static class PsycheDBMiddleware
@@ -24,6 +26,22 @@ public static class PsycheDBMiddleware
         return dbPath;
     }
 
+    public static async Task<string> GetAddressableDBPath()
+    {
+        var locations = await Addressables.LoadResourceLocationsAsync("database").Task;
+        
+        if(locations != null)
+        {
+            return locations[0].PrimaryKey;
+        }
+        else
+        {
+            Debug.LogError("DATABASE FAILED TO LOAD FROM ADDRESSABLE.");
+        }
+
+        return null;
+    }
+
     // builds Mono.Data.Sqlite connection string from a full path.
     private static string BuildConnString(string dbPath)
     {
@@ -36,7 +54,7 @@ public static class PsycheDBMiddleware
     //          NOTE:   at runtime, SO instances will be held in memory, so using them to
     //                  populate the prefab should be followed immediately by destruction
     //                  of the SO in question. pipe in the data, dump the container
-    public static bool TryLoadArtworkByProjectId(long projectId, ArtworkData target, string dbPathOverride = null)
+    public async static Task<bool> TryLoadArtworkByProjectId(long projectId, ArtworkData target, string dbPathOverride = null)
     {
         if (target == null)
         {
@@ -44,7 +62,7 @@ public static class PsycheDBMiddleware
             return false;
         }
 
-        string dbPath = GetDefaultDbPath();
+        string dbPath = await GetAddressableDBPath();
         if (!File.Exists(dbPath))
         {
             Debug.LogError($"PsycheDbMiddleware: DB not found at {dbPath}");
@@ -151,10 +169,10 @@ public static class PsycheDBMiddleware
 
     // will return an in-memory SO(ArtworkData) that is safe to pull the data from and delete immediately following. Can also be reused, potentially.
     // I have ideas for the multi-project retrieval here
-    public static ArtworkData LoadArtworkIntoNewSO(long projectId, string dbPathOverride = null)
+    public async static Task<ArtworkData> LoadArtworkIntoNewSO(long projectId, string dbPathOverride = null)
     {
         var so = ScriptableObject.CreateInstance<ArtworkData>();
-        if (!TryLoadArtworkByProjectId(projectId, so, dbPathOverride))
+        if (!(await TryLoadArtworkByProjectId(projectId, so, dbPathOverride)))
         {
             UnityEngine.Object.DestroyImmediate(so);
             return null;
@@ -257,7 +275,7 @@ public static class PsycheDBMiddleware
 
 
     // safe for runtime use, all returned Scriptable objects are stored in memory(currently
-    public static List<ArtworkData> LoadRandomArtworkData(int count, string dbPathOverride = null)
+    public async static Task<List<ArtworkData>> LoadRandomArtworkData(int count, string dbPathOverride = null)
     {
         
         var ids = GetRandomProjectIds(count, dbPathOverride);
@@ -265,7 +283,7 @@ public static class PsycheDBMiddleware
         foreach (var id in ids)
         {
             var so = ScriptableObject.CreateInstance<ArtworkData>();
-            if (TryLoadArtworkByProjectId(id, so, dbPathOverride))
+            if (await TryLoadArtworkByProjectId(id, so, dbPathOverride))
             {
                 // @TODO
                 // add a check for having media files associated with project id, in the event of invalid types.
@@ -286,9 +304,9 @@ public static class PsycheDBMiddleware
 
     public interface InterfaceArtworkFactory
     {
-        ArtworkData Create(long projectId);
-        List<ArtworkData> CreateMany(IEnumerable<long> projectIds);
-        List<ArtworkData> CreateRandom(int count);
+        Task<ArtworkData> Create(long projectId);
+        Task<List<ArtworkData>> CreateMany(IEnumerable<long> projectIds);
+        Task<List<ArtworkData>> CreateRandom(int count);
     }
 
     // sealing a class allows the compiler to perform optimizations by removing the ability to inherit.
@@ -304,10 +322,10 @@ public static class PsycheDBMiddleware
         }
 
         //factory method to create a singular instance of a scriptable object with the project id.
-        public ArtworkData Create(long projectId)
+        public async Task<ArtworkData> Create(long projectId)
         {
             var so = ScriptableObject.CreateInstance<ArtworkData>();
-            if (!TryLoadArtworkByProjectId(projectId, so, _dbPathOverride))
+            if (!(await TryLoadArtworkByProjectId(projectId, so, _dbPathOverride)))
             {
                 UnityEngine.Object.Destroy(so);
                 return null;
@@ -316,22 +334,22 @@ public static class PsycheDBMiddleware
         }
 
         // factory method to return Scriptable objects for the passed in list of project ids
-        public List<ArtworkData> CreateMany(IEnumerable<long> ids)
+        public async Task<List<ArtworkData>> CreateMany(IEnumerable<long> ids)
         {
             var list = new List<ArtworkData>();
             foreach (var id in ids)
             {
-                var so = Create(id);
+                var so = await Create(id);
                 if (so != null) list.Add(so);
             }
             return list;
         }
         // factory method to return the random scriptable objects based on the prior work with random ids and
         // valid projects(has media row in DB)
-        public List<ArtworkData> CreateRandom(int count)
+        public async Task<List<ArtworkData>> CreateRandom(int count)
         {
             var ids = GetRandomProjectIds(count);
-            return CreateMany(ids);
+            return await CreateMany(ids);
         }
     }
 
@@ -340,10 +358,10 @@ public static class PsycheDBMiddleware
     // var exhibitSOs = PsycheDBMiddleware.CreateRandomProjectSObjects(n);
     // testing or using a different version of the db somewhere else:
     // var testExhibitSOs = PsycheDBMiddleware.CreateRandomProjectSObjects(n, testDB_path);
-    public static List<ArtworkData> CreateRandomProjectSObjects(int count, string dbPathOverride = null)
+    public async static Task<List<ArtworkData>> CreateRandomProjectSObjects(int count, string dbPathOverride = null)
     {
         var factory = new ArtworkFactory(dbPathOverride);
-        return factory.CreateRandom(count);
+        return await factory.CreateRandom(count);
     }
 
 }

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.Purchasing;
+using UnityEngine.ResourceManagement.ResourceLocations;
 using UnityEngine.Video;
 
 public class FrameController : MonoBehaviour
@@ -113,7 +116,7 @@ public class FrameController : MonoBehaviour
 
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
         
-        fallbackTexture = LoadImage(ResolveFullPath("Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png"));
+        fallbackTexture = LoadImageFromPath(ResolveFullPath("Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png"));
         if (fallbackTexture == null)
             Debug.LogError("Fallback image missing! Add it at Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png");
 
@@ -162,20 +165,20 @@ public class FrameController : MonoBehaviour
 
         // store the paths for potential video playback as well
         // while filtering out missing files(in case db got some bad entries)
-        var validated = new List<string>();
-        foreach (string relPath in data.artworkURLs)
-        {
-            string full = ResolveFullPath(relPath);
-            if (!string.IsNullOrEmpty(full) && System.IO.File.Exists(full))
-            {
-                validated.Add(relPath);
-            }
-            else
-            {
-                Debug.LogWarning($"[FrameController] Removing missing media file from list: {relPath}");
-            }
-        }
-        mediaPaths = validated;
+        //var validated = new List<string>();
+        //foreach (string relPath in data.artworkURLs)
+        //{
+        //    string full = ResolveFullPath(relPath);
+        //    if (!string.IsNullOrEmpty(full) && System.IO.File.Exists(full))
+        //    {
+        //        validated.Add(relPath);
+        //    }
+        //    else
+        //    {
+        //        Debug.LogWarning($"[FrameController] Removing missing media file from list: {relPath}");
+        //    }
+        //}
+        mediaPaths = data.artworkURLs;
 
         currentMediaIndex = 0;
         ApplyAll();     // will now decide image vs video properly
@@ -279,7 +282,7 @@ public class FrameController : MonoBehaviour
         textBoxController.UpdateTextLocation();
     }
 
-    void ApplyAll()
+    async void ApplyAll()
     {
         if (!imageQuadRenderer) return;
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
@@ -297,9 +300,9 @@ public class FrameController : MonoBehaviour
             currentMediaIndex = 0;
 
         string raw = mediaPaths[currentMediaIndex];
-        string fullPath = ResolveFullPath(raw);
-        
-        
+        string fullPath = raw;
+
+
         if (IsAudioFile(fullPath))
         {
             Debug.LogWarning($"[FrameController] Skipping audio file: {raw}");
@@ -317,7 +320,7 @@ public class FrameController : MonoBehaviour
         // IMAGE MODE
         StopVideoIfNeeded();
         currentVideoDuration = 0.0;
-        Texture2D tex = LoadImage(fullPath);
+        Texture2D tex = await LoadImageASYNC(fullPath);
 
         // destroy previous texture, if any
         if (lastLoadedImage != null)
@@ -368,7 +371,7 @@ public class FrameController : MonoBehaviour
     }
 
 
-    private Texture2D LoadImage(string path)
+    private Texture2D LoadImageFromPath(string path)
     {
         if (!System.IO.File.Exists(path))
         {
@@ -380,6 +383,30 @@ public class FrameController : MonoBehaviour
         Texture2D tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
         tex.LoadImage(bytes);
         return tex;
+    }
+
+    private async Task<Texture2D> LoadImageASYNC(string path)
+    {
+        var locations = await Addressables.LoadResourceLocationsAsync(path.Replace('\\', '/')).Task;
+
+        if (locations != null && locations.Count > 0)
+        {
+            if (!System.IO.File.Exists(locations[0].PrimaryKey))
+            {
+                Debug.LogWarning("[FrameController] Image not found: " + path);
+                return null;
+            }
+
+            byte[] bytes = System.IO.File.ReadAllBytes(locations[0].PrimaryKey);
+            Texture2D tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            tex.LoadImage(bytes);
+            return tex;
+        }
+        else
+        {
+            Debug.LogWarning("[FrameController] Image not found in Addressables: " + path);
+            return null;
+        }
     }
 
     private void ShowFallbackImage()
@@ -714,11 +741,14 @@ public class FrameController : MonoBehaviour
 
 
 
-    private void PlayVideo(string fullPath)
+    private async void PlayVideo(string fullPath)
     {
-        if (!System.IO.File.Exists(fullPath))
+        var locations = await Addressables.LoadResourceLocationsAsync(fullPath.Replace('\\', '/')).Task;
+        string path = locations[0].PrimaryKey;
+
+        if (!System.IO.File.Exists(path))
         {
-            Debug.LogWarning("[FrameController] Video not found: " + fullPath);
+            Debug.LogWarning("[FrameController] Video not found: " + path);
             return;
         }
 
@@ -758,7 +788,7 @@ public class FrameController : MonoBehaviour
         }
 
         // Assign video path
-        videoPlayer.url = fullPath;
+        videoPlayer.url = path;
 
         // Only register ONCE
         videoPlayer.prepareCompleted -= OnVideoPrepared;

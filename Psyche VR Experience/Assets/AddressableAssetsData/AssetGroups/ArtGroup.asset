@@ -20,6 +20,17 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 252a699edd0d69e409f10bddb872baf3
+    m_Address: Assets/Database
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 66cd319641fda5846a8a4930bedc198f
+    m_Address: Assets/Database/psyche.db
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - database
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 4ce1ec75aec347840bc5a87947c3bc37, type: 2}
   m_SchemaSet:
