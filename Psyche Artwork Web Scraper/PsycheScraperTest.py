@@ -1,11 +1,24 @@
 import os
 import unittest
 import PsycheScraper
+from dotenv import load_dotenv
 
-class MyTestCase(unittest.TestCase):
+class PsycheScraperTest(unittest.TestCase):
+    def testEnvironmentVariables(self):
+        load_dotenv()
+        
+        self.assertIsNotNone(os.getenv("ARTWORK_DIR"))
+        self.assertIsNotNone(os.getenv("DB_DIR"))
+
+    def testEnvironmentVariableValuesInPsycheScraper(self):
+        load_dotenv()
+        
+        self.assertEqual(os.getenv("ARTWORK_DIR"), str(PsycheScraper.ARTWORK_DIR))
+        self.assertEqual(os.getenv("DB_DIR"), str(PsycheScraper.DB_DIR))
+
     # test that it works on newer art
     def testGetArtInfo2025(self):
-        info = PsycheScraper.getArtInfo("https://psyche.ssl.berkeley.edu/gallery/the-launch/")
+        info = PsycheScraper.getArtInfo("https://psyche.ssl.berkeley.edu/gallery/the-launch/", False)
         self.assertEqual(info["artTitle"], "The Launch")
         self.assertEqual(info["artistName"], "Ash Soriano")
         self.assertEqual(info["date"], "2025-07-02")
@@ -19,7 +32,7 @@ class MyTestCase(unittest.TestCase):
 
     # test that it works on older art
     def testGetArtInfo2017(self):
-        info = PsycheScraper.getArtInfo("https://psyche.ssl.berkeley.edu/gallery/ideas/")
+        info = PsycheScraper.getArtInfo("https://psyche.ssl.berkeley.edu/gallery/ideas/", False)
         self.assertEqual(info["artTitle"], "Ideas")
         self.assertEqual(info["artistName"], "Isaac Wisdom")
         self.assertEqual(info["date"], "2017-11-18")

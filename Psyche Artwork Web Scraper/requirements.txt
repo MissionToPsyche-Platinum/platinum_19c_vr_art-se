@@ -1,6 +1,6 @@
 beautifulsoup4
 ffmpeg_python
-fitz
+PyMuPDF
 Pillow
 pytubefix
 Requests

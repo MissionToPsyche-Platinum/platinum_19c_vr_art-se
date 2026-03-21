@@ -25,7 +25,9 @@ from contextlib import contextmanager
 from typing import Optional
 from dotenv import load_dotenv
 
+# TODO: Don't do this when we import
 load_dotenv()
+
 
 # art folder director
 HERE = Path(__file__).resolve().parent
@@ -1122,7 +1124,10 @@ def repair_media(verbose=True):
             print("   -", e)
 
     print("\n*** MEDIA REPAIR : COMPLETE ***\n")
-        
+
+# TODO: Don't do this when we import
 init_db()
-scrapePsyche(verbose=True)
+
+if __name__ == "__main__":
+    scrapePsyche(verbose=True)
 # repair_media(verbose=True)
