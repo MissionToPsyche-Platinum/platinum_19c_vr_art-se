@@ -1,20 +1,21 @@
 import os
 import unittest
 import PsycheScraper
+from pathlib import Path
+
 from dotenv import load_dotenv
 
 class PsycheScraperTest(unittest.TestCase):
-    def testEnvironmentVariables(self):
+    def testEnvironmentVariablesExist(self):
         load_dotenv()
         
-        self.assertIsNotNone(os.getenv("ARTWORK_DIR"))
-        self.assertIsNotNone(os.getenv("DB_DIR"))
+        self.assertIsNotNone(os.getenv("OUTPUT_DIR"))
 
     def testEnvironmentVariableValuesInPsycheScraper(self):
         load_dotenv()
         
-        self.assertEqual(os.getenv("ARTWORK_DIR"), str(PsycheScraper.ARTWORK_DIR))
-        self.assertEqual(os.getenv("DB_DIR"), str(PsycheScraper.DB_DIR))
+        self.assertEqual(Path(os.getenv('OUTPUT_DIR')) / "Artwork", PsycheScraper.ARTWORK_DIR)
+        self.assertEqual(Path(os.getenv('OUTPUT_DIR')) / "Database", PsycheScraper.DB_DIR)
 
     # test that it works on newer art
     def testGetArtInfo2025(self):

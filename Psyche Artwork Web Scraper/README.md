@@ -62,6 +62,6 @@ You should be good to go!
 
 ### WIP Running via Docker: 
 
-Build the image (-t to give name, . for all files): `docker build -t psyche-art-scraper .`  
+Build the image (-t to give name, . for all files): `docker compose build`  
 
-Run the image (-it for terminal/input, --rm to delete when done): `docker run -it --rm psyche-art-scraper`
+Run the image (-it for terminal/input, --rm to delete when done): `docker compose run --rm psyche-art-scraper` OR `docker compose run --rm psyche-art-scraper` (nonfunctional)

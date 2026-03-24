@@ -1,0 +1,21 @@
+services:
+  psyche-art-scraper:
+    build:
+      context: .
+    image: psyche-art-scraper
+    stdin_open: true
+    tty: true
+    volumes:
+      - ${OUTPUT_PATH:-./output}:/app/output
+    environment:
+      - OUTPUT_PATH=/app/output
+
+  psyche-art-scraper-with-input:
+    extends:
+      service: psyche-art-scraper
+    volumes:
+      - ${OUTPUT_PATH:-./output}:/app/output
+      - ${INPUT_PATH}:/app/input
+    environment:
+      - OUTPUT_PATH=/app/output
+      - INPUT_PATH=/app/input
