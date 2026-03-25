@@ -4,3 +4,9 @@ This text file will include the current updates being made towards the new Psych
 
 3/24/26 Updates - Worked on identifying some basic melodic themes set up for the song. I haven't really done this before but a lot of the research into how creating the
 "space" sound works has been fascinating.
+
+3/25/26 Updates - Continued work on the melodic themes. I am kind of in the rythm, so I just spent a few more hours playing around with some sounds. Used the following links for some additional
+research
+https://www.soundonsound.com/techniques/designing-cubase-synth-pads
+https://www.steinberg.net/tutorials/apply-fx-plug-ins-in-cubase/
+https://www.youtube.com/playlist?list=PL-V-CUB-_0SAkwbowYs1D0RcY0qFQxRBC
