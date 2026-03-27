@@ -11,35 +11,38 @@ using UnityEngine.AddressableAssets;
 using static PsycheDBMiddleware;
 
 public static class PsycheDBMiddleware
-{ 
+{
+    static string path = "";
+
     // resolve the default DB path: ../Psyche VR Experience/Assets/Database/psyche.db
     // relative to Application.dataPath (which is .../Psyche VR Experience/Assets)
     public static string GetDefaultDbPath()
     {
+        return StreamingAssetsDbPath();
+
         var assetsDir = Application.dataPath;                     // .../Psyche VR Experience/Assets
         var projectRoot = Directory.GetParent(assetsDir)?.FullName;
 
         if (string.IsNullOrEmpty(projectRoot))
             throw new Exception("Could not resolve project root from Application.streamingAssetsPath.");
 
-        var dbPath = Path.Combine(assetsDir, "Database", "psyche.db");
+        var dbPath = Path.Combine(assetsDir, "Resources", "Database", "psyche.db");
         return dbPath;
     }
 
-    public static async Task<string> GetAddressableDBPath()
+    public static string StreamingAssetsDbPath()
     {
-        var locations = await Addressables.LoadResourceLocationsAsync("database").Task;
-        
-        if(locations != null)
+        if (path == "" || !File.Exists(path))
         {
-            return locations[0].PrimaryKey;
-        }
-        else
-        {
-            Debug.LogError("DATABASE FAILED TO LOAD FROM ADDRESSABLE.");
+            path = Application.persistentDataPath + "/" + "Database/psyche.db";
+
+            string dbPath = Application.streamingAssetsPath + "/Database/" + "psyche.db";
+
+            Directory.CreateDirectory(Application.persistentDataPath + "/Database/");
+            File.Copy(dbPath, path, true);
         }
 
-        return null;
+        return path;
     }
 
     // builds Mono.Data.Sqlite connection string from a full path.
@@ -62,7 +65,7 @@ public static class PsycheDBMiddleware
             return false;
         }
 
-        string dbPath = await GetAddressableDBPath();
+        string dbPath = GetDefaultDbPath();
         if (!File.Exists(dbPath))
         {
             Debug.LogError($"PsycheDbMiddleware: DB not found at {dbPath}");
@@ -70,6 +73,7 @@ public static class PsycheDBMiddleware
         }
 
         string connStr = BuildConnString(dbPath);
+        await Task.Delay(1);
 
         // query project + artist table via join on artist id hash
         string sqlProject = @"

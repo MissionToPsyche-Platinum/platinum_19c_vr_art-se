@@ -375,11 +375,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 252a699edd0d69e409f10bddb872baf3
-    m_Address: Assets/Database
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 26d423459e32898438afcd82ca9665a4
     m_Address: Assets/Artwork/526444463789687379
     m_ReadOnly: 0
@@ -954,12 +949,6 @@ MonoBehaviour:
     m_Address: Assets/Artwork/6808506198709268620
     m_ReadOnly: 0
     m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 66cd319641fda5846a8a4930bedc198f
-    m_Address: Assets/Database/psyche.db
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - database
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 66e877caf8c808a4abaf49b56da0dc63
     m_Address: Assets/Artwork/6690429237956098898
