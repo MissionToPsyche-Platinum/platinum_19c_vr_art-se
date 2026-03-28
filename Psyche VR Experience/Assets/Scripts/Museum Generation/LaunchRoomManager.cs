@@ -9,6 +9,7 @@ public class LaunchRoomManager : MonoBehaviour
     [SerializeField] private ExpoTimer expoTimer;
     [SerializeField] private MuseumManager museumManager;
     [SerializeField] private Transform playerTransform;
+    [SerializeField] private Transform domeTransform;
 
     [Tooltip("Where the player will spawn")]
     [SerializeField] private Vector3 playerSpawnPosition;
@@ -89,6 +90,8 @@ public class LaunchRoomManager : MonoBehaviour
         {
             Vector3 playerSpawnPosition = new Vector3(spawnPosition.x, 0, spawnPosition.z);
             playerTransform.position = playerSpawnPosition;
+            
+            domeTransform.position = new Vector3(spawnPosition.x, 0, spawnPosition.z);
         }
     }
 
@@ -96,5 +99,7 @@ public class LaunchRoomManager : MonoBehaviour
     {
         PrepareMuseumAfterReload = true;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        
+        domeTransform.position = new Vector3(0, -50, 0);
     }
 }
