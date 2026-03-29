@@ -13,7 +13,7 @@ namespace PsycheDB
     public static class DatabaseManager
     {
         // intended database location: Assets/Database/psyche_data.db
-        public static readonly string DatabaseFolder = Path.Combine(Application.dataPath, "Database");
+        public static readonly string DatabaseFolder = Path.Combine(Application.persistentDataPath, "Database");
         public static readonly string DatabasePath = Path.Combine(DatabaseFolder, "psyche_data.db");
 
         // connection string

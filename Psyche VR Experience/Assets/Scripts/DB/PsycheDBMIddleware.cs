@@ -9,6 +9,8 @@ using UnityEditor.XR.LegacyInputHelpers;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using static PsycheDBMiddleware;
+using static PsycheDB.DatabaseManager;
+using UnityEngine.Networking;
 
 public static class PsycheDBMiddleware
 {
@@ -16,9 +18,9 @@ public static class PsycheDBMiddleware
 
     // resolve the default DB path: ../Psyche VR Experience/Assets/Database/psyche.db
     // relative to Application.dataPath (which is .../Psyche VR Experience/Assets)
-    public static string GetDefaultDbPath()
+    public static async Task<string> GetDefaultDbPath()
     {
-        return StreamingAssetsDbPath();
+        return await StreamingAssetsDbPath();
 
         var assetsDir = Application.dataPath;                     // .../Psyche VR Experience/Assets
         var projectRoot = Directory.GetParent(assetsDir)?.FullName;
@@ -30,16 +32,26 @@ public static class PsycheDBMiddleware
         return dbPath;
     }
 
-    public static string StreamingAssetsDbPath()
+    public async static Task<string> StreamingAssetsDbPath()
     {
         if (path == "" || !File.Exists(path))
         {
-            path = Application.persistentDataPath + "/" + "Database/psyche.db";
+            path = DatabasePath;
 
             string dbPath = Application.streamingAssetsPath + "/Database/" + "psyche.db";
 
-            Directory.CreateDirectory(Application.persistentDataPath + "/Database/");
-            File.Copy(dbPath, path, true);
+            UnityWebRequest request = UnityWebRequest.Get(dbPath);
+            await request.SendWebRequest();
+
+            if(request.result == UnityWebRequest.Result.Success)
+            {
+                File.WriteAllBytes(path, request.downloadHandler.data);
+                Debug.Log("COPIED DATABASE PROPERLY");
+            }
+            else
+            {
+                Debug.LogError("FAILED TO LOAD DATABASE FROM STREAMINGASSETS");
+            }
         }
 
         return path;
@@ -65,7 +77,7 @@ public static class PsycheDBMiddleware
             return false;
         }
 
-        string dbPath = GetDefaultDbPath();
+        string dbPath = await GetDefaultDbPath();
         if (!File.Exists(dbPath))
         {
             Debug.LogError($"PsycheDbMiddleware: DB not found at {dbPath}");
@@ -207,9 +219,9 @@ public static class PsycheDBMiddleware
 
     // will return all projectIds currently in the project for use in random selection
     // or for direct usage into LoadArtworkIntoNewSO/TryLoadArtworkByProjectId
-    public static List<long> GetAllProjectIds(string dbPathOverride = null)
+    public async static Task<List<long>> GetAllProjectIds(string dbPathOverride = null)
     {
-        var dbPath = dbPathOverride ?? GetDefaultDbPath();
+        var dbPath = dbPathOverride ?? await GetDefaultDbPath();
         if (!File.Exists(dbPath))
         {
             Debug.LogError($"PsycheDbMiddleware: db not found at {dbPath}");
@@ -234,9 +246,9 @@ public static class PsycheDBMiddleware
 
     // will return all projectIds with a media filepath in the database. Any without will be excluded.
     // This will see more usage than GetAllProjectIds, considering it returns invalid projects 
-    public static List<long> GetProjectIdsWithMediaRows(string dbPathOverride = null)
+    public async static Task<List<long>> GetProjectIdsWithMediaRows(string dbPathOverride = null)
     {
-        var dbPath = dbPathOverride ?? GetDefaultDbPath();
+        var dbPath = dbPathOverride ?? await GetDefaultDbPath();
         if (!File.Exists(dbPath))
         {
             Debug.LogError($"PsycheDbMiddleware: DB not found at {dbPath}");
@@ -259,9 +271,9 @@ public static class PsycheDBMiddleware
 
     // randomized the project ids, selecting a range that is entered as an input, allowing us to adjust to that sweet spot.
     // Once we figure that out we can make a duplicate method that does a specific amount for exhibit mode and for full mode
-    public static List<long> GetRandomProjectIds(int count, string dbPathOverride = null)
+    public async static Task<List<long>> GetRandomProjectIds(int count, string dbPathOverride = null)
     {
-        var allIds = GetProjectIdsWithMediaRows(dbPathOverride);
+        var allIds = await GetProjectIdsWithMediaRows(dbPathOverride);
         if (allIds.Count == 0) return allIds;
         if (count == 0) return new List<long>();
 
@@ -282,7 +294,7 @@ public static class PsycheDBMiddleware
     public async static Task<List<ArtworkData>> LoadRandomArtworkData(int count, string dbPathOverride = null)
     {
         
-        var ids = GetRandomProjectIds(count, dbPathOverride);
+        var ids = await GetRandomProjectIds(count, dbPathOverride);
         var list = new List<ArtworkData>(ids.Count);
         foreach (var id in ids)
         {
@@ -352,7 +364,7 @@ public static class PsycheDBMiddleware
         // valid projects(has media row in DB)
         public async Task<List<ArtworkData>> CreateRandom(int count)
         {
-            var ids = GetRandomProjectIds(count);
+            var ids = await GetRandomProjectIds(count);
             return await CreateMany(ids);
         }
     }

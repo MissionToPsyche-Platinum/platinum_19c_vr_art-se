@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -19,9 +20,9 @@ public class PsycheDBMiddlewareEditorRuntimeTests
 
     // helper, returns a valid project_id or marks test inconclusive if DB is empty/unavailable.
 
-    private static long GetAnyProjectIdOrInconclusive()
+    private async static Task<long> GetAnyProjectIdOrInconclusive()
     {
-        var ids = PsycheDBMiddleware.GetAllProjectIds();
+        var ids = await PsycheDBMiddleware.GetAllProjectIds();
         if (ids == null || ids.Count == 0)
         {
             Assert.Inconclusive("No projects found in DB. Seed the database before running tests.");
@@ -31,9 +32,9 @@ public class PsycheDBMiddlewareEditorRuntimeTests
 
     // this one checks that ids are being returned
     [Test]
-    public void GetAllProjectIds_ReturnsIds()
+    public async void GetAllProjectIds_ReturnsIds()
     {
-        var ids = PsycheDBMiddleware.GetAllProjectIds();
+        var ids = await PsycheDBMiddleware.GetAllProjectIds();
         Assert.IsNotNull(ids, "GetAllProjectIds returned null.");
 
         if (ids.Count == 0)
@@ -51,7 +52,7 @@ public class PsycheDBMiddlewareEditorRuntimeTests
     [Test]
     public async void TryLoadArtworkByProjectId_PopulatesScriptableObject()
     {
-        long projectId = GetAnyProjectIdOrInconclusive();
+        long projectId = await GetAnyProjectIdOrInconclusive();
         var so = ScriptableObject.CreateInstance<ArtworkData>();
         _toCleanup.Add(so);
 
