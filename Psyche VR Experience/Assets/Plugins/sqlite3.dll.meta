@@ -11,14 +11,22 @@ PluginImporter:
   isExplicitlyReferenced: 0
   validateReferences: 1
   platformData:
+    Android:
+      enabled: 1
+      settings:
+        AndroidLibraryDependee: UnityLibrary
+        AndroidSharedLibraryType: Executable
+        CPU: ARMv7
     Any:
       enabled: 0
       settings:
+        Exclude Android: 0
         Exclude Editor: 0
         Exclude Linux64: 1
         Exclude OSXUniversal: 1
         Exclude Win: 1
         Exclude Win64: 0
+        Exclude WindowsStoreApps: 1
     Editor:
       enabled: 1
       settings:
@@ -44,7 +52,11 @@ PluginImporter:
     WindowsStoreApps:
       enabled: 0
       settings:
-        CPU: x64
+        CPU: X64
+        DontProcess: false
+        PlaceholderPath: 
+        SDK: AnySDK
+        ScriptingBackend: AnyScriptingBackend
   userData: 
   assetBundleName: 
   assetBundleVariant: 

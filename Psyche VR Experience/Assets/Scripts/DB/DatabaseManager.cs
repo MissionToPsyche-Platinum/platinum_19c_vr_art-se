@@ -6,6 +6,7 @@ using System;
 using System.Data;
 using System.IO;
 using Mono.Data.Sqlite;
+using UnityEngine.Networking;
 
 
 namespace PsycheDB
@@ -17,43 +18,65 @@ namespace PsycheDB
         public static readonly string DatabasePath = Path.Combine(DatabaseFolder, "psyche_data.db");
 
         // connection string
-        private static string ConnString => $"URI=file:{DatabasePath};Pooling=True;Journal Mode=WAL;";
+        public static string ConnString => $"URI=file:{DatabasePath};Pooling=True;Journal Mode=WAL;";
 
         /// <summary>
         /// Public entrypoint: ensure folder, create DB if missing, apply schema.
         /// Safe to call multiple times.
         /// </summary>
-        public static void Initialize()
+        public async static void Initialize()
         {
-            EnsureFolder();
-            var firstTime = !File.Exists(DatabasePath);
-            using (var conn = Open())
+            //EnsureFolder();
+            //var firstTime = !File.Exists(DatabasePath);
+            string dbPath = Application.streamingAssetsPath + "/Database/" + "psyche.db";
+            try
             {
-                using (var cmd = conn.CreateCommand())
+                UnityWebRequest request = UnityWebRequest.Get(dbPath);
+                await request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
                 {
-                    // PRAGMAs
-                    // - foreign key enforcement
-                    // - Write-Ahead Logging(rollback in case of error)
-                    // - Normal synchronous mode allows rollback in case of crash in WAL mode)
-                    cmd.CommandText = @"
+                    File.WriteAllBytes(DatabasePath, request.downloadHandler.data);
+                    Debug.Log("COPIED DATABASE PROPERLY");
+                }
+                else
+                {
+                    Debug.LogError("FAILED TO LOAD DATABASE FROM STREAMINGASSETS");
+                }
+            }
+            catch (Exception e)
+            {
+                {
+
+                    using (var conn = Open())
+                    {
+                        using (var cmd = conn.CreateCommand())
+                        {
+                            // PRAGMAs
+                            // - foreign key enforcement
+                            // - Write-Ahead Logging(rollback in case of error)
+                            // - Normal synchronous mode allows rollback in case of crash in WAL mode)
+                            cmd.CommandText = @"
                         PRAGMA foreign_keys = ON;   
                         PRAGMA journal_mode = WAL;
                         PRAGMA synchronous = NORMAL;
                     ";
-                    cmd.ExecuteNonQuery();
-                }
+                            cmd.ExecuteNonQuery();
+                        }
 
-                // Create / migrate schema (idempotent)
-                CreateSchema(conn);
+                        // Create / migrate schema (idempotent)
+                        CreateSchema(conn);
 
-                // for debugging, leave alone
-                if (firstTime)
-                {
-                    Debug.Log($"[DB] Created new database at: {DatabasePath}");
-                }
-                else
-                {
-                    Debug.Log($"[DB] Opened database at: {DatabasePath}");
+                        // for debugging, leave alone
+                        //if (firstTime)
+                        //{
+                        //    Debug.Log($"[DB] Created new database at: {DatabasePath}");
+                        //}
+                        //else
+                        //{
+                        //    Debug.Log($"[DB] Opened database at: {DatabasePath}");
+                        //}
+                    }
                 }
             }
         }

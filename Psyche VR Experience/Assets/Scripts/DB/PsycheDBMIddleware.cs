@@ -14,13 +14,11 @@ using UnityEngine.Networking;
 
 public static class PsycheDBMiddleware
 {
-    static string path = "";
-
     // resolve the default DB path: ../Psyche VR Experience/Assets/Database/psyche.db
     // relative to Application.dataPath (which is .../Psyche VR Experience/Assets)
     public static async Task<string> GetDefaultDbPath()
     {
-        return await StreamingAssetsDbPath();
+        return DatabasePath;
 
         var assetsDir = Application.dataPath;                     // .../Psyche VR Experience/Assets
         var projectRoot = Directory.GetParent(assetsDir)?.FullName;
@@ -32,30 +30,30 @@ public static class PsycheDBMiddleware
         return dbPath;
     }
 
-    public async static Task<string> StreamingAssetsDbPath()
-    {
-        if (path == "" || !File.Exists(path))
-        {
-            path = DatabasePath;
+    //public async static Task<string> StreamingAssetsDbPath()
+    //{
+    //    if (!File.Exists(path))
+    //    {
+    //        path = DatabasePath;
 
-            string dbPath = Application.streamingAssetsPath + "/Database/" + "psyche.db";
+    //        string dbPath = Application.streamingAssetsPath + "/Database/" + "psyche.db";
 
-            UnityWebRequest request = UnityWebRequest.Get(dbPath);
-            await request.SendWebRequest();
+    //        UnityWebRequest request = UnityWebRequest.Get(dbPath);
+    //        await request.SendWebRequest();
 
-            if(request.result == UnityWebRequest.Result.Success)
-            {
-                File.WriteAllBytes(path, request.downloadHandler.data);
-                Debug.Log("COPIED DATABASE PROPERLY");
-            }
-            else
-            {
-                Debug.LogError("FAILED TO LOAD DATABASE FROM STREAMINGASSETS");
-            }
-        }
+    //        if(request.result == UnityWebRequest.Result.Success)
+    //        {
+    //            File.WriteAllBytes(path, request.downloadHandler.data);
+    //            Debug.Log("COPIED DATABASE PROPERLY");
+    //        }
+    //        else
+    //        {
+    //            Debug.LogError("FAILED TO LOAD DATABASE FROM STREAMINGASSETS");
+    //        }
+    //    }
 
-        return path;
-    }
+    //    return path;
+    //}
 
     // builds Mono.Data.Sqlite connection string from a full path.
     private static string BuildConnString(string dbPath)
