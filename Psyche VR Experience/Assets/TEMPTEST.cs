@@ -1,3 +1,4 @@
+using PsycheDB;
 using SQLite4Unity3d;
 using System;
 using System.Collections.Generic;
@@ -45,58 +46,19 @@ public class TEMPTEST : MonoBehaviour
         public string artist_major { get; set; }
     }
 
-    public async void LoadByKey()
+    public void LoadByKey()
     {
         text.text = "";
-        //try
-        //{
-            //text.text = File.ReadAllLines(PsycheDB.DatabaseManager.DatabasePath)[10];
 
-            string dbPath = PsycheDB.DatabaseManager.ConnString;
+        //try {
+            ArtworkData data = (PsycheDBMiddleware.LoadRandomArtworkData(1))[0];
 
-            using (var connection = new SQLiteConnection(dbPath))
-            {
-                var results = connection.Query<ProjectArtistResult>(
-                    @"SELECT p.project_id, p.title, 
-                    a.name  AS artist_name, 
-                    a.major AS artist_major
-                    FROM projects p
-                    JOIN artists a ON a.artist_id = p.artist_id"
-                );
+            text.text += data.artistName + "\n";
 
-            foreach (var row in results)
-            {
-                text.text += $"{row.project_id} | {row.title} | {row.artist_name} | {row.artist_major}";
-            }
+            text.text += data.artworkURLs[0] + "\n";
 
-            //using (var command = connection.CreateCommand())
-            //{
-            //    command.CommandText = @"
-            //        SELECT p.project_id, p.title, p.description, p.date, p.genre_medium,
-            //        a.artist_id, a.name AS artist_name, a.major AS artist_major
-            //        FROM projects p
-            //        JOIN artists a ON a.artist_id = p.artist_id;
-            //        ";
-            //    using (IDataReader reader = command.ExecuteReader())
-            //    {
-            //        while (reader.Read())
-            //        {
-            //            text.text += reader["title"] as string;
-            //        }
-            //    }
-            //}
-        }
-
-            //ArtworkData data = (await PsycheDBMiddleware.LoadRandomArtworkData(1))[0];
-
-            //text.text += data.artistName + "\n";
-
-            //text.text += data.artworkURLs[0] + "\n";
-
-
-
-            //opHandle = Addressables.LoadAssetAsync<Texture2D>(data.artworkURLs[0].Replace("\\", "/"));
-            //opHandle.Completed += FinishLoad;
+            opHandle = Addressables.LoadAssetAsync<Texture2D>(data.artworkURLs[0].Replace("\\", "/"));
+            opHandle.Completed += FinishLoad;
         //}
         //catch (Exception e)
         //{

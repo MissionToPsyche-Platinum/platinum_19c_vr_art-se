@@ -411,7 +411,7 @@ public class MuseumManager : MonoBehaviour
         //take the minimum between the two, we can't request more art than we have spots for
         int requestCount = Mathf.Min(numSpots, numArtPieces);
 
-        List<ArtworkData> items = await PsycheDBMiddleware.CreateRandomProjectSObjects(requestCount, dbPathOverride);
+        List<ArtworkData> items = PsycheDBMiddleware.CreateRandomProjectSObjects(requestCount, dbPathOverride);
         if (items == null || items.Count == 0)
         {
             Debug.LogWarning("[MuseumManager] PopulateDisplays: Middleware returned no ArtworkData.");
