@@ -1,0 +1,13 @@
+services:
+  psyche-art-scraper:
+    build:
+      context: .
+    image: psyche-art-scraper
+    stdin_open: true        # keeps input terminal open
+    tty: true               # allocates terminal
+    volumes:
+      - ${OUTPUT_PATH:-./output}:/app/output
+      - ${INPUT_PATH}:/app/input
+    environment:
+      - OUTPUT_PATH=/app/output
+      - INPUT_PATH=/app/input

@@ -3,7 +3,7 @@ import shutil
 from pathlib import Path
 from datetime import datetime
 
-from PsycheScraper import connection, upsert_media, make_media_id, detect_media_type, upsert_artist, upsert_project
+from PsycheScraper import connection, upsert_media, make_media_id, detect_media_type, upsert_artist, upsert_project, ARTWORK_DIR
 
 def add_art_file():
     # open connection
@@ -55,8 +55,8 @@ def add_art_file():
                 project_id = cursor.fetchone()[0]
 
                 # create absolute path and relative path
-                dst_abs_path = (Path(__file__).resolve().parent / ".." / "Psyche VR Experience" / "Assets" / "Artwork").resolve() / str(project_id) / new_file_path.split("\\")[-1]
-                dst_rel_path = Path("Assets") / "Artwork" / str(project_id) / new_file_path.split("\\")[-1]
+                dst_abs_path = ARTWORK_DIR / str(project_id) / new_file_path.split("\\")[-1]
+                dst_rel_path = Path(str(project_id)) / new_file_path.split("\\")[-1]
                 # copy file to new destination
                 shutil.copy(new_file_path, dst_abs_path)
 
@@ -117,7 +117,7 @@ def delete_art_file():
             else:
                 file_selection = int(file_selection) - 1
 
-                abs_art_path = (Path(__file__).resolve().parent / ".." / "Psyche VR Experience" / media_list[file_selection][0]).resolve()
+                abs_art_path = ARTWORK_DIR / media_list[file_selection][0]
 
                 cursor.execute("delete from project_media where filepath = ?", (str(abs_art_path),))
                 os.remove(abs_art_path)

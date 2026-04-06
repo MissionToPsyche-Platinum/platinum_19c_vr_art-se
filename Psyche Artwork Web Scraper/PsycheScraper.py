@@ -1,4 +1,5 @@
 import os.path
+import os
 from datetime import datetime
 import re
 import sys
@@ -22,10 +23,14 @@ import yt_dlp
 from pathlib import Path
 from contextlib import contextmanager
 from typing import Optional
+from dotenv import load_dotenv
+
+# TODO: Don't do this when we import
+load_dotenv()
+
 
 # art folder director
-HERE = Path(__file__).resolve().parent
-ARTWORK_DIR = (HERE / ".." / "Psyche VR Experience" / "Assets" / "Artwork").resolve()
+ARTWORK_DIR = Path(os.getenv('OUTPUT_PATH')) / "Artwork"
 ARTWORK_DIR.mkdir(parents=True, exist_ok=True)
 ALLOWED_FILE_EXTENSIONS = [".bmp", ".exr", ".gif", ".hdr", ".iff", ".jpeg", ".jpg", ".pct", ".pic", ".pict", ".png", ".psd", ".tga", ".tif", ".tiff"]
 HANDLED_FILE_EXTENSIONS = [".pdf"]
@@ -88,7 +93,7 @@ def getArtInfo(url, verbose):
     # art title is contained in the first h2 tag
     artTitle = h2Tags[0].text.strip()
     results["artTitle"] = safe_filename(artTitle)
-    # art title is in the first h3 tag without a class, or in the second h2Tag if there are none/only the h3 tag for the slides
+    # artist name is in the first h3 tag without a class, or in the second h2Tag if there are none/only the h3 tag for the slides
     if len(h3Tags) == 0 or (len(h3Tags) == 1 and h3Tags[0].has_attr("class")):
         # There is an exception where the first p tag contains the artist name rather than the date
         if not cleanString(pTags[0].text)[-1].isdigit():
@@ -500,7 +505,7 @@ def getArtInfo(url, verbose):
     # remove any file paths pointing to files that no longer exist(video_only/audio/.mp4)
     cleaned_paths = []
     for p in file_paths:
-        abs_path = ARTWORK_DIR.parent.parent / p  # convert relative to absolute
+        abs_path = ARTWORK_DIR / p  # convert relative to absolute
         if abs_path.exists():
             cleaned_paths.append(p)
         else:
@@ -741,9 +746,7 @@ def standardizeDate(date):
     # Format the datetime object as "YYYY-MM-DD" string (that is how SQL date is)
     return dateTime.strftime("%Y-%m-%d")
 
-# *** DB path: one directory up - Psyche VR Experience/Assets/Database/psyche.db ***
-HERE = Path(__file__).resolve().parent
-DB_DIR = (HERE / ".." / "Psyche VR Experience" / "Assets" / "Database").resolve()
+DB_DIR = Path(os.getenv('OUTPUT_PATH')) / "Database"
 DB_DIR.mkdir(parents=True, exist_ok=True)
 DB_PATH = DB_DIR / "psyche.db"
 
@@ -1118,7 +1121,10 @@ def repair_media(verbose=True):
             print("   -", e)
 
     print("\n*** MEDIA REPAIR : COMPLETE ***\n")
-        
+
+# TODO: Don't do this when we import
 init_db()
-scrapePsyche(verbose=True)
+
+if __name__ == "__main__":
+    scrapePsyche(verbose=True)
 # repair_media(verbose=True)

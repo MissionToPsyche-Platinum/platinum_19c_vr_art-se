@@ -149,6 +149,9 @@ Psyche VR Experience/Assets/Artwork/
 Psyche VR Experience/Assets/Artwork.meta
 /[Aa]sets/Art/
 
+# Emily's 3D modelling folder
+Psyche VR Experience/3DModelFiles/
+
 # Art database folders
 Psyche VR Experience/Assets/Database/
 Psyche VR Experience/Assets/Database.meta
@@ -157,12 +160,10 @@ Psyche VR Experience/Assets/Database.meta
 # Git ignore for Web Scraper 
 # ----------------------------------------------------------------------------------
 
-#Psyche Artwork Web Scraper/.idea/
 Psyche Artwork Web Scraper/.vscode/
 Psyche Artwork Web Scraper/.DS_Store
 Psyche Artwork Web Scraper/__pycache__/
 
 Psyche Artwork Web Scraper/psyche_media/
 
-# Emily's 3D modelling folder
-Psyche VR Experience/3DModelFiles/
+Psyche Artwork Web Scraper/.env
