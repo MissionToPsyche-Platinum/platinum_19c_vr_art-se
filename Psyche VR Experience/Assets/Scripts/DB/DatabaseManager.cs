@@ -26,8 +26,7 @@ namespace PsycheDB
         /// </summary>
         public async static void Initialize()
         {
-            //EnsureFolder();
-            //var firstTime = !File.Exists(DatabasePath);
+            var firstTime = !File.Exists(DatabasePath);
             string dbPath = Application.streamingAssetsPath + "/Database/" + "psyche.db";
             try
             {
@@ -50,32 +49,31 @@ namespace PsycheDB
 
                     using (var conn = Open())
                     {
-                    //    using (var cmd = conn.CreateCommand())
-                    //    {
-                    //        // PRAGMAs
-                    //        // - foreign key enforcement
-                    //        // - Write-Ahead Logging(rollback in case of error)
-                    //        // - Normal synchronous mode allows rollback in case of crash in WAL mode)
-                    //        cmd.CommandText = @"
-                    //    PRAGMA foreign_keys = ON;   
-                    //    PRAGMA journal_mode = WAL;
-                    //    PRAGMA synchronous = NORMAL;
-                    //";
-                    //        cmd.ExecuteNonQuery();
-                    //    }
+                        //PRAGMAs
+                        // - foreign key enforcement
+                        // - Write-Ahead Logging(rollback in case of error)
+                        // - Normal synchronous mode allows rollback in case of crash in WAL mode)
+                        string command = @"
+                            PRAGMA foreign_keys = ON;
+                            PRAGMA journal_mode = WAL;
+                            PRAGMA synchronous = NORMAL:
+                        ";
+
+                        conn.Execute(command);
+                       
 
                         // Create / migrate schema (idempotent)
                         CreateSchema(conn);
 
                         // for debugging, leave alone
-                        //if (firstTime)
-                        //{
-                        //    Debug.Log($"[DB] Created new database at: {DatabasePath}");
-                        //}
-                        //else
-                        //{
-                        //    Debug.Log($"[DB] Opened database at: {DatabasePath}");
-                        //}
+                        if (firstTime)
+                        {
+                            Debug.Log($"[DB] Created new database at: {DatabasePath}");
+                        }
+                        else
+                        {
+                            Debug.Log($"[DB] Opened database at: {DatabasePath}");
+                        }
                     }
                 }
             }
@@ -87,23 +85,22 @@ namespace PsycheDB
         // Upsert(Insert/Update) by primary key.
         public static void UpsertArtist(int artistId, string name, string major)
         {
-            using (var connection = Open()) ;
-            //using (var transaction = connection.BeginTransaction())
-            //using (var command = connection.CreateCommand())
-            //{
-            //    command.CommandText = @"
-            //        INSERT INTO artists (artist_id, name, major)
-            //        VALUES (@id, @name, @major)
-            //        ON CONFLICT(artist_id) DO UPDATE SET
-            //            name = excluded.name,
-            //            major = excluded.major;
-            //    ";
-            //    command.Parameters.Add(new SqliteParameter("@id", artistId));
-            //    command.Parameters.Add(new SqliteParameter("@name", name ?? string.Empty));
-            //    command.Parameters.Add(new SqliteParameter("@major", major ?? string.Empty));
-            //    command.ExecuteNonQuery();
-            //    transaction.Commit();
-            //}
+            using (var connection = Open())
+            {
+                connection.BeginTransaction();
+
+                string command = $@"
+                        INSERT INTO artists (artist_id, name, major)
+                        VALUES ({artistId}, {name}, {major})
+                        ON CONFLICT(artist_id) DO UPDATE SET
+                            name = excluded.name,
+                            major = excluded.major;
+                    ";
+
+                connection.Execute(command);
+
+                connection.Commit();
+            }
         }
 
         public static void UpsertProject(
@@ -187,57 +184,54 @@ namespace PsycheDB
         // sets ups the schemas
         private static void CreateSchema(SQLiteConnection connection)
         {
-            //using (var command = connection.CreateCommand())
-            //{
-            //    // artists
-            //    command.CommandText = @"
-            //        CREATE TABLE IF NOT EXISTS artists (
-            //            artist_id      INTEGER PRIMARY KEY,
-            //            name           TEXT NOT NULL,
-            //            major          TEXT
-            //        );
-            //    ";
-            //    command.ExecuteNonQuery();
+            // artists
+            string command = @"
+                    CREATE TABLE IF NOT EXISTS artists (
+                        artist_id      INTEGER PRIMARY KEY,
+                        name           TEXT NOT NULL,
+                        major          TEXT
+                    );
+                ";
+            connection.Execute(command);
 
-            //    // projects / artworks
-            //    command.CommandText = @"
-            //        CREATE TABLE IF NOT EXISTS projects (
-            //            project_id     INTEGER PRIMARY KEY,
-            //            title          TEXT NOT NULL,
-            //            description    TEXT,
-            //            date           TEXT, -- store ISO8601 strings, e.g. '2025-10-07'
-            //            genre_medium   TEXT,
-            //            artist_id      INTEGER NOT NULL,
-            //            FOREIGN KEY (artist_id)
-            //              REFERENCES artists(artist_id)
-            //              ON UPDATE CASCADE
-            //              ON DELETE CASCADE
-            //        );
-            //    ";
-            //    command.ExecuteNonQuery();
+            // projects / artworks
+            command = @"
+                    CREATE TABLE IF NOT EXISTS projects (
+                        project_id     INTEGER PRIMARY KEY,
+                        title          TEXT NOT NULL,
+                        description    TEXT,
+                        date           TEXT, -- store ISO8601 strings, e.g. '2025-10-07'
+                        genre_medium   TEXT,
+                        artist_id      INTEGER NOT NULL,
+                        FOREIGN KEY (artist_id)
+                          REFERENCES artists(artist_id)
+                          ON UPDATE CASCADE
+                          ON DELETE CASCADE
+                    );
+                ";
+            connection.Execute(command);
 
-            //    // project media (enum via CHECK)
-            //    command.CommandText = @"
-            //        CREATE TABLE IF NOT EXISTS project_media (
-            //            media_id       INTEGER PRIMARY KEY,
-            //            filepath       TEXT NOT NULL,
-            //            media_type     TEXT NOT NULL CHECK (media_type IN ('image','video','audio')),
-            //            project_id     INTEGER NOT NULL,
-            //            FOREIGN KEY (project_id)
-            //              REFERENCES projects(project_id)
-            //              ON UPDATE CASCADE
-            //              ON DELETE CASCADE
-            //        );
-            //    ";
-            //    command.ExecuteNonQuery();
+            // project media (enum via CHECK)
+            command = @"
+                    CREATE TABLE IF NOT EXISTS project_media (
+                        media_id       INTEGER PRIMARY KEY,
+                        filepath       TEXT NOT NULL,
+                        media_type     TEXT NOT NULL CHECK (media_type IN ('image','video','audio')),
+                        project_id     INTEGER NOT NULL,
+                        FOREIGN KEY (project_id)
+                          REFERENCES projects(project_id)
+                          ON UPDATE CASCADE
+                          ON DELETE CASCADE
+                    );
+                ";
+            connection.Execute(command);
 
-            //    // helpful indexes for debug and perusing
-            //    command.CommandText = @"
-            //        CREATE INDEX IF NOT EXISTS idx_projects_artist ON projects(artist_id);
-            //        CREATE INDEX IF NOT EXISTS idx_media_project   ON project_media(project_id);
-            //    ";
-            //    command.ExecuteNonQuery();
-            //}
+            // helpful indexes for debug and perusing
+            command = @"
+                    CREATE INDEX IF NOT EXISTS idx_projects_artist ON projects(artist_id);
+                    CREATE INDEX IF NOT EXISTS idx_media_project   ON project_media(project_id);
+                ";
+            connection.Execute(command);
         }
 
 
@@ -250,6 +244,9 @@ namespace PsycheDB
         {
             if (!File.Exists(DatabasePath)) return;
             using (var connection = Open())
+            {
+
+            }
             //using (var command = connection.CreateCommand())
             //{
             //    command.CommandText = @"
