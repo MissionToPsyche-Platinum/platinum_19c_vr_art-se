@@ -3,6 +3,7 @@ import pandas as pd
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 
+import PsycheMediaStubbed
 
 def UpdateDatabase():
     csv_file = Get_CSV_File()
@@ -17,14 +18,14 @@ def UpdateDatabase():
     for start in range(0, len(dataframe), BATCH_SIZE):
         print(f"Processing rows {start} to {min(start + BATCH_SIZE, len(dataframe))}...")
         batch = dataframe.iloc[start:start + BATCH_SIZE]
-        
-        for _, row in batch.iterrows():
-            # TODO: Task 444
-            # Get filepaths from project link scraper.GetFilepathsFromProjectLink(row["Project Link"]) (threaded)
 
-            # TODO: Task 445
-            # Insert all info into the database properly
-            print(row)
+        projectLinks = batch["Project Link"].tolist()
+        filepaths = []
+        with ThreadPoolExecutor() as executor:
+            filepaths = list(executor.map(PsycheMediaStubbed.getArtFilepath, projectLinks)) # TODO: replace PsycheMediaStubbed.getArtFilepath with the actual function that gets filepaths from project links (From User Story 445)
+
+        # TODO: Task 445
+        # Insert all info into the database properly
 
 def Get_CSV_File():
     INPUT_PATH = Path(os.getenv('INPUT_PATH'))
