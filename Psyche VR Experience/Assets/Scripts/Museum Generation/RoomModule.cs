@@ -188,6 +188,11 @@ public class RoomModule : MonoBehaviour
 
             // decoration = room.transform.GetChild(UnityEngine.Random.Range(1, 5)).gameObject;
             decoration.SetActive(true);
+        } else if ((roomType == RoomType.TwoOpenLShapeFlat || roomType == RoomType.TwoOpenLShape ||
+                    roomType == RoomType.OneOpen) && dieRoll < decorationLikelihood)
+        {
+            decoration = room.transform.GetChild(2).gameObject;
+            decoration.SetActive(true);
         }
     }
        
