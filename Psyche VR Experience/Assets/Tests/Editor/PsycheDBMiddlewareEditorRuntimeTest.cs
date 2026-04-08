@@ -20,9 +20,9 @@ public class PsycheDBMiddlewareEditorRuntimeTests
 
     // helper, returns a valid project_id or marks test inconclusive if DB is empty/unavailable.
 
-    private async static Task<long> GetAnyProjectIdOrInconclusive()
+    private static long GetAnyProjectIdOrInconclusive()
     {
-        var ids = await PsycheDBMiddleware.GetAllProjectIds();
+        var ids = PsycheDBMiddleware.GetAllProjectIds();
         if (ids == null || ids.Count == 0)
         {
             Assert.Inconclusive("No projects found in DB. Seed the database before running tests.");
@@ -32,9 +32,9 @@ public class PsycheDBMiddlewareEditorRuntimeTests
 
     // this one checks that ids are being returned
     [Test]
-    public async void GetAllProjectIds_ReturnsIds()
+    public void GetAllProjectIds_ReturnsIds()
     {
-        var ids = await PsycheDBMiddleware.GetAllProjectIds();
+        var ids = PsycheDBMiddleware.GetAllProjectIds();
         Assert.IsNotNull(ids, "GetAllProjectIds returned null.");
 
         if (ids.Count == 0)
@@ -50,13 +50,13 @@ public class PsycheDBMiddlewareEditorRuntimeTests
 
     // this one checks whether or not the scriptable objects are being populated properly
     [Test]
-    public async void TryLoadArtworkByProjectId_PopulatesScriptableObject()
+    public void TryLoadArtworkByProjectId_PopulatesScriptableObject()
     {
-        long projectId = await GetAnyProjectIdOrInconclusive();
+        long projectId = GetAnyProjectIdOrInconclusive();
         var so = ScriptableObject.CreateInstance<ArtworkData>();
         _toCleanup.Add(so);
 
-        bool ok = await PsycheDBMiddleware.TryLoadArtworkByProjectId(projectId, so);
+        bool ok = PsycheDBMiddleware.TryLoadArtworkByProjectId(projectId, so);
 
         // asserting
         Assert.IsTrue(ok, $"TryLoadArtworkByProjectId({projectId}) returned false.");
@@ -75,11 +75,11 @@ public class PsycheDBMiddlewareEditorRuntimeTests
 
     // ensures a list of scriptable object is returned by various methods
     [Test]
-    public async void LoadRandomArtworkData_ReturnsListOfScriptableObjects()
+    public void LoadRandomArtworkData_ReturnsListOfScriptableObjects()
     {
         const int howMany = 3;
 
-        var list = await PsycheDBMiddleware.LoadRandomArtworkData(
+        var list = PsycheDBMiddleware.LoadRandomArtworkData(
             count: howMany,
             dbPathOverride: null
         );
@@ -111,11 +111,11 @@ public class PsycheDBMiddlewareEditorRuntimeTests
 
     // this one tests the factory method callable
     [Test]
-    public async void CreateRandomProjectSObjects_FactoryCreatesValidScriptableObjects()
+    public void CreateRandomProjectSObjects_FactoryCreatesValidScriptableObjects()
     {
         const int howMany = 3;
 
-        var list = await PsycheDBMiddleware.CreateRandomProjectSObjects(howMany);
+        var list = PsycheDBMiddleware.CreateRandomProjectSObjects(howMany);
 
         if (list != null) _toCleanup.AddRange(list);
 
