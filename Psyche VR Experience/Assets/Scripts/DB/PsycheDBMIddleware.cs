@@ -125,7 +125,7 @@ public static class PsycheDBMiddleware
                     {
                         if (!string.IsNullOrEmpty(d.filepath))
                         {
-                            mediaPaths.Add(d.filepath);
+                            mediaPaths.Add(d.filepath.Replace("\\", "/"));
                         }
                     }
                 }
@@ -149,8 +149,6 @@ public static class PsycheDBMiddleware
                 target.artworkURLs.Clear();
                 target.artworkURLs.AddRange(mediaPaths);
                 target.artworkCount = mediaPaths.Count;
-
-                Debug.Log($"DATA = id -> {target.artworkID}, desc -> {target.artworkDescription}, artwork_count -> {target.artworkCount}");
 
                 return true;
             }
@@ -248,7 +246,6 @@ public static class PsycheDBMiddleware
         foreach (var projectID in projectIDs)
         {
             ids.Add(Convert.ToInt64(projectID.ProjectId));
-            Debug.Log($"PROJECT ID: {projectID.ProjectId}");
         }
 
         return ids;
