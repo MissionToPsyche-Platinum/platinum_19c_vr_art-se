@@ -27,6 +27,8 @@ public class SettingsManager : MonoBehaviour
     public static UnityEvent m_VideoVolumeChanged = new UnityEvent();
     //event to let text know to change size
     public static UnityEvent m_TextSizeChanged = new UnityEvent();
+    //event to let buttons know to change size
+    public static UnityEvent m_ButtonSizeChanged = new UnityEvent();
 
     private void OnValidate()
     {
@@ -85,6 +87,8 @@ public class SettingsManager : MonoBehaviour
     {
         LocomotionSettingsMenu.SetActive(!menuOpen);
         menuOpen = !menuOpen;
+
+        GlobalSettings.canSnapTurn = !menuOpen;
     }
 
     private void downSelection()
@@ -154,16 +158,6 @@ public class SettingsManager : MonoBehaviour
         m_TextSizeChanged?.Invoke();
     }
 
-    public void AutoIterateOn()
-    {
-        GlobalSettings.AUTO_ITERATE_ON = true;
-    }
-
-    public void AutoIterateOff()
-    {
-        GlobalSettings.AUTO_ITERATE_ON = false;
-    }
-
     public void AdjustTeleportFade(float val)
     {
         if (val > 0f)
@@ -190,6 +184,8 @@ public class SettingsManager : MonoBehaviour
 
         float result = float.Parse(input);
         GlobalSettings.INTERACTION_SIZE_MULTIPLER = result;
+
+        m_ButtonSizeChanged?.Invoke();
     }
 
     public void SkyboxRotationToggleOn()

@@ -55,15 +55,20 @@ MonoBehaviour:
   - {fileID: 7116434444811588528, guid: 8f15812dbba2c914ebb43fa487536ac0, type: 3}
   - {fileID: 3470039319190951384, guid: 6d83461a7e322504e8c196f827dc50f8, type: 3}
   - {fileID: 2533214597889045791, guid: 81ab8d452ef049241a2474654c49c8c1, type: 3}
+  decorationLikelihood: 0.2
   room: {fileID: 0}
   display: {fileID: 0}
   wallHeightMod: 2
   centerArtPieces: 1
+  desiredFrameCenterWorldY: 1.6
+  reservedBottomPercent: 0.1
+  bottomPadding: 0.05
   openNorth: 0
   openSouth: 0
   openWest: 0
   openEast: 0
   orientation: 0
+  decoration: {fileID: 0}
 --- !u!65 &1582381695963460741
 BoxCollider:
   m_ObjectHideFlags: 0

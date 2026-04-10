@@ -9,17 +9,18 @@ using UnityEngine;
 using static PsycheDBMiddleware;
 
 public static class PsycheDBMiddleware
-{
+{ 
     // resolve the default DB path: ../Psyche VR Experience/Assets/Database/psyche.db
     // relative to Application.dataPath (which is .../Psyche VR Experience/Assets)
     public static string GetDefaultDbPath()
     {
         var assetsDir = Application.dataPath;                     // .../Psyche VR Experience/Assets
         var projectRoot = Directory.GetParent(assetsDir)?.FullName;
-        if (string.IsNullOrEmpty(projectRoot))
-            throw new Exception("Could not resolve project root from Application.dataPath.");
 
-        var dbPath = Path.Combine(projectRoot, "Assets", "Database", "psyche.db");
+        if (string.IsNullOrEmpty(projectRoot))
+            throw new Exception("Could not resolve project root from Application.streamingAssetsPath.");
+
+        var dbPath = Path.Combine(assetsDir, "Database", "psyche.db");
         return dbPath;
     }
 
@@ -111,7 +112,9 @@ public static class PsycheDBMiddleware
                             // I stored the relative paths(EX: "Assets/Artwork/<project_id>/<file>"), should be fine
                             var filepath = reader["filepath"] as string;
                             if (!string.IsNullOrEmpty(filepath))
+                            {
                                 mediaPaths.Add(filepath);
+                            }
                         }
                     }
                 }
