@@ -1,7 +1,7 @@
 import shutil
 from pathlib import Path
 
-from PsycheScraper import upsert_artist, upsert_project, upsert_media, make_artist_id, make_project_id, detect_media_type, make_media_id, ARTWORK_DIR
+from PsycheScraper import upsert_artist, upsert_project, upsert_media, make_artist_id, make_project_id, detect_media_type, make_media_id, ARTWORK_DIR   # TODO: import from the new, correct file location (probably CsvUpdater)
 from datetime import datetime
 import os
 
@@ -21,7 +21,7 @@ def addArtProject(artInfo):
     upsert_project(project_id, art_title, description, date_iso,genre_medium, artist_id)
 
     # create project directory
-    dst_dir_abs_path = ARTWORK_DIR / str(project_id)
+    dst_dir_abs_path = ARTWORK_DIR / str(project_id)    # TODO: verify this is the correct path based on the docker container
     os.makedirs(dst_dir_abs_path, exist_ok=True)
 
     # media hash and upsert
@@ -39,6 +39,7 @@ def addArtProject(artInfo):
         upsert_media(media_id, str(dst_rel_path), media_type, project_id)
 
         print("Art project added successfully!\n")
+        # TODO: verify art addition
 
 def getArtProjectInfo():
     results = {}
@@ -58,6 +59,7 @@ def getArtProjectInfo():
         except ValueError:
             print("Invalid format. Please enter date as YYYY-MM-DD.")
 
+    # TODO: edit this whole section to look at valid files in the input directory and give the user a choice between those
     print("Enter the absolute file path of each art file you wish to add, pressing enter in between each file.  When you have entered the last file, enter \"f\".  (To get the absolute path, right click on the desired file in your file explorer and click \"Copy as path\".  Paste the copied text into the command line.)")
     file_paths = []
     while True:

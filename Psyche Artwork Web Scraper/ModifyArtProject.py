@@ -3,14 +3,14 @@ import shutil
 from pathlib import Path
 from datetime import datetime
 
-from PsycheScraper import connection, upsert_media, make_media_id, detect_media_type, upsert_artist, upsert_project, ARTWORK_DIR
+from PsycheScraper import connection, upsert_media, make_media_id, detect_media_type, upsert_artist, upsert_project, ARTWORK_DIR     # TODO: import from the new, correct file location (probably CsvUpdater)
 
 def add_art_file():
     # open connection
     with connection() as conn:
         # open cursor to make queries
         cursor = conn.cursor()
-        cursor.execute("select title from projects")
+        cursor.execute("select title from projects")        # TODO: verify this is the correct query to get the list of project titles
 
         # get list of art project titles and list them
         title_list = list(cursor)
@@ -35,6 +35,7 @@ def add_art_file():
             print("Warning: if there is already a file of the same name in the art project's directory, it will be overwritten.")
             print("Enter the absolute file path of the art file you wish to add.  (To get the absolute path, right click on the desired file in your file explorer and click \"Copy as path\".  Paste the copied text into the command line.) (q to quit): ", end="")
 
+            # TODO: edit file path getting section to read from the docker container's input directory and give the user a choice between the valid files in that directory instead of having the user input the file path
             # get path of file to add
             new_file_path = input()
             new_file_path = new_file_path.replace("\"", "")
@@ -67,6 +68,7 @@ def add_art_file():
 
                 print("Added file successfully!")
 
+# TODO: verify this still works on new art database
 def delete_art_file():
     # open connection
     with connection() as conn:
@@ -125,6 +127,7 @@ def delete_art_file():
         # close cursor object
         cursor.close()
 
+# TODO: verify this still works on new art database
 def modify_art_project():
     artist = False
     # are we modifying an artist or a project
@@ -230,6 +233,7 @@ def modify_art_project():
 
     print("Successfully modified!")
 
+# TODO: verify this still works on new art database
 def delete_art_project():
     with connection() as conn:
         # open cursor to make queries
