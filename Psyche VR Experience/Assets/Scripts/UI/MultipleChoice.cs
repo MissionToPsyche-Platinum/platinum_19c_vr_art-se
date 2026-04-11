@@ -23,7 +23,11 @@ public class MultipleChoice : MonoBehaviour
     [SerializeField] private UnityEvent<string> onChange;
 
     [SerializeField] private MusicManager musicManager;
+    [SerializeField] private MusicManager musicManager;
     private int currIndex;
+    [Header("Only check this for the Music Change Multiple Choice")]
+    [SerializeField] private bool needsMusicManaged = false;
+    
     [Header("Only check this for the Music Change Multiple Choice")]
     [SerializeField] private bool needsMusicManaged = false;
     
@@ -77,6 +81,15 @@ public class MultipleChoice : MonoBehaviour
         {
             SetTextToIndex(currIndex);    
         }
+        if (needsMusicManaged == true)
+        {
+            GetTextFromMusicManager();
+            musicManager.PlayNextClip();
+        } 
+        else
+        {
+            SetTextToIndex(currIndex);    
+        }
         buttonPressed();
     }
 
@@ -97,12 +110,26 @@ public class MultipleChoice : MonoBehaviour
         {
             SetTextToIndex(currIndex);    
         }
+        if (needsMusicManaged == true)
+        {
+            GetTextFromMusicManager();
+            musicManager.PlayPreviousClip();
+        } 
+        else
+        {
+            SetTextToIndex(currIndex);    
+        }
         buttonPressed();
     }
 
     private void SetTextToIndex(int index)
     {
         textBox.text = options[index];
+    }
+
+    private void GetTextFromMusicManager()
+    {
+        textBox.text = musicManager.getSongName();
     }
 
     private void GetTextFromMusicManager()
