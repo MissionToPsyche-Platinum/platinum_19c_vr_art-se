@@ -16,11 +16,11 @@ public class MusicManager : MonoBehaviour
 
     void Start()
     {
-        audioSource = GetComponent<AudioSource>();
+        //audioSource = GetComponent<AudioSource>();
         //Ensure the toggle is set to true for the music to play at start-up
         isPlaying = true;
         audioSource.volume = GlobalSettings.MUSIC_VOLUME;
-        audioSource.clip = musicPlaylist[songIndex];
+        audioSource.clip = musicPlaylist[Random.Range(0, musicPlaylist.Length)];
     }
 
     void Update()
