@@ -22,13 +22,15 @@ import ffmpeg
 import yt_dlp
 from pathlib import Path
 
+from typing import List, Optional
+
 RED    = "\033[31m"
 YELLOW = "\033[33m"
 RESET  = "\033[0m"
 
 # Shared download-result accumulators (populated by callers)
-SUCCESS_DOWNLOADS: list[dict] = []
-FAILED_DOWNLOADS:  list[dict] = []
+SUCCESS_DOWNLOADS: List[dict] = []
+FAILED_DOWNLOADS:  List[dict] = []
 
 
 # ---------------------------------------------------------------------------
@@ -43,7 +45,7 @@ def download_iframe_video(
     art_title: str,
     project_id: int,
     verbose: bool = False,
-) -> list[str]:
+) -> List[str]:
     """
     Download a video embedded in an <iframe> and return a list of relative
     Unity asset paths for every file written to disk.
@@ -102,7 +104,7 @@ def _download_youtube(
     art_title: str,
     project_id: int,
     verbose: bool,
-) -> list[str]:
+) -> List[str]:
     """Full YouTube download pipeline: separate video + audio → mux → _FINAL."""
 
     link = "https://www.youtube.com/watch?v=" + iframe_src.split("/")[-1].split("?")[0]
@@ -121,7 +123,7 @@ def _download_youtube(
     rel_final   = Path("Assets") / "Artwork" / str(project_id) / abs_final.name
     rel_vidonly = Path("Assets") / "Artwork" / str(project_id) / abs_vidonly.name
 
-    file_paths: list[str] = []
+    file_paths: List[str] = []
 
     # ── 1. Video-only ────────────────────────────────────────────────────────
     video_ok = _yt_download_video_only(link, abs_vidonly, verbose)
@@ -204,7 +206,7 @@ def _yt_download_video_only(link: str, destination: Path, verbose: bool) -> bool
         return False
 
 
-def _yt_download_audio_only(link: str, destination: Path, verbose: bool) -> Path | None:
+def _yt_download_audio_only(link: str, destination: Path, verbose: bool) -> Optional[Path]:
     """
     Download the best audio-only stream, then convert to MP3.
 
@@ -287,7 +289,7 @@ def _yt_download_best_combined(link: str, destination: Path, verbose: bool) -> N
 
 def _mux_video_audio(
     video_path: Path,
-    audio_path: Path | None,
+    audio_path: Optional[Path],
     output_path: Path,
     link: str,
     verbose: bool,
@@ -394,7 +396,7 @@ def _download_vimeo(
     art_title: str,
     project_id: int,
     verbose: bool,
-) -> list[str]:
+) -> List[str]:
     """Download a Vimeo video using yt-dlp with the page URL as referer."""
 
     base_video = f"{_safe_name(artist_name)}_{_safe_name(art_title)}.mp4"
@@ -437,7 +439,7 @@ def _safe_name(s: str) -> str:
     return s.replace(" ", "")
 
 
-def _safe_remove(path: Path | None) -> None:
+def _safe_remove(path: Optional[Path]) -> None:
     """Delete a file silently if it exists."""
     try:
         if path and Path(path).exists():

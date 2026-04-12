@@ -4,6 +4,7 @@ pdf_downloader.py
 Handles downloading and converting PDF files to PNG images.
 PDFs are converted to a single stacked PNG image for Unity compatibility.
 """
+from typing import Optional
 
 import fitz  # PyMuPDF
 from PIL import Image
@@ -15,7 +16,7 @@ YELLOW = "\033[33m"
 RESET  = "\033[0m"
 
 
-def download_pdf(response, destination: Path, verbose: bool = False) -> str | None:
+def download_pdf(response, destination: Path, verbose: bool = False) -> Optional[str]:
     """
     Convert a PDF (provided as a requests.Response) into a single stacked PNG.
 

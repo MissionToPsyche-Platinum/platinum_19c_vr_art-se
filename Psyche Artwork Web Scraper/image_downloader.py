@@ -6,6 +6,8 @@ for Unity VideoPlayer compatibility.
 """
 
 import os
+from typing import Optional
+
 import ffmpeg
 from pathlib import Path
 
@@ -21,7 +23,7 @@ ALLOWED_IMAGE_EXTENSIONS = {
 }
 
 
-def download_image(response, destination: Path, verbose: bool = False) -> str | None:
+def download_image(response, destination: Path, verbose: bool = False) -> Optional[str]:
     """
     Save a raw image response to disk.
 
