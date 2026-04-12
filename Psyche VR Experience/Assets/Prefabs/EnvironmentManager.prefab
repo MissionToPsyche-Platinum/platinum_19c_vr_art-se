@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1010254064570177547}
   - component: {fileID: 4078764943581485991}
   - component: {fileID: -5913760947967832729}
+  - component: {fileID: 7653531623003197582}
   m_Layer: 0
   m_Name: EnvironmentManager
   m_TagString: Untagged
@@ -64,6 +65,19 @@ MonoBehaviour:
   baseName: diversespace-
   applyOnEnable: 1
   autoApplyOnValidate: 1
+--- !u!114 &7653531623003197582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1929560406302967027}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acaae7dcfbe908c43bde6f9f43915357, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LightRotationUtilities
+  rotationSpeed: 1
 --- !u!1 &2641473753700885567
 GameObject:
   m_ObjectHideFlags: 0
