@@ -8,6 +8,7 @@ public class LaunchRoomManager : MonoBehaviour
 {
     [SerializeField] private ExpoTimer expoTimer;
     [SerializeField] private MuseumManager museumManager;
+    [SerializeField] private MusicManager musicManager;
     [SerializeField] private Transform playerTransform;
     [SerializeField] private Transform domeTransform;
 
@@ -99,7 +100,12 @@ public class LaunchRoomManager : MonoBehaviour
     {
         PrepareMuseumAfterReload = true;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        
+        Debug.Log("Hello World");
         domeTransform.position = new Vector3(0, -50, 0);
+    }
+
+    public void SetMusicPlaylistActive()
+    {
+        musicManager.StartMuseumPlaylist();
     }
 }

@@ -30,14 +30,16 @@ public class MultipleChoice : MonoBehaviour
     protected void OnValidate()
     {
         currIndex = startingIndex;
-        SetTextToIndex(currIndex);
-        
         if (needsMusicManaged == true)
         {
             GetTextFromMusicManager();
+        } 
+        else
+        {
+            SetTextToIndex(currIndex);    
         }
 
-        if (currIndex == 0)
+        if (currIndex == 0 & needsMusicManaged == false)
         {
             leftArrow.SetActive(false);
         }
@@ -45,7 +47,7 @@ public class MultipleChoice : MonoBehaviour
         {
             leftArrow.SetActive(true);
         }
-        if (currIndex >= options.Count - 1)
+        if (currIndex >= options.Count - 1 & needsMusicManaged == false)
         {
             rightArrow.SetActive(false);
         }
@@ -77,15 +79,6 @@ public class MultipleChoice : MonoBehaviour
         {
             SetTextToIndex(currIndex);    
         }
-        if (needsMusicManaged == true)
-        {
-            GetTextFromMusicManager();
-            musicManager.PlayNextClip();
-        } 
-        else
-        {
-            SetTextToIndex(currIndex);    
-        }
         buttonPressed();
     }
 
@@ -97,15 +90,6 @@ public class MultipleChoice : MonoBehaviour
         }
 
         currIndex += 1;
-        if (needsMusicManaged == true)
-        {
-            GetTextFromMusicManager();
-            musicManager.PlayPreviousClip();
-        } 
-        else
-        {
-            SetTextToIndex(currIndex);    
-        }
         if (needsMusicManaged == true)
         {
             GetTextFromMusicManager();

@@ -2,7 +2,6 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
-using System.Diagnostics;
 
 public class MenuLogic : MonoBehaviour
 {
@@ -18,7 +17,7 @@ public class MenuLogic : MonoBehaviour
 
     public void QuitExperience()
     {
-        UnityEngine.Debug.Log("Exiting Psyche VR Experience...");
+        Debug.Log("Exiting Psyche VR Experience...");
         Application.Quit();
     }
 }
