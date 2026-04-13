@@ -6,8 +6,6 @@ There are many ways to download it, but here is the official guides:
 👉 Mac: https://docs.docker.com/desktop/setup/install/mac-install/  
 👉 Linux: https://docs.docker.com/desktop/setup/install/linux/  
 
-Installing Python like this should also install **pip**, which is needed to install required libraries.
-
 ### 1. Verify installation
 Open a terminal (or command prompt), start Docker and check that the installation worked properly:
 ```bash
