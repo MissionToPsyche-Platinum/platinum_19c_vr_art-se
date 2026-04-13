@@ -16,6 +16,7 @@ def UpdateDatabase():
         print("There should be exactly one CSV file in the input directory.  Please fix this and try again.")
         return
     
+    InitializeDatabase()
     columns = ['Artist Name', 'Artist Major', 'Project Title', 'Project Date', 'Project Genre', 'Project Description', 'Project Link']
     dataframe = pd.read_csv(csv_file, usecols=columns)
     
@@ -135,4 +136,49 @@ def _hash_to_int63(seed: str) -> int:
 
 def GetDatabasePath():
     dbDirectory = Path(os.getenv('OUTPUT_PATH')) / "Database"
+    dbDirectory.mkdir(parents=True, exist_ok=True)
     return dbDirectory / "artwork.db"
+
+def InitializeDatabase():
+    # create tables and indexes if they don't exist.
+    with connection() as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS artists (
+                artist_id INTEGER PRIMARY KEY,
+                name      TEXT NOT NULL,
+                major     TEXT
+            );
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS projects (
+                project_id   INTEGER PRIMARY KEY,
+                title        TEXT NOT NULL,
+                description  TEXT,
+                date         TEXT,           -- ISO (YYYY-MM-DD) recommended
+                genre_medium TEXT,
+                artist_id    INTEGER NOT NULL,
+                FOREIGN KEY (artist_id)
+                    REFERENCES artists(artist_id)
+                    ON UPDATE CASCADE
+                    ON DELETE CASCADE
+            );
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS project_media (
+                media_id   INTEGER PRIMARY KEY,
+                filepath   TEXT NOT NULL,
+                media_type TEXT NOT NULL CHECK (media_type IN ('image','video','audio')),
+                project_id INTEGER NOT NULL,
+                FOREIGN KEY (project_id)
+                    REFERENCES projects(project_id)
+                    ON UPDATE CASCADE
+                    ON DELETE CASCADE
+            );
+        """)
+
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_projects_artist ON projects(artist_id);")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_media_project  ON project_media(project_id);")

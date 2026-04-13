@@ -75,14 +75,14 @@ def get_art_filepath(row:pd.Series, verbose:bool = False)-> List[str]:
                     result = download_image(resp, abs_dest, verbose=verbose)
                     if result:
                         file_paths.append(
-                            str(Path("Assets") / "Artwork" / str(project_id) / Path(result).name)
+                            str(Path("Artwork") / str(project_id) / Path(result).name)
                         )
 
                 elif ext == ".pdf":
                     result = download_pdf(resp, abs_dest, verbose=verbose)
                     if result:
                         file_paths.append(
-                            str(Path("Assets") / "Artwork" / str(project_id) / Path(result).name)
+                            str(Path("Artwork") / str(project_id) / Path(result).name)
                         )
 
                 else:

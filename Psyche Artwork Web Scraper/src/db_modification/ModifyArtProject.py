@@ -63,7 +63,7 @@ def add_art_file():
                 # add file path to sql database
                 artist_name = cursor.execute("select name from artists, projects where projects.project_id = ? and projects.artist_id = artists.artist_id", (project_id,)).fetchone()[0]
                 new_media_id = CreateMediaId(artist_name, art_title, new_file_path)
-                UpsertMedia(new_media_id, str(dst_rel_path), detect_media_type(str(dst_rel_path)), project_id)
+                UpsertMedia(new_media_id, str(dst_rel_path), GetMediaType(str(dst_rel_path)), project_id)
 
                 print("Added file successfully!")
 

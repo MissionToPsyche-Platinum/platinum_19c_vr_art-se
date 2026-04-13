@@ -120,8 +120,8 @@ def _download_youtube(
     abs_vidonly = _safe_destination(project_dir, base_vidonly)
     abs_audio   = _safe_destination(project_dir, base_audio)
 
-    rel_final   = Path("Assets") / "Artwork" / str(project_id) / abs_final.name
-    rel_vidonly = Path("Assets") / "Artwork" / str(project_id) / abs_vidonly.name
+    rel_final   = Path("Artwork") / str(project_id) / abs_final.name
+    rel_vidonly = Path("Artwork") / str(project_id) / abs_vidonly.name
 
     file_paths: List[str] = []
 
@@ -138,7 +138,7 @@ def _download_youtube(
     abs_audio_final = _yt_download_audio_only(link, abs_audio, verbose)  # may return .mp3 path
 
     if abs_audio_final:
-        rel_audio = Path("Assets") / "Artwork" / str(project_id) / abs_audio_final.name
+        rel_audio = Path("Artwork") / str(project_id) / abs_audio_final.name
         file_paths.append(str(rel_audio))
 
     # ── 4. Mux video + audio → _FINAL ────────────────────────────────────────
@@ -168,10 +168,10 @@ def _download_youtube(
                 _safe_remove(abs_audio_final)
         file_paths.append(str(rel_final))
 
-    # ── 5. Clean up any paths that no longer exist on disk ───────────────────
+    # ── 5. Clean up any paths that no longer exist on disk ───────────────────    
     file_paths = [
         p for p in file_paths
-        if (project_dir.parent / p).exists()
+        if (project_dir.parent.parent / p).exists()
     ]
 
     return file_paths
@@ -401,7 +401,7 @@ def _download_vimeo(
 
     base_video = f"{_safe_name(artist_name)}_{_safe_name(art_title)}.mp4"
     abs_dest   = _safe_destination(project_dir, base_video)
-    rel_dest   = Path("Assets") / "Artwork" / str(project_id) / abs_dest.name
+    rel_dest   = Path("Artwork") / str(project_id) / abs_dest.name
 
     try:
         if verbose:
