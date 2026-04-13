@@ -8,10 +8,10 @@ from typing import Optional
 
 import pandas as pd
 
-import PsycheMediaStubbed
+import src.media_handling.PsycheMedia as PsycheMedia
 
 def UpdateDatabase():
-    csv_file = Get_CSV_File()
+    csv_file = GetCSVFile()
     if csv_file is None:
         print("There should be exactly one CSV file in the input directory.  Please fix this and try again.")
         return
@@ -27,14 +27,14 @@ def UpdateDatabase():
         rows = [batch.iloc[i] for i in range(len(batch))]
         batchFilepaths = []
         with ThreadPoolExecutor() as executor:
-            batchFilepaths = list(executor.map(PsycheMediaStubbed.getArtFilepath, rows)) # TODO: replace PsycheMediaStubbed.getArtFilepath with the actual function that gets filepaths from project links (From User Story 445)
+            batchFilepaths = list(executor.map(PsycheMedia.get_art_filepath, rows))
 
         for i in range(len(batch)):
             row = batch.iloc[i]
             projectFilepaths = batchFilepaths[i]
             UpsertRowToDatabase(row, projectFilepaths)
 
-def Get_CSV_File():
+def GetCSVFile():
     INPUT_PATH = Path(os.getenv('INPUT_PATH'))
     csv_files = list(INPUT_PATH.glob("*.csv"))
     if (len(csv_files) != 1):
@@ -57,7 +57,7 @@ def UpsertRowToDatabase(row, projectFilepaths):
     # media hash and upsert
     for filepath in projectFilepaths:
         mediaType = GetMediaType(filepath)
-        mediaId = make_media_id(artistName, projectTitle, filepath)
+        mediaId = CreateMediaId(artistName, projectTitle, filepath)
         UpsertMedia(mediaId, filepath, mediaType, projectId)
 
 
@@ -99,7 +99,7 @@ def GetMediaType(filepath: str) -> str:
         return "audio"
     return "image"
 
-def make_media_id(artist_name: str, artwork_title: str, filepath: str) -> int:
+def CreateMediaId(artist_name: str, artwork_title: str, filepath: str) -> int:
     basename = Path(filepath).name
     return _hash_to_int63(f"media::{_norm(artist_name)}::{_norm(artwork_title)}::{_norm(basename)}")
 

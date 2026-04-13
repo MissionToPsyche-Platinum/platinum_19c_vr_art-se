@@ -7,9 +7,9 @@ from typing import List
 
 import pandas as pd
 
-from image_downloader import download_image, ALLOWED_IMAGE_EXTENSIONS
-from pdf_downloader import download_pdf
-from video_downloader import download_iframe_video
+from src.media_handling.image_downloader import download_image, ALLOWED_IMAGE_EXTENSIONS
+from src.media_handling.pdf_downloader import download_pdf
+from src.media_handling.video_downloader import download_iframe_video
 
 RED    = "\033[31m"
 YELLOW = "\033[33m"
