@@ -125,7 +125,7 @@ public static class PsycheDBMiddleware
                     {
                         if (!string.IsNullOrEmpty(d.filepath))
                         {
-                            mediaPaths.Add(d.filepath.Replace("\\", "/"));
+                            mediaPaths.Add("Assets/" + d.filepath);
                         }
                     }
                 }

@@ -15,7 +15,7 @@ namespace PsycheDB
     {
         // intended database location: Assets/Database/psyche_data.db
         public static readonly string DatabaseFolder = Path.Combine(Application.persistentDataPath, "Database");
-        public static readonly string DatabasePath = Path.Combine(DatabaseFolder, "psyche_data.db");
+        public static readonly string DatabasePath = Path.Combine(DatabaseFolder, "artwork.db");
 
         // connection string
         public static string ConnString => DatabasePath;
@@ -27,7 +27,7 @@ namespace PsycheDB
         public async static void Initialize()
         {
             var firstTime = !File.Exists(DatabasePath);
-            string dbPath = Application.streamingAssetsPath + "/Database/" + "psyche.db";
+            string dbPath = Application.streamingAssetsPath + "/Database/" + "artwork.db";
             try
             {
                 UnityWebRequest request = UnityWebRequest.Get(dbPath);
@@ -36,7 +36,7 @@ namespace PsycheDB
                 if (request.result == UnityWebRequest.Result.Success)
                 {
                     File.WriteAllBytes(DatabasePath, request.downloadHandler.data);
-                    Debug.Log("COPIED DATABASE PROPERLY");
+                    Debug.Log("COPIED DATABASE PROPERLY TO " + DatabasePath);
                 }
                 else
                 {

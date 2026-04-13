@@ -156,10 +156,15 @@ public class FrameController : MonoBehaviour
         SettingsManager.m_VideoVolumeChanged.RemoveListener(VolumeChanged);
         SettingsManager.m_VideoVolumeChanged.RemoveListener(RepositionButtons_Callback);
 
-        Addressables.Release(textureHandle);
-        Addressables.Release(audioHandle);
-        Addressables.Release(videoHandle);
+        if(textureHandle.IsValid())
+            Addressables.Release(textureHandle);
+        if (audioHandle.IsValid())
+            Addressables.Release(audioHandle);
+        if(videoHandle.IsValid())
+            Addressables.Release(videoHandle);
     }
+
+    public bool apply_all_manual = false;
 
     void Update()
     {
@@ -168,6 +173,12 @@ public class FrameController : MonoBehaviour
         {
             ApplyAll();
         }
+        if (apply_all_manual)
+        {
+            ApplyAll();
+            apply_all_manual = false;
+        }
+
 #endif
     }
 
