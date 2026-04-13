@@ -24,10 +24,10 @@ def UpdateDatabase():
         print(f"Processing rows {start} to {min(start + BATCH_SIZE, len(dataframe))}...")
         batch = dataframe.iloc[start:start + BATCH_SIZE]
 
-        projectLinks = batch["Project Link"].tolist()
+        rows = [batch.iloc[i] for i in range(len(batch))]
         batchFilepaths = []
         with ThreadPoolExecutor() as executor:
-            batchFilepaths = list(executor.map(PsycheMediaStubbed.getArtFilepath, projectLinks)) # TODO: replace PsycheMediaStubbed.getArtFilepath with the actual function that gets filepaths from project links (From User Story 445)
+            batchFilepaths = list(executor.map(PsycheMediaStubbed.getArtFilepath, rows)) # TODO: replace PsycheMediaStubbed.getArtFilepath with the actual function that gets filepaths from project links (From User Story 445)
 
         for i in range(len(batch)):
             row = batch.iloc[i]
