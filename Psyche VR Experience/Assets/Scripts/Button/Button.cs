@@ -32,6 +32,11 @@ public class Button : MonoBehaviour
         }
     }
 
+    public void OnDestroy()
+    {
+        SettingsManager.m_ButtonSizeChanged?.RemoveListener(ResizeSelf);
+    }
+
     void ResizeSelf()
     {
         transform.localScale = Vector3.one * GlobalSettings.INTERACTION_SIZE_MULTIPLER * scale;

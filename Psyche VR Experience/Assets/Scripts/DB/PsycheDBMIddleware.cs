@@ -3,31 +3,39 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using Mono.Data.Sqlite;       // assumes sqlite dlls and mono.data.sqlite is already included in plugins folder
+using System.Threading.Tasks;
 using UnityEditor.XR.LegacyInputHelpers;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using static PsycheDBMiddleware;
+using static PsycheDB.DatabaseManager;
+using UnityEngine.Networking;
+using SQLite4Unity3d;
 
 public static class PsycheDBMiddleware
-{ 
+{
     // resolve the default DB path: ../Psyche VR Experience/Assets/Database/psyche.db
     // relative to Application.dataPath (which is .../Psyche VR Experience/Assets)
     public static string GetDefaultDbPath()
     {
-        var assetsDir = Application.dataPath;                     // .../Psyche VR Experience/Assets
-        var projectRoot = Directory.GetParent(assetsDir)?.FullName;
-
-        if (string.IsNullOrEmpty(projectRoot))
-            throw new Exception("Could not resolve project root from Application.streamingAssetsPath.");
-
-        var dbPath = Path.Combine(assetsDir, "Database", "psyche.db");
-        return dbPath;
+        return DatabasePath;
     }
 
-    // builds Mono.Data.Sqlite connection string from a full path.
-    private static string BuildConnString(string dbPath)
+    class ProjectData
     {
-        return $"URI=file:{dbPath}";
+        public string title { get; set; }
+        public string description { get; set; }
+        public string date { get; set; }
+        public string genre_medium { get; set; }
+        public string artist_name { get; set; }
+        public string artist_major { get; set; }
+    }
+
+    class MediaData
+    {
+        public string media_id { get; set; }
+        public string filepath { get; set; }
+        public string media_type { get; set; }
     }
 
     // load a single project (by project_id) and populate an ArtworkData ScriptableObject
@@ -51,7 +59,7 @@ public static class PsycheDBMiddleware
             return false;
         }
 
-        string connStr = BuildConnString(dbPath);
+        string connStr = dbPath;
 
         // query project + artist table via join on artist id hash
         string sqlProject = @"
@@ -72,49 +80,52 @@ public static class PsycheDBMiddleware
 
         try
         {
-            using (var conn = new SqliteConnection(connStr))
+            using (var conn = new SQLiteConnection(connStr))
             {
-                conn.Open();
+
 
                 // populate the artist and project table data into temporary variables
                 string title = null, description = null, dateIso = null, genre = null;
                 string artistName = null, artistMajor = null;
 
-                using (var cmd = new SqliteCommand(sqlProject, conn))
+                // get project info from id
                 {
-                    cmd.Parameters.AddWithValue("@pid", projectId);
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        if (!reader.Read())
-                        {
-                            Debug.LogWarning($"PsycheDbMiddleware: No project found with id {projectId}");
-                            return false;
-                        }
+                    string command = sqlProject;
 
-                        title = reader["title"] as string;
-                        description = reader["description"] as string;
-                        dateIso = reader["date"] as string;
-                        genre = reader["genre_medium"] as string;
-                        artistName = reader["artist_name"] as string;
-                        artistMajor = reader["artist_major"] as string;
+                    command = command.Replace("@pid", projectId.ToString());
+
+                    List<ProjectData> projectdata = conn.Query<ProjectData>(command);
+
+                    if(projectdata.Count == 0)
+                    {
+                        Debug.LogWarning($"PsycheDbMiddleware: No project found with id {projectId}");
+                        return false;
                     }
+
+                    ProjectData data = projectdata[0];
+
+                    title = data.title;
+                    description = data.description;
+                    dateIso = data.date;
+                    genre = data.genre_medium;
+                    artistName = data.artist_name;
+                    artistMajor = data.artist_major;
                 }
 
-                // populate the file paths for media into a temporary list
+                // populate the file paths for media into a temporary list 
                 var mediaPaths = new List<string>();
-                using (var cmd = new SqliteCommand(sqlMedia, conn))
                 {
-                    cmd.Parameters.AddWithValue("@pid", projectId);
-                    using (var reader = cmd.ExecuteReader())
+                    string command = sqlMedia;
+
+                    command = command.Replace("@pid", projectId.ToString());
+
+                    List<MediaData> mediaData = conn.Query<MediaData>(command);
+
+                    foreach (MediaData d in mediaData)
                     {
-                        while (reader.Read())
+                        if (!string.IsNullOrEmpty(d.filepath))
                         {
-                            // I stored the relative paths(EX: "Assets/Artwork/<project_id>/<file>"), should be fine
-                            var filepath = reader["filepath"] as string;
-                            if (!string.IsNullOrEmpty(filepath))
-                            {
-                                mediaPaths.Add(filepath);
-                            }
+                            mediaPaths.Add("Assets/" + d.filepath);
                         }
                     }
                 }
@@ -154,7 +165,7 @@ public static class PsycheDBMiddleware
     public static ArtworkData LoadArtworkIntoNewSO(long projectId, string dbPathOverride = null)
     {
         var so = ScriptableObject.CreateInstance<ArtworkData>();
-        if (!TryLoadArtworkByProjectId(projectId, so, dbPathOverride))
+        if (!(TryLoadArtworkByProjectId(projectId, so, dbPathOverride)))
         {
             UnityEngine.Object.DestroyImmediate(so);
             return null;
@@ -183,6 +194,12 @@ public static class PsycheDBMiddleware
         return iso; // return original
     }
 
+    struct ProjectID
+    {
+        [Column("project_id")]
+        public string ProjectId { get; set; }
+    }
+
     // will return all projectIds currently in the project for use in random selection
     // or for direct usage into LoadArtworkIntoNewSO/TryLoadArtworkByProjectId
     public static List<long> GetAllProjectIds(string dbPathOverride = null)
@@ -194,19 +211,17 @@ public static class PsycheDBMiddleware
             return new List<long>();
         }
         var projectIds = new List<long>();
-        using (var conn = new SqliteConnection(BuildConnString(dbPath)))
-        {
-            conn.Open();
-            using (var command = new SqliteCommand("SELECT project_id FROM projects;", conn))
-            using (var reader = command.ExecuteReader())
-            {
-                while (reader.Read())
-                {
 
-                    projectIds.Add(Convert.ToInt64(reader["project_id"]));
-                }
-            }
+        SQLiteConnection conn = new SQLiteConnection(dbPath);
+        string command = "SELECT project_id FROM projects;";
+
+        List<ProjectID> projectIDs = conn.Query<ProjectID>(command);
+
+        foreach (var projectID in projectIDs)
+        {
+            projectIds.Add(Convert.ToInt64(projectID.ProjectId));
         }
+
         return projectIds;
     }
 
@@ -222,16 +237,17 @@ public static class PsycheDBMiddleware
         }
 
         var ids = new List<long>();
-        using (var conn = new SqliteConnection(BuildConnString(dbPath)))
+        var conn = new SQLiteConnection(dbPath);
+
+        var command = "SELECT DISTINCT project_id FROM project_media;";
+
+        List<ProjectID> projectIDs = conn.Query<ProjectID>(command);
+
+        foreach (var projectID in projectIDs)
         {
-            conn.Open();
-            using (var cmd = new SqliteCommand("SELECT DISTINCT project_id FROM project_media;", conn))
-            using (var reader = cmd.ExecuteReader())
-            {
-                while (reader.Read())
-                    ids.Add(Convert.ToInt64(reader["project_id"]));
-            }
+            ids.Add(Convert.ToInt64(projectID.ProjectId));
         }
+
         return ids;
     }
 
@@ -307,7 +323,7 @@ public static class PsycheDBMiddleware
         public ArtworkData Create(long projectId)
         {
             var so = ScriptableObject.CreateInstance<ArtworkData>();
-            if (!TryLoadArtworkByProjectId(projectId, so, _dbPathOverride))
+            if (!(TryLoadArtworkByProjectId(projectId, so, _dbPathOverride)))
             {
                 UnityEngine.Object.Destroy(so);
                 return null;
