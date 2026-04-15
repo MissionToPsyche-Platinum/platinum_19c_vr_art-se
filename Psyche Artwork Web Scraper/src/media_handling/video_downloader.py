@@ -18,6 +18,7 @@ Pipeline for Vimeo:
 """
 
 import os
+import re
 import ffmpeg
 import yt_dlp
 from pathlib import Path
@@ -436,8 +437,8 @@ def _download_vimeo(
 
 def _safe_name(s: str) -> str:
     """Strip spaces for use in file names."""
-    return s.replace(" ", "")
-
+    s = s.replace(" ", "")
+    return re.sub(r'[\\/:*?"<>|]', "_", s)
 
 def _safe_remove(path: Optional[Path]) -> None:
     """Delete a file silently if it exists."""

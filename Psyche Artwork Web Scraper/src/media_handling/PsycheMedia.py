@@ -1,4 +1,5 @@
 import os
+import re
 import requests
 import bs4
 from bs4 import BeautifulSoup
@@ -69,7 +70,8 @@ def get_art_filepath(row:pd.Series, verbose:bool = False)-> List[str]:
                     continue
 
                 ext = Path(link.split("/")[-1]).suffix.lower()
-                abs_dest = _safe_destination(project_dir, link.split("/")[-1])
+                orig_name = re.sub(r'[\\/:*?"<>|]', "_", link.split("/")[-1])
+                abs_dest = _safe_destination(project_dir, orig_name)
 
                 if ext in ALLOWED_IMAGE_EXTENSIONS:
                     result = download_image(resp, abs_dest, verbose=verbose)
