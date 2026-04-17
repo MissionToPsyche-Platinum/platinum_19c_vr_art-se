@@ -171,20 +171,27 @@ public class RoomModule : MonoBehaviour
         if ((roomType == RoomType.FourOpen || roomType == RoomType.FlatOpen) && dieRoll < decorationLikelihood)
         {
             dieRoll = UnityEngine.Random.Range(0f, 1f);
-            // bench and plant (50% chance)
-            if (dieRoll < .5f)
+            // bench and plant (25% chance)
+            if (dieRoll < .25f)
                 decoration = room.transform.GetChild(2).gameObject;
+            else if (dieRoll < .5f)
+                decoration = room.transform.GetChild(3).gameObject;
             // fountain (20% chance)
             else if (dieRoll < .7f)
-                decoration = room.transform.GetChild(3).gameObject;
+                decoration = room.transform.GetChild(4).gameObject;
             // satellite statue (15% chance)
             else if (dieRoll < .85f)
-                decoration = room.transform.GetChild(4).gameObject;
+                decoration = room.transform.GetChild(5).gameObject;
             // asteroid statue (15% chance)
             else
-                decoration = room.transform.GetChild(5).gameObject;
+                decoration = room.transform.GetChild(6).gameObject;
 
             // decoration = room.transform.GetChild(UnityEngine.Random.Range(1, 5)).gameObject;
+            decoration.SetActive(true);
+        } else if ((roomType == RoomType.TwoOpenLShapeFlat || roomType == RoomType.TwoOpenLShape ||
+                    roomType == RoomType.OneOpen) && dieRoll < decorationLikelihood)
+        {
+            decoration = room.transform.GetChild(2).gameObject;
             decoration.SetActive(true);
         }
     }
