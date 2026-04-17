@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO.IsolatedStorage;
 using System.Linq;
@@ -173,7 +174,37 @@ public class RoomModule : MonoBehaviour
             dieRoll = UnityEngine.Random.Range(0f, 1f);
             // bench and plant (25% chance)
             if (dieRoll < .25f)
+            {
                 decoration = room.transform.GetChild(2).gameObject;
+                
+                GameObject plant = decoration.transform.GetChild(0).gameObject;
+
+                ArrayList colorArray = new ArrayList();
+                colorArray.Add(new Color(250/255f, 160/255f, 0/255f));
+                colorArray.Add(new Color(245/255f, 125/255f, 50/255f));
+                colorArray.Add(new Color(239/255f, 89/255f, 102/255f));
+                colorArray.Add(new Color(165/255f, 63/255f, 91/255f));
+                colorArray.Add(new Color(89/255f, 38/255f, 81/255f));
+                colorArray.Add(new Color(48/255f, 33/255f, 68/255f));
+
+                int petalColorIndex = UnityEngine.Random.Range(0, colorArray.Count);
+                GameObject petals1 = plant.transform.GetChild(0).gameObject;
+                GameObject petals2 = plant.transform.GetChild(1).gameObject;
+                GameObject petals3 = plant.transform.GetChild(2).gameObject;
+                petals1.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[petalColorIndex]);
+                petals2.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[petalColorIndex]);
+                petals3.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[petalColorIndex]);
+                colorArray.RemoveAt(petalColorIndex);
+                
+                int centerColorIndex = UnityEngine.Random.Range(0, colorArray.Count);
+                GameObject center1 = plant.transform.GetChild(3).gameObject;
+                GameObject center2 = plant.transform.GetChild(4).gameObject;
+                GameObject center3 = plant.transform.GetChild(5).gameObject;
+                center1.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[centerColorIndex]);
+                center2.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[centerColorIndex]);
+                center3.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[centerColorIndex]);
+                
+            }
             else if (dieRoll < .5f)
                 decoration = room.transform.GetChild(3).gameObject;
             // fountain (20% chance)
@@ -191,6 +222,7 @@ public class RoomModule : MonoBehaviour
         } else if ((roomType == RoomType.TwoOpenLShapeFlat || roomType == RoomType.TwoOpenLShape ||
                     roomType == RoomType.OneOpen) && dieRoll < decorationLikelihood)
         {
+            // cactus
             decoration = room.transform.GetChild(2).gameObject;
             decoration.SetActive(true);
         }
