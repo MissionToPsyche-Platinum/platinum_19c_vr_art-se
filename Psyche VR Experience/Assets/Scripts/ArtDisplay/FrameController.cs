@@ -151,7 +151,8 @@ public class FrameController : MonoBehaviour
         SettingsManager.m_VideoVolumeChanged.RemoveListener(VolumeChanged);
         SettingsManager.m_VideoVolumeChanged.RemoveListener(RepositionButtons_Callback);
 
-        Addressables.Release(handle);
+        if(handle.IsValid())
+            Addressables.Release(handle);
     }
 
     public bool apply_all_manual = false;
@@ -579,27 +580,6 @@ public class FrameController : MonoBehaviour
     *                   VIDEO AND AUDIO HANDLING
     * -------------------------------------------------------------- */
 
-
-    // helper for detecting videofile(just checks the extension)
-    //private bool IsVideoFile(string path)
-    //{
-    //    if (string.IsNullOrEmpty(path)) return false;
-    //    string ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
-    //    return ext == ".mp4" || ext == ".mov" || ext == ".m4v" || ext == ".avi" || ext == ".webm";
-    //}
-    //private bool IsAudioFile(string path)
-    //{
-    //    if (string.IsNullOrEmpty(path)) return false;
-    //    string ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
-    //    return ext == ".mp3" || ext == ".wav" || ext == ".m4a" || ext == ".ogg" || ext == ".flac";
-    //}
-    //private bool IsCurrentMediaVideo()
-    //{
-    //    if (mediaPaths == null || mediaPaths.Count == 0) return false;
-    //    string full = ResolveFullPath(mediaPaths[currentMediaIndex]);
-    //    return IsVideoFile(full);
-    //}
-
     private void OnVideoPrepared(VideoPlayer vp)
     {
         vp.prepareCompleted -= OnVideoPrepared;
@@ -666,8 +646,6 @@ public class FrameController : MonoBehaviour
         pauseSymbol.SetActive(true);
     }
 
-
-
     private void StopVideoIfNeeded()
     {
         if (videoPlayer != null)
@@ -679,36 +657,15 @@ public class FrameController : MonoBehaviour
         isVideoMode = false;
     }
 
-    private void ShowVideo(string fullPath)
-    {
-        // stop any currently running video
-        StopVideoIfNeeded();
-
-        // free last image texture if switching to video
-        if (lastLoadedImage != null)
-        {
-            Destroy(lastLoadedImage);
-            lastLoadedImage = null;
-        }
-
-        // start playing this video
-        PlayVideo(fullPath);
-
-        // mark that we are now in video mode
-        isVideoMode = true;
-    }
-
     private void ShowVideo(VideoClip clip)
     {
-        StopVideoIfNeeded();
-
         // stop any currently running video
         StopVideoIfNeeded();
 
         // free last image texture if switching to video
         if (lastLoadedImage != null)
         {
-            Destroy(lastLoadedImage);
+            Addressables.Release(handle);
             lastLoadedImage = null;
         }
 
