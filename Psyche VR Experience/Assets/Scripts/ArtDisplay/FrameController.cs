@@ -113,6 +113,8 @@ public class FrameController : MonoBehaviour
 
     private bool applyallrunning = false;
 
+    AsyncOperationHandle handle;
+
     void Awake()
     {
         SettingsManager.m_VideoVolumeChanged.AddListener(VolumeChanged);
@@ -148,6 +150,8 @@ public class FrameController : MonoBehaviour
     {
         SettingsManager.m_VideoVolumeChanged.RemoveListener(VolumeChanged);
         SettingsManager.m_VideoVolumeChanged.RemoveListener(RepositionButtons_Callback);
+
+        Addressables.Release(handle);
     }
 
     public bool apply_all_manual = false;
@@ -314,10 +318,15 @@ public class FrameController : MonoBehaviour
 
         Addressables.LoadAssetAsync<UnityEngine.Object>(key).Completed += handle =>
         {
+            if(this.handle.IsValid())
+            {
+                Addressables.Release(this.handle);
+            }
+
+            this.handle = handle;
             if (handle.Status == AsyncOperationStatus.Succeeded)
             {
                 UnityEngine.Object asset = handle.Result;
-                Addressables.Release(handle);
 
                 if(asset is AudioClip)
                 {
