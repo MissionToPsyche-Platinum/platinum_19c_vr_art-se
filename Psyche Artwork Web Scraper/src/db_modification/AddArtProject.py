@@ -1,7 +1,7 @@
 import shutil
 from pathlib import Path
 
-from PsycheScraper import upsert_artist, upsert_project, upsert_media, make_artist_id, make_project_id, detect_media_type, make_media_id, ARTWORK_DIR   # TODO: import from the new, correct file location (probably CsvUpdater)
+from src.db_modification.DatabaseUpdater import UpsertArtist, UpsertProject, UpsertMedia, CreateArtistId, CreateProjectId, GetMediaType, CreateMediaId
 from datetime import datetime
 import os
 
@@ -15,13 +15,13 @@ def addArtProject(artInfo):
     temp_files = artInfo["file_paths"]  # downloaded to ./psyche_media
 
     # artist and project hash and upsert
-    artist_id = make_artist_id(artist_name)
-    project_id = make_project_id(artist_name,art_title)
-    upsert_artist(artist_id, artist_name, artist_major)
-    upsert_project(project_id, art_title, description, date_iso,genre_medium, artist_id)
+    artist_id = CreateArtistId(artist_name)
+    project_id = CreateProjectId(artist_name, art_title)
+    UpsertArtist(artist_id, artist_name, artist_major)
+    UpsertProject(project_id, art_title, description, date_iso, genre_medium, artist_id)
 
     # create project directory
-    dst_dir_abs_path = ARTWORK_DIR / str(project_id)    # TODO: verify this is the correct path based on the docker container
+    dst_dir_abs_path = Path(os.getenv('OUTPUT_PATH')) / "Artwork" / str(project_id) # TODO: verify this is the correct path based on the docker container
     os.makedirs(dst_dir_abs_path, exist_ok=True)
 
     # media hash and upsert
@@ -34,9 +34,9 @@ def addArtProject(artInfo):
         shutil.copy(filepath, dst_abs_path)
 
         # add media to database
-        media_type = detect_media_type(filepath)
-        media_id = make_media_id(artist_name, art_title, filepath)
-        upsert_media(media_id, str(dst_rel_path), media_type, project_id)
+        media_type = GetMediaType(filepath)
+        media_id = CreateMediaId(artist_name, art_title, filepath)
+        UpsertMedia(media_id, str(dst_rel_path), media_type, project_id)
 
         print("Art project added successfully!\n")
         # TODO: verify art addition
