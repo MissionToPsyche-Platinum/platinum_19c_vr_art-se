@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.Purchasing;
+using UnityEngine.ResourceManagement.ResourceLocations;
 using UnityEngine.Video;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class FrameController : MonoBehaviour
 {
@@ -107,13 +111,18 @@ public class FrameController : MonoBehaviour
     [SerializeField] private GameObject buttonNext;
     [SerializeField] private GameObject buttonPrev;
 
+    private AsyncOperationHandle textureHandle;
+    private AsyncOperationHandle videoHandle;
+    private AsyncOperationHandle audioHandle;
+    private bool applyallrunning = false;
+
     void Awake()
     {
         SettingsManager.m_VideoVolumeChanged.AddListener(VolumeChanged);
 
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
         
-        fallbackTexture = LoadImage(ResolveFullPath("Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png"));
+        fallbackTexture = LoadImageFromPath(ResolveFullPath("Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png"));
         if (fallbackTexture == null)
             Debug.LogError("Fallback image missing! Add it at Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png");
 
@@ -128,7 +137,7 @@ public class FrameController : MonoBehaviour
         frameDepth = Mathf.Max(0.0f, frameDepth);
         nominalImageHeight = Mathf.Max(0.001f, nominalImageHeight);
         currentMediaIndex = Mathf.Clamp(currentMediaIndex, 0, Mathf.Max(0, mediaPaths.Count - 1));
-        ApplyAll();
+        //ApplyAll();
     }
 
     void Reset()
@@ -142,6 +151,21 @@ public class FrameController : MonoBehaviour
         ApplyAll();
     }
 
+    private void OnDestroy()
+    {
+        SettingsManager.m_VideoVolumeChanged.RemoveListener(VolumeChanged);
+        SettingsManager.m_VideoVolumeChanged.RemoveListener(RepositionButtons_Callback);
+
+        if(textureHandle.IsValid())
+            Addressables.Release(textureHandle);
+        if (audioHandle.IsValid())
+            Addressables.Release(audioHandle);
+        if(videoHandle.IsValid())
+            Addressables.Release(videoHandle);
+    }
+
+    public bool apply_all_manual = false;
+
     void Update()
     {
 #if UNITY_EDITOR
@@ -149,6 +173,12 @@ public class FrameController : MonoBehaviour
         {
             ApplyAll();
         }
+        if (apply_all_manual)
+        {
+            ApplyAll();
+            apply_all_manual = false;
+        }
+
 #endif
     }
 
@@ -162,20 +192,20 @@ public class FrameController : MonoBehaviour
 
         // store the paths for potential video playback as well
         // while filtering out missing files(in case db got some bad entries)
-        var validated = new List<string>();
-        foreach (string relPath in data.artworkURLs)
-        {
-            string full = ResolveFullPath(relPath);
-            if (!string.IsNullOrEmpty(full) && System.IO.File.Exists(full))
-            {
-                validated.Add(relPath);
-            }
-            else
-            {
-                Debug.LogWarning($"[FrameController] Removing missing media file from list: {relPath}");
-            }
-        }
-        mediaPaths = validated;
+        //var validated = new List<string>();
+        //foreach (string relPath in data.artworkURLs)
+        //{
+        //    string full = ResolveFullPath(relPath);
+        //    if (!string.IsNullOrEmpty(full) && System.IO.File.Exists(full))
+        //    {
+        //        validated.Add(relPath);
+        //    }
+        //    else
+        //    {
+        //        Debug.LogWarning($"[FrameController] Removing missing media file from list: {relPath}");
+        //    }
+        //}
+        mediaPaths = data.artworkURLs;
 
         currentMediaIndex = 0;
         ApplyAll();     // will now decide image vs video properly
@@ -279,9 +309,24 @@ public class FrameController : MonoBehaviour
         textBoxController.UpdateTextLocation();
     }
 
-    void ApplyAll()
+    async void ApplyAll()
     {
-        if (!imageQuadRenderer) return;
+        if(!enabled)
+        {
+            return;
+        }
+
+        while(applyallrunning)
+        {
+            await Task.Delay(500);
+        }
+
+        StartCoroutine(ApplyAllEnumerator());
+    }
+
+    IEnumerator ApplyAllEnumerator()
+    {
+        if (!imageQuadRenderer) yield break;
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
 
         // Ensure valid index or display generic psyche logo instead
@@ -290,53 +335,132 @@ public class FrameController : MonoBehaviour
             Debug.LogWarning("[FrameController] No media found : using fallback image.");
 
             ShowFallbackImage();
-            return;
+            yield break;
         }
 
         if (currentMediaIndex < 0 || currentMediaIndex >= mediaPaths.Count)
             currentMediaIndex = 0;
 
-        string raw = mediaPaths[currentMediaIndex];
-        string fullPath = ResolveFullPath(raw);
-        
-        
-        if (IsAudioFile(fullPath))
+        string key = mediaPaths[currentMediaIndex];
+
+        // AUDIO ?
+        UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<AudioClip> handle = Addressables.LoadAssetAsync<AudioClip>(key);
+        yield return handle;
+        if(handle.Status == AsyncOperationStatus.Succeeded) {
+
+            AudioClip clip = handle.Result;
+            audioHandle = handle;
+
+            if (clip != null)
+            {
+                NextImage();
+                yield break;
+            }
+        } else
         {
-            Debug.LogWarning($"[FrameController] Skipping audio file: {raw}");
-            NextImage();   // automatically go to next file
-            return;
+            Addressables.Release(handle);
         }
 
         // VIDEO MODE?
-        if (IsVideoFile(fullPath))
+        UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<VideoClip> vHandle = Addressables.LoadAssetAsync<VideoClip>(key);
+        yield return vHandle;
+        if (vHandle.Status == AsyncOperationStatus.Succeeded)
         {
-            ShowVideo(fullPath);
-            return;
+
+            VideoClip clip = vHandle.Result;
+            videoHandle = vHandle;
+
+            if (clip != null)
+            {
+                ShowVideo(clip);
+                yield break;
+            }
+        }
+        else
+        {
+            Addressables.Release(vHandle);
         }
 
         // IMAGE MODE
-        StopVideoIfNeeded();
-        currentVideoDuration = 0.0;
-        Texture2D tex = LoadImage(fullPath);
-
-        // destroy previous texture, if any
-        if (lastLoadedImage != null)
+        UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<Texture2D> tHandle = Addressables.LoadAssetAsync<Texture2D>(key);
+        yield return tHandle;
+        if (tHandle.Status == AsyncOperationStatus.Succeeded)
         {
-            Destroy(lastLoadedImage);
+
+            Texture2D tex = tHandle.Result;
+            textureHandle = tHandle;
+
+            StopVideoIfNeeded();
+            currentVideoDuration = 0.0;
+
+            // destroy previous texture, if any
+            if (lastLoadedImage != null)
+            {
+                Addressables.Release(textureHandle);
+                lastLoadedImage = null;
+            }
+
+            lastLoadedImage = tex;
+
+            imageQuadRenderer.GetPropertyBlock(_mpb);
+            _mpb.SetTexture("_BaseMap", tex);
+            _mpb.SetTexture("_MainTex", tex);
+            imageQuadRenderer.SetPropertyBlock(_mpb);
+
+            // Sizing based on the current texture
+            Vector2Int res = tex ? new(tex.width, tex.height) : baseResolution;
+            ResizeFrame(res);
+        }
+        else
+        {
+            Addressables.Release(tHandle);
+            Debug.LogError($"ASSET UNRECOGNIZED! TRIED TO LOAD ASSET AT KEY {key}");
+            yield break;
         }
 
-        lastLoadedImage = tex;
+        
 
-        imageQuadRenderer.GetPropertyBlock(_mpb);
-        _mpb.SetTexture("_BaseMap", tex);
-        _mpb.SetTexture("_MainTex", tex);
-        imageQuadRenderer.SetPropertyBlock(_mpb);
+        //string raw = mediaPaths[currentMediaIndex];
+        //string fullPath = raw;
 
-        //Vector3 scale = transform.localScale; //keep track of this in case it changes
 
-        // Sizing based on the current texture
-        Vector2Int res = tex ? new(tex.width, tex.height) : baseResolution;
-        ResizeFrame(res);
+        //if (IsAudioFile(fullPath))
+        //{
+        //    Debug.LogWarning($"[FrameController] Skipping audio file: {raw}");
+        //    NextImage();   // automatically go to next file
+        //    return;
+        //}
+
+        //// VIDEO MODE?
+        //if (IsVideoFile(fullPath))
+        //{
+        //    ShowVideo(fullPath);
+        //    return;
+        //}
+
+        //// IMAGE MODE
+        //StopVideoIfNeeded();
+        //currentVideoDuration = 0.0;
+        //Texture2D tex = await LoadImageASYNC(fullPath);
+
+        //// destroy previous texture, if any
+        //if (lastLoadedImage != null)
+        //{
+        //    Destroy(lastLoadedImage);
+        //}
+
+        //lastLoadedImage = tex;
+
+        //imageQuadRenderer.GetPropertyBlock(_mpb);
+        //_mpb.SetTexture("_BaseMap", tex);
+        //_mpb.SetTexture("_MainTex", tex);
+        //imageQuadRenderer.SetPropertyBlock(_mpb);
+
+        ////Vector3 scale = transform.localScale; //keep track of this in case it changes
+
+        //// Sizing based on the current texture
+        //Vector2Int res = tex ? new(tex.width, tex.height) : baseResolution;
+        //ResizeFrame(res);
 
         //make sure text controller isn't affected by the scaling (this is a little costly)
         //if(scale != transform.localScale)
@@ -368,7 +492,7 @@ public class FrameController : MonoBehaviour
     }
 
 
-    private Texture2D LoadImage(string path)
+    private Texture2D LoadImageFromPath(string path)
     {
         if (!System.IO.File.Exists(path))
         {
@@ -380,6 +504,30 @@ public class FrameController : MonoBehaviour
         Texture2D tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
         tex.LoadImage(bytes);
         return tex;
+    }
+
+    private async Task<Texture2D> LoadImageASYNC(string path)
+    {
+        var locations = await Addressables.LoadResourceLocationsAsync(path.Replace('\\', '/')).Task;
+
+        if (locations != null && locations.Count > 0)
+        {
+            if (!System.IO.File.Exists(locations[0].PrimaryKey))
+            {
+                Debug.LogWarning("[FrameController] Image not found: " + path);
+                return null;
+            }
+
+            byte[] bytes = System.IO.File.ReadAllBytes(locations[0].PrimaryKey);
+            Texture2D tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            tex.LoadImage(bytes);
+            return tex;
+        }
+        else
+        {
+            Debug.LogWarning("[FrameController] Image not found in Addressables: " + path);
+            return null;
+        }
     }
 
     private void ShowFallbackImage()
@@ -712,13 +860,35 @@ public class FrameController : MonoBehaviour
         isVideoMode = true;
     }
 
-
-
-    private void PlayVideo(string fullPath)
+    private void ShowVideo(VideoClip clip)
     {
-        if (!System.IO.File.Exists(fullPath))
+        StopVideoIfNeeded();
+
+        // stop any currently running video
+        StopVideoIfNeeded();
+
+        // free last image texture if switching to video
+        if (lastLoadedImage != null)
         {
-            Debug.LogWarning("[FrameController] Video not found: " + fullPath);
+            Destroy(lastLoadedImage);
+            lastLoadedImage = null;
+        }
+
+        // start playing this video
+        PlayVideo(clip);
+
+        // mark that we are now in video mode
+        isVideoMode = true;
+    }
+
+    private async void PlayVideo(string fullPath)
+    {
+        var locations = await Addressables.LoadResourceLocationsAsync(fullPath.Replace('\\', '/')).Task;
+        string path = locations[0].PrimaryKey;
+
+        if (!System.IO.File.Exists(path))
+        {
+            Debug.LogWarning("[FrameController] Video not found: " + path);
             return;
         }
 
@@ -758,7 +928,55 @@ public class FrameController : MonoBehaviour
         }
 
         // Assign video path
-        videoPlayer.url = fullPath;
+        videoPlayer.url = path;
+
+        // Only register ONCE
+        videoPlayer.prepareCompleted -= OnVideoPrepared;
+        videoPlayer.prepareCompleted += OnVideoPrepared;
+
+        videoPlayer.Prepare();
+        isVideoMode = true;
+    }
+
+    private void PlayVideo(VideoClip clip)
+    {
+        if (videoPlayer == null)
+        {
+            videoPlayer = gameObject.AddComponent<VideoPlayer>();
+            videoPlayer.playOnAwake = false;
+            videoPlayer.renderMode = VideoRenderMode.RenderTexture;
+            videoPlayer.waitForFirstFrame = true;
+            videoPlayer.isLooping = false;
+        }
+
+        // Setup audio
+        if (enableAudio)
+        {
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+                audioSource.playOnAwake = false;
+                audioSource.spatialBlend = 1f;                  // Make audio 3D
+                audioSource.rolloffMode = AudioRolloffMode.Linear;
+                audioSource.minDistance = .5f;                  // Start fading out
+                audioSource.maxDistance = 3f;                   // ~silent by this distance
+                audioSource.dopplerLevel = 0f;                  // Avoid doppler shift
+                audioSource.loop = false;                       // no looping ever please
+                audioSource.spread = 0f;                        // 0 = more directional  
+                audioSource.volume = GlobalSettings.MASTER_VOLUME;
+            }
+
+            videoPlayer.audioOutputMode = VideoAudioOutputMode.AudioSource;
+            videoPlayer.EnableAudioTrack(0, true);
+            videoPlayer.SetTargetAudioSource(0, audioSource);
+        }
+        else
+        {
+            videoPlayer.audioOutputMode = VideoAudioOutputMode.None;
+        }
+
+        // Assign video clip
+        videoPlayer.clip = clip;
 
         // Only register ONCE
         videoPlayer.prepareCompleted -= OnVideoPrepared;

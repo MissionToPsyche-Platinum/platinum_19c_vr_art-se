@@ -3,6 +3,8 @@ using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Threading.Tasks;
+using UnityEngine.AddressableAssets;
 
 public class LaunchRoomManager : MonoBehaviour
 {
@@ -22,6 +24,7 @@ public class LaunchRoomManager : MonoBehaviour
     // survives scene reload because static
     public static bool PrepareMuseumAfterReload = false;
 
+    bool waiting = false;
     public async void Start()
     {
         // if previous scene requested a preload, do it now
@@ -32,13 +35,37 @@ public class LaunchRoomManager : MonoBehaviour
         }
     }
 
+#if UNITY_EDITOR
+    public bool manual_start = false;
+    public bool manual_restart = false;
+    private void Update()
+    {
+        if (manual_start)
+        {
+            startExpoExperience();
+            manual_start = false;
+        }
+        if (manual_restart)
+        {
+            ReloadSceneAndPrepareMuseum();
+            manual_restart = false;
+        }
+    }
+#endif
 
     public async void startExpoExperience()
     {
-        if (InMuseum || preparationInProgress)
+        if (InMuseum || waiting)
         {
             return;
         }
+
+        waiting = true;
+        while (preparationInProgress)
+        {
+            await Task.Delay(1000);
+        }
+        waiting = false;
 
         InMuseum = true;
 
@@ -56,6 +83,8 @@ public class LaunchRoomManager : MonoBehaviour
     {
         if (preparationInProgress)
             return;
+
+        
 
         preparationInProgress = true;
         museumPrepared = false;

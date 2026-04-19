@@ -54,6 +54,13 @@ public class SettingsManager : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        m_VideoVolumeChanged.RemoveAllListeners();
+        m_TextSizeChanged.RemoveAllListeners();
+        m_ButtonSizeChanged.RemoveAllListeners();
+    }
+
     // Update is called once per frame
     private void Update()
     {
