@@ -2,6 +2,8 @@ import shutil
 from pathlib import Path
 
 from src.db_modification.DatabaseUpdater import UpsertArtist, UpsertProject, UpsertMedia, CreateArtistId, CreateProjectId, GetMediaType, CreateMediaId
+from src.db_modification.GetInputFiles import GetValidFilesInInputDirectory
+
 from datetime import datetime
 import os
 
@@ -12,7 +14,7 @@ def addArtProject(artInfo):
     artist_major = artInfo["artistMajor"]
     genre_medium = artInfo["genre"]
     description = artInfo["description"]
-    temp_files = artInfo["file_paths"]  # downloaded to ./psyche_media
+    temp_files = artInfo["file_paths"]
 
     # artist and project hash and upsert
     artist_id = CreateArtistId(artist_name)
@@ -21,15 +23,15 @@ def addArtProject(artInfo):
     UpsertProject(project_id, art_title, description, date_iso, genre_medium, artist_id)
 
     # create project directory
-    dst_dir_abs_path = Path(os.getenv('OUTPUT_PATH')) / "Artwork" / str(project_id) # TODO: verify this is the correct path based on the docker container
+    dst_dir_abs_path = Path(os.getenv('OUTPUT_PATH')) / "Artwork" / str(project_id)
     os.makedirs(dst_dir_abs_path, exist_ok=True)
 
     # media hash and upsert
     for filepath in temp_files:
         # create absolute path and relative path
-        file_name = filepath.split("\\")[-1]
+        file_name = Path(filepath).name
         dst_abs_path = dst_dir_abs_path / file_name
-        dst_rel_path = Path(str(project_id)) / file_name
+        dst_rel_path = Path("Artwork") / str(project_id) / file_name
         # copy file to new destination
         shutil.copy(filepath, dst_abs_path)
 
@@ -38,8 +40,7 @@ def addArtProject(artInfo):
         media_id = CreateMediaId(artist_name, art_title, filepath)
         UpsertMedia(media_id, str(dst_rel_path), media_type, project_id)
 
-        print("Art project added successfully!\n")
-        # TODO: verify art addition
+    print("Art project added successfully!\n")
 
 def getArtProjectInfo():
     results = {}
@@ -59,20 +60,29 @@ def getArtProjectInfo():
         except ValueError:
             print("Invalid format. Please enter date as YYYY-MM-DD.")
 
-    # TODO: edit this whole section to look at valid files in the input directory and give the user a choice between those
-    print("Enter the absolute file path of each art file you wish to add, pressing enter in between each file.  When you have entered the last file, enter \"f\".  (To get the absolute path, right click on the desired file in your file explorer and click \"Copy as path\".  Paste the copied text into the command line.)")
-    file_paths = []
+    # file_path.replace("\"", "")
+    all_file_names = GetValidFilesInInputDirectory()
+    chosen_files = []
     while True:
-        file_path = input()
-        file_path = file_path.replace("\"", "")
-
-        if file_path.lower() == "f":
-            print("Ending file collection.")
+        print("\nAvailable files:")
+        for i, file in enumerate(all_file_names):
+            print(f"  {i + 1}. {file.name}")
+        
+        print("\nIf you are not seeing the file you expect, make sure it is one of the allowed file types in the README")
+        user_input = input("\nEnter file number to select (or 'q' to quit): ").strip()
+        
+        if user_input.lower() == 'q':
             break
-        if os.path.isfile(file_path):
-            file_paths.append(file_path)
-        else:
-            print("That is not a valid file path. Please enter a new one.")
+        
+        try:
+            index = int(user_input) - 1
+            if 0 <= index < len(all_file_names):
+                chosen_files.append(str(all_file_names[index]))
+                print(f"Added: {all_file_names[index].name}")
+            else:
+                print("Invalid number, please try again.")
+        except ValueError:
+            print("Invalid input, please enter a number or 'q'.")
 
-    results["file_paths"] = file_paths
+    results["file_paths"] = chosen_files
     return results
