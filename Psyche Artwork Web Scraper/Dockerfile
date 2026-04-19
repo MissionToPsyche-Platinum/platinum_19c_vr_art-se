@@ -18,5 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application source
 COPY . ./
 
+ENV PYTHONPATH=/app
+
 # Default command to run CLI; interactive mode
-ENTRYPOINT ["python", "PsycheArtCLI.py"]
+ENTRYPOINT ["python", "src/PsycheArtCLI.py"]
