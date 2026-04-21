@@ -127,7 +127,6 @@ def delete_art_file():
         # close cursor object
         cursor.close()
 
-# TODO: verify this still works on new art database
 def modify_art_project():
     artist = False
     # are we modifying an artist or a project
@@ -182,8 +181,8 @@ def modify_art_project():
                 name, major = cursor.fetchone()
 
                 in_str = input(f"""Would you like to modify the artist's name or major?
-                    1: Name (Currently {name})
-                    2: Major (Currently {major})\n""")
+                    1: Name (Currently: {name})
+                    2: Major (Currently: {major})\n""")
 
                 if in_str == "1":
                     name = input("Enter the new name of the artist: ")
@@ -202,10 +201,10 @@ def modify_art_project():
                 title, description, date, genre, artist_id = cursor.fetchone()
 
                 in_str = input(f"""Would you like to modify the artist's name or major?
-                    1: Title (Currently {title})
-                    2: Description (Currently {description})
-                    3: Date (Currently {date})
-                    4: Genre (Currently {genre})\n""")
+                    1: Title (Currently: {title})
+                    2: Description (Currently: {description})
+                    3: Date (Currently: {date})
+                    4: Genre (Currently: {genre})\n""")
 
                 if in_str == "1":
                     title = input("Enter the new title of the project: ")
@@ -233,7 +232,6 @@ def modify_art_project():
 
     print("Successfully modified!")
 
-# TODO: verify this still works on new art database
 def delete_art_project():
     with connection() as conn:
         # open cursor to make queries
