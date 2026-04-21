@@ -25,6 +25,7 @@ public class RoomModule : MonoBehaviour
     }
 
     public RoomType roomType = RoomType.OneOpen;
+    public string decorationType;
 
     public GameObject[] roomModels;
     [SerializeField, Range(0f, 1f), Tooltip("Number between 0 and 1.  The higher it is, the higher the chance of spawning a decoration in an empty spot.")]
@@ -169,11 +170,10 @@ public class RoomModule : MonoBehaviour
         
         // chance to add decorations if the room is a certain type
         float dieRoll = UnityEngine.Random.Range(0f, 1f);
-        if ((roomType == RoomType.FourOpen || roomType == RoomType.FlatOpen) && dieRoll < decorationLikelihood)
+        if ((roomType == RoomType.FourOpen || roomType == RoomType.FlatOpen) && decorationType != null)
         {
-            dieRoll = UnityEngine.Random.Range(0f, 1f);
             // bench and plant (25% chance)
-            if (dieRoll < .25f)
+            if (decorationType.Equals("bench and plant"))
             {
                 decoration = room.transform.GetChild(2).gameObject;
                 
@@ -205,22 +205,21 @@ public class RoomModule : MonoBehaviour
                 center3.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[centerColorIndex]);
                 
             }
-            else if (dieRoll < .5f)
+            else if (decorationType.Equals("backless bench"))
                 decoration = room.transform.GetChild(3).gameObject;
             // fountain (20% chance)
-            else if (dieRoll < .7f)
+            else if (decorationType.Equals("fountain"))
                 decoration = room.transform.GetChild(4).gameObject;
             // satellite statue (15% chance)
-            else if (dieRoll < .85f)
+            else if (decorationType.Equals("psyche satellite"))
                 decoration = room.transform.GetChild(5).gameObject;
             // asteroid statue (15% chance)
             else
                 decoration = room.transform.GetChild(6).gameObject;
-
-            // decoration = room.transform.GetChild(UnityEngine.Random.Range(1, 5)).gameObject;
             decoration.SetActive(true);
+        // set cactus decoration with simple random chance
         } else if ((roomType == RoomType.TwoOpenLShapeFlat || roomType == RoomType.TwoOpenLShape ||
-                    roomType == RoomType.OneOpen) && dieRoll < decorationLikelihood)
+                    roomType == RoomType.OneOpen) && dieRoll < 0.2f)
         {
             // cactus
             decoration = room.transform.GetChild(2).gameObject;
@@ -232,9 +231,11 @@ public class RoomModule : MonoBehaviour
     /// Deactivates the previous room model and activates the model given. Then, sets the roomType property to the new value.
     /// </summary>
     /// <param name="nRoomType">The new room shape to use</param>
-    public void SetRoomActive(RoomType nRoomType)
+    /// <param name="nDecorationType">The decoration to place, if any (null = no decoration)</param>
+    public void SetRoomActive(RoomType nRoomType, string nDecorationType)
     {
         roomType = nRoomType;
+        decorationType = nDecorationType;
 
         CreateRoom();
         UpdateRoomOpenings();

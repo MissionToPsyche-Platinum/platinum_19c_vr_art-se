@@ -271,6 +271,9 @@ public class MuseumManager : MonoBehaviour
     public void AlignAllRooms()
     {
         numFrames = 0;
+        
+        string[] decorationPool = { "bench and plant", "backless bench" , "fountain", "psyche satellite", "psyche asteroid" };
+        // TODO: figure out how to pass these in randomly for each room/chunk
 
         for (int x = 0; x < roomGrid.Length; x++)
         {
@@ -529,7 +532,7 @@ public class MuseumManager : MonoBehaviour
             if (roomGrid[x - 1][y - 1] != null || roomGrid[x + 1][y - 1] != null
                 || roomGrid[x + 1][y + 1] != null || roomGrid[x - 1][y + 1] != null)
             {
-                room.SetRoomActive(RoomModule.RoomType.FlatOpen);
+                room.SetRoomActive(RoomModule.RoomType.FlatOpen, "null");
                 return;
             }
         }
@@ -557,7 +560,7 @@ public class MuseumManager : MonoBehaviour
             if(range && roomGrid[x + xOffset][y + yOffset] != null)
             {
                 room.SetOpenings(openNorth, openSouth, openWest, openEast, false);
-                room.SetRoomActive(RoomModule.RoomType.TwoOpenLShapeFlat);
+                room.SetRoomActive(RoomModule.RoomType.TwoOpenLShapeFlat, null);
                 return;
             }
         }
@@ -603,7 +606,7 @@ public class MuseumManager : MonoBehaviour
             if (range && roomGrid[xN][yN] != null && diagonals)
             {
                 room.SetOpenings(openNorth, openSouth, openWest, openEast, false);
-                room.SetRoomActive(RoomModule.RoomType.ThreeOpenFlat);
+                room.SetRoomActive(RoomModule.RoomType.ThreeOpenFlat, null);
                 return;
             }
         }
