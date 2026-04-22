@@ -1,7 +1,7 @@
 #PATHS
-$artworkPath = "C:\Artwork" #change this to the path of the artwork folder, only necessary if building
+$artworkPath = "./ART_DATABASE/Artwork" #change this to the path of the artwork folder, only necessary if building
 $bundleSource = "./Bundles" #change this to the path of the build bundle folder, keep as ./Bundles if building from Artwork
-$databasePath = "C:\Database" #change this to the path of the database folder, always necessary
+$databasePath = "./ART_DATABASE/Database" #change this to the path of the database folder, always necessary
 
 # Config
 $bundleBuild = "./Psyche VR Experience\ServerData\Android"
