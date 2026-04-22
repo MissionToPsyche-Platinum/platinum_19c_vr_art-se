@@ -60,7 +60,6 @@ def getArtProjectInfo():
         except ValueError:
             print("Invalid format. Please enter date as YYYY-MM-DD.")
 
-    # file_path.replace("\"", "")
     all_file_names = GetValidFilesInInputDirectory()
     chosen_files = []
     while True:
