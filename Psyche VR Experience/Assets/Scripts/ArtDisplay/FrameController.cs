@@ -1020,21 +1020,21 @@ public class FrameController : MonoBehaviour
     {
         if (!isVideoMode || videoPlayer == null)
             return;
+        // debug
+        //if (!videoPlayer.isPrepared)
+        //{
+        //    Debug.Log("Video not ready yet.");
+        //    return;
+        //}
 
-        if (!videoPlayer.isPrepared)
-        {
-            Debug.Log("Video not ready yet.");
-            return;
-        }
+        playVideoOnPlayerProximity = false;
 
         if (videoPlayer.isPlaying)
         {
-            playVideoOnPlayerProximity = false;
             PausePreparedVideo();
         }
         else
         {
-            playVideoOnPlayerProximity = true;
             PlayPreparedVideo();
         }
     }
