@@ -25,7 +25,6 @@ public class RoomModule : MonoBehaviour
     }
 
     public RoomType roomType = RoomType.OneOpen;
-    public string decorationType;
 
     public GameObject[] roomModels;
     [SerializeField, Range(0f, 1f), Tooltip("Number between 0 and 1.  The higher it is, the higher the chance of spawning a decoration in an empty spot.")]
@@ -170,55 +169,8 @@ public class RoomModule : MonoBehaviour
         
         // chance to add decorations if the room is a certain type
         float dieRoll = UnityEngine.Random.Range(0f, 1f);
-        if ((roomType == RoomType.FourOpen || roomType == RoomType.FlatOpen) && decorationType != null)
-        {
-            // bench and plant (25% chance)
-            if (decorationType.Equals("bench and plant"))
-            {
-                decoration = room.transform.GetChild(2).gameObject;
-                
-                GameObject plant = decoration.transform.GetChild(0).gameObject;
-
-                ArrayList colorArray = new ArrayList();
-                colorArray.Add(new Color(250/255f, 160/255f, 0/255f));
-                colorArray.Add(new Color(245/255f, 125/255f, 50/255f));
-                colorArray.Add(new Color(239/255f, 89/255f, 102/255f));
-                colorArray.Add(new Color(165/255f, 63/255f, 91/255f));
-                colorArray.Add(new Color(89/255f, 38/255f, 81/255f));
-                colorArray.Add(new Color(48/255f, 33/255f, 68/255f));
-
-                int petalColorIndex = UnityEngine.Random.Range(0, colorArray.Count);
-                GameObject petals1 = plant.transform.GetChild(0).gameObject;
-                GameObject petals2 = plant.transform.GetChild(1).gameObject;
-                GameObject petals3 = plant.transform.GetChild(2).gameObject;
-                petals1.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[petalColorIndex]);
-                petals2.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[petalColorIndex]);
-                petals3.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[petalColorIndex]);
-                colorArray.RemoveAt(petalColorIndex);
-                
-                int centerColorIndex = UnityEngine.Random.Range(0, colorArray.Count);
-                GameObject center1 = plant.transform.GetChild(3).gameObject;
-                GameObject center2 = plant.transform.GetChild(4).gameObject;
-                GameObject center3 = plant.transform.GetChild(5).gameObject;
-                center1.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[centerColorIndex]);
-                center2.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[centerColorIndex]);
-                center3.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[centerColorIndex]);
-                
-            }
-            else if (decorationType.Equals("backless bench"))
-                decoration = room.transform.GetChild(3).gameObject;
-            // fountain (20% chance)
-            else if (decorationType.Equals("fountain"))
-                decoration = room.transform.GetChild(4).gameObject;
-            // satellite statue (15% chance)
-            else if (decorationType.Equals("psyche satellite"))
-                decoration = room.transform.GetChild(5).gameObject;
-            // asteroid statue (15% chance)
-            else
-                decoration = room.transform.GetChild(6).gameObject;
-            decoration.SetActive(true);
         // set cactus decoration with simple random chance
-        } else if ((roomType == RoomType.TwoOpenLShapeFlat || roomType == RoomType.TwoOpenLShape ||
+        if ((roomType == RoomType.TwoOpenLShapeFlat || roomType == RoomType.TwoOpenLShape ||
                     roomType == RoomType.OneOpen) && dieRoll < 0.2f)
         {
             // cactus
@@ -226,16 +178,65 @@ public class RoomModule : MonoBehaviour
             decoration.SetActive(true);
         }
     }
+
+    public void setEmptyDecoration(string decorationType)
+    {
+        // bench and plant (25% chance)
+        if (decorationType.Equals("bench and plant"))
+        {
+            decoration = room.transform.GetChild(2).gameObject;
+            
+            GameObject plant = decoration.transform.GetChild(0).gameObject;
+
+            ArrayList colorArray = new ArrayList();
+            colorArray.Add(new Color(250/255f, 160/255f, 0/255f));
+            colorArray.Add(new Color(245/255f, 125/255f, 50/255f));
+            colorArray.Add(new Color(239/255f, 89/255f, 102/255f));
+            colorArray.Add(new Color(165/255f, 63/255f, 91/255f));
+            colorArray.Add(new Color(89/255f, 38/255f, 81/255f));
+            colorArray.Add(new Color(48/255f, 33/255f, 68/255f));
+
+            // set petal colors randomly
+            int petalColorIndex = UnityEngine.Random.Range(0, colorArray.Count);
+            GameObject petals1 = plant.transform.GetChild(0).gameObject;
+            GameObject petals2 = plant.transform.GetChild(1).gameObject;
+            GameObject petals3 = plant.transform.GetChild(2).gameObject;
+            petals1.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[petalColorIndex]);
+            petals2.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[petalColorIndex]);
+            petals3.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[petalColorIndex]);
+            colorArray.RemoveAt(petalColorIndex);
+            
+            // set center color randomly
+            int centerColorIndex = UnityEngine.Random.Range(0, colorArray.Count);
+            GameObject center1 = plant.transform.GetChild(3).gameObject;
+            GameObject center2 = plant.transform.GetChild(4).gameObject;
+            GameObject center3 = plant.transform.GetChild(5).gameObject;
+            center1.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[centerColorIndex]);
+            center2.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[centerColorIndex]);
+            center3.GetComponent<Renderer>().material.SetColor("_BaseColor", (Color)colorArray[centerColorIndex]);
+            
+        }
+        else if (decorationType.Equals("backless bench"))
+            decoration = room.transform.GetChild(3).gameObject;
+        // fountain (20% chance)
+        else if (decorationType.Equals("fountain"))
+            decoration = room.transform.GetChild(4).gameObject;
+        // satellite statue (15% chance)
+        else if (decorationType.Equals("psyche satellite"))
+            decoration = room.transform.GetChild(5).gameObject;
+        // asteroid statue (15% chance)
+        else
+            decoration = room.transform.GetChild(6).gameObject;
+        decoration.SetActive(true);
+    }
        
     /// <summary>
     /// Deactivates the previous room model and activates the model given. Then, sets the roomType property to the new value.
     /// </summary>
     /// <param name="nRoomType">The new room shape to use</param>
-    /// <param name="nDecorationType">The decoration to place, if any (null = no decoration)</param>
-    public void SetRoomActive(RoomType nRoomType, string nDecorationType)
+    public void SetRoomActive(RoomType nRoomType)
     {
         roomType = nRoomType;
-        decorationType = nDecorationType;
 
         CreateRoom();
         UpdateRoomOpenings();

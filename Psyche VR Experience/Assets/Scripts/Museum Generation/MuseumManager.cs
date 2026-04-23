@@ -236,6 +236,46 @@ public class MuseumManager : MonoBehaviour
         RecurseChunks(startPos, numArtPieces, ref chunksTraversed);
 
         AlignAllRooms();
+        
+        // iterate through all chunks to 
+        for (int yBound = 0; yBound < numChunks; yBound++)
+        {
+            for (int xBound = 0; xBound < numChunks; xBound++)
+            {
+                List<string> decorationsList = new List<string>();
+                decorationsList.Add("bench and plant");
+                decorationsList.Add("backless bench");
+                decorationsList.Add("fountain");
+                decorationsList.Add("psyche satellite");
+                decorationsList.Add("psyche asteroid");
+                int decorationTicker = Random.Range(0, 9);
+
+                for (int currY = yBound * chunkSize; currY < yBound * chunkSize + chunkSize; currY++)
+                {
+                    for (int currX = xBound * chunkSize; currX < xBound * chunkSize + chunkSize; currX++)
+                    {
+                        RoomModule currRoom = roomGrid[currX][currY];
+                        if (currRoom != null && currRoom.roomType == RoomModule.RoomType.FlatOpen)
+                        {
+                            if (decorationTicker == 8)
+                            {
+                                int decorationTypeIndex = Random.Range(0, decorationsList.Count);
+                                currRoom.setEmptyDecoration(decorationsList[decorationTypeIndex]);
+                                decorationsList.RemoveAt(decorationTypeIndex);
+                            }
+
+                            decorationTicker = (decorationTicker + 1) % 9;
+
+                            if (decorationsList.Count == 0)
+                                break;
+                        }
+
+                        if (decorationsList.Count == 0)
+                            break;
+                    }
+                }
+            }
+        }
 
         //Debug.Log("Count: " + CountArtSpots());
 
@@ -271,9 +311,6 @@ public class MuseumManager : MonoBehaviour
     public void AlignAllRooms()
     {
         numFrames = 0;
-        
-        string[] decorationPool = { "bench and plant", "backless bench" , "fountain", "psyche satellite", "psyche asteroid" };
-        // TODO: figure out how to pass these in randomly for each room/chunk
 
         for (int x = 0; x < roomGrid.Length; x++)
         {
@@ -532,7 +569,7 @@ public class MuseumManager : MonoBehaviour
             if (roomGrid[x - 1][y - 1] != null || roomGrid[x + 1][y - 1] != null
                 || roomGrid[x + 1][y + 1] != null || roomGrid[x - 1][y + 1] != null)
             {
-                room.SetRoomActive(RoomModule.RoomType.FlatOpen, "null");
+                room.SetRoomActive(RoomModule.RoomType.FlatOpen);
                 return;
             }
         }
@@ -560,7 +597,7 @@ public class MuseumManager : MonoBehaviour
             if(range && roomGrid[x + xOffset][y + yOffset] != null)
             {
                 room.SetOpenings(openNorth, openSouth, openWest, openEast, false);
-                room.SetRoomActive(RoomModule.RoomType.TwoOpenLShapeFlat, null);
+                room.SetRoomActive(RoomModule.RoomType.TwoOpenLShapeFlat);
                 return;
             }
         }
@@ -606,7 +643,7 @@ public class MuseumManager : MonoBehaviour
             if (range && roomGrid[xN][yN] != null && diagonals)
             {
                 room.SetOpenings(openNorth, openSouth, openWest, openEast, false);
-                room.SetRoomActive(RoomModule.RoomType.ThreeOpenFlat, null);
+                room.SetRoomActive(RoomModule.RoomType.ThreeOpenFlat);
                 return;
             }
         }
