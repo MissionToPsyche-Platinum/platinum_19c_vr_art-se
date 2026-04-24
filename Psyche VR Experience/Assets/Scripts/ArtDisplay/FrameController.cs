@@ -317,69 +317,76 @@ public class FrameController : MonoBehaviour
 
         string key = mediaPaths[currentMediaIndex];
 
-        Addressables.LoadAssetAsync<UnityEngine.Object>(key).Completed += handle =>
+        try
         {
-            if(this.handle.IsValid())
+            Addressables.LoadAssetAsync<UnityEngine.Object>(key).Completed += handle =>
             {
-                Addressables.Release(this.handle);
-            }
-
-            this.handle = handle;
-            if (handle.Status == AsyncOperationStatus.Succeeded)
-            {
-                UnityEngine.Object asset = handle.Result;
-
-                if(asset is AudioClip)
+                if (this.handle.IsValid())
                 {
-                    AudioClip clip = (AudioClip)asset;
-
-                    if (clip != null)
-                    {
-                        NextImage();
-                        return;
-                    }
-                } 
-                else if (asset is VideoClip)
-                {
-                    VideoClip clip = (VideoClip)asset;
-
-                    if (clip != null)
-                    {
-                        ShowVideo(clip);
-                        return;
-                    }
-                } 
-                else if (asset is Texture2D)
-                {
-                    Texture2D tex = (Texture2D)asset;
-
-                    StopVideoIfNeeded();
-                    currentVideoDuration = 0.0;
-
-                    // destroy previous texture, if any
-                    if (lastLoadedImage != null)
-                    {
-                        //Destroy(lastLoadedImage);
-                        lastLoadedImage = null;
-                    }
-
-                    lastLoadedImage = tex;
-
-                    imageQuadRenderer.GetPropertyBlock(_mpb);
-                    _mpb.SetTexture("_BaseMap", tex);
-                    _mpb.SetTexture("_MainTex", tex);
-                    imageQuadRenderer.SetPropertyBlock(_mpb);
-
-                    // Sizing based on the current texture
-                    Vector2Int res = tex ? new(tex.width, tex.height) : baseResolution;
-                    ResizeFrame(res);
+                    Addressables.Release(this.handle);
                 }
-                else
+
+                this.handle = handle;
+                if (handle.Status == AsyncOperationStatus.Succeeded)
                 {
-                    Debug.LogError($"ASSET UNRECOGNIZED! TRIED TO LOAD ASSET AT KEY {key}");
+                    UnityEngine.Object asset = handle.Result;
+
+                    if (asset is AudioClip)
+                    {
+                        AudioClip clip = (AudioClip)asset;
+
+                        if (clip != null)
+                        {
+                            NextImage();
+                            return;
+                        }
+                    }
+                    else if (asset is VideoClip)
+                    {
+                        VideoClip clip = (VideoClip)asset;
+
+                        if (clip != null)
+                        {
+                            ShowVideo(clip);
+                            return;
+                        }
+                    }
+                    else if (asset is Texture2D)
+                    {
+                        Texture2D tex = (Texture2D)asset;
+
+                        StopVideoIfNeeded();
+                        currentVideoDuration = 0.0;
+
+                        // destroy previous texture, if any
+                        if (lastLoadedImage != null)
+                        {
+                            //Destroy(lastLoadedImage);
+                            lastLoadedImage = null;
+                        }
+
+                        lastLoadedImage = tex;
+
+                        imageQuadRenderer.GetPropertyBlock(_mpb);
+                        _mpb.SetTexture("_BaseMap", tex);
+                        _mpb.SetTexture("_MainTex", tex);
+                        imageQuadRenderer.SetPropertyBlock(_mpb);
+
+                        // Sizing based on the current texture
+                        Vector2Int res = tex ? new(tex.width, tex.height) : baseResolution;
+                        ResizeFrame(res);
+                    }
+                    else
+                    {
+                        Debug.LogError($"ASSET UNRECOGNIZED! TRIED TO LOAD ASSET AT KEY {key}");
+                    }
                 }
-            }
-        };
+            };
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+        }
     }
 
     /* --------------------------------------------------------------

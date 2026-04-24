@@ -26,57 +26,24 @@ namespace PsycheDB
         /// </summary>
         public async static void Initialize()
         {
-            var firstTime = !File.Exists(DatabasePath);
-            string dbPath = Application.streamingAssetsPath + "/Database/" + "artwork.db";
-            try
-            {
-                UnityWebRequest request = UnityWebRequest.Get(dbPath);
-                await request.SendWebRequest();
+            //EnsureFolder();
+            //var firstTime = !File.Exists(DatabasePath);
+            //string dbPath = Application.streamingAssetsPath + "/Database/" + "artwork.db";
 
-                if (request.result == UnityWebRequest.Result.Success)
-                {
-                    File.WriteAllBytes(DatabasePath, request.downloadHandler.data);
-                    Debug.Log("COPIED DATABASE PROPERLY TO " + DatabasePath);
-                }
-                else
-                {
-                    Debug.LogError("FAILED TO LOAD DATABASE FROM STREAMINGASSETS");
-                }
-            }
-            catch (Exception e)
-            {
-                {
+            //UnityWebRequest request = UnityWebRequest.Get(dbPath);
+            //await request.SendWebRequest();
 
-                    using (var conn = Open())
-                    {
-                        //PRAGMAs
-                        // - foreign key enforcement
-                        // - Write-Ahead Logging(rollback in case of error)
-                        // - Normal synchronous mode allows rollback in case of crash in WAL mode)
-                        string command = @"
-                            PRAGMA foreign_keys = ON;
-                            PRAGMA journal_mode = WAL;
-                            PRAGMA synchronous = NORMAL:
-                        ";
+            //if (request.result == UnityWebRequest.Result.Success)
+            //{
+            //    File.WriteAllBytes(DatabasePath, request.downloadHandler.data);
+            //    Debug.Log("COPIED DATABASE PROPERLY TO " + DatabasePath);
+            //}
+            //else
+            //{
+            //    Debug.LogError("FAILED TO LOAD DATABASE FROM STREAMINGASSETS");
+            //}
 
-                        conn.Execute(command);
-                       
-
-                        // Create / migrate schema (idempotent)
-                        CreateSchema(conn);
-
-                        // for debugging, leave alone
-                        if (firstTime)
-                        {
-                            Debug.Log($"[DB] Created new database at: {DatabasePath}");
-                        }
-                        else
-                        {
-                            Debug.Log($"[DB] Opened database at: {DatabasePath}");
-                        }
-                    }
-                }
-            }
+            
         }
 
         /*  API  */
