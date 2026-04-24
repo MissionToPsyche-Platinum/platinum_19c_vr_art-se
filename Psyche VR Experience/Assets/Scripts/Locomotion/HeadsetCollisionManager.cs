@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+/*using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -21,7 +21,7 @@ public class HeadsetCollisionManager : MonoBehaviour
     /// </param>
     /// <param name="mask"></param>
     /// <returns></returns>
-    private List<RaycastHit> DetectCollisions (Vector3 position, float distance, LayerMask mask)
+    /*private List<RaycastHit> DetectCollisions (Vector3 position, float distance, LayerMask mask)
     {
         List<RaycastHit> detectedHits = new();
 
@@ -38,6 +38,12 @@ public class HeadsetCollisionManager : MonoBehaviour
         return detectedHits;
     }
 
+    private List<Collider> DetectCollisions(Vector3 position, float radius, LayerMask mask)
+    {
+        Collider[] hits = Physics.OverlapSphere(position, radius, mask);
+
+        return List<Collider>(hits); 
+    }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -55,4 +61,5 @@ public class HeadsetCollisionManager : MonoBehaviour
             DetectedColliderHits = DetectCollisions(transform.position, detectionDistance, detectionLayers);
         }
     }
-}
+} 
+*/

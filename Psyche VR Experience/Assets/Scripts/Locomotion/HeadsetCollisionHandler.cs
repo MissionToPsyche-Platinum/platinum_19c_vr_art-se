@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+/*using System.Collections.Generic;
 using UnityEngine;
 
 public class HeadsetCollisionHandler : MonoBehaviour
@@ -19,7 +19,7 @@ public class HeadsetCollisionHandler : MonoBehaviour
     /// <returns>
     /// A calculated normal for knocking the player back into bounds.
     /// </returns>
-    private Vector3 CalculateKnockbackDirection(List<RaycastHit> colliderHits)
+    /*private Vector3 CalculateKnockbackDirection(List<Collider> colliderHits)
     {
         Vector3 combinedNormal = Vector3.zero;
         foreach (RaycastHit hitLocation in colliderHits)
@@ -29,6 +29,26 @@ public class HeadsetCollisionHandler : MonoBehaviour
         return combinedNormal;
     }
 
+    private Vector3 CalculateKnockbackDirection(List<Collider> colliders, Vector3 headPosition)
+    {
+        Vector3 combined = Vector3.zero;
+
+        foreach (Collider col in colliders)
+        {
+            Vector3 closest = col.ClosestPoint(headPosition);
+            Vector3 penetration = headPosition - closest;
+
+            // Ignore vertical push if you want to keep current behavior
+            penetration.y = 0;
+
+            if (penetration.sqrMagnitude > 0.0001f)
+            {
+                combined += penetration.normalized;
+            }
+        }
+
+        return combined;
+    }
     // Update is called once per frame
     void Update()
     {
@@ -46,3 +66,4 @@ public class HeadsetCollisionHandler : MonoBehaviour
         Debug.Log("I threw you back inside the gameworld!");
     }
 }
+*/
