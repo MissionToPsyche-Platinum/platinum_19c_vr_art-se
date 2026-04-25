@@ -4484,6 +4484,14 @@ PrefabInstance:
     m_TransformParent: {fileID: 5726407453223257981}
     m_Modifications:
     - target: {fileID: 2366053935513795159, guid: 99e67190654bfe94fb3c1ad447a28d04, type: 3}
+      propertyPath: m_Value
+      value: 0.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2366053935513795159, guid: 99e67190654bfe94fb3c1ad447a28d04, type: 3}
+      propertyPath: m_MaxValue
+      value: 0.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2366053935513795159, guid: 99e67190654bfe94fb3c1ad447a28d04, type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.size
       value: 1
       objectReference: {fileID: 0}

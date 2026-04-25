@@ -93,6 +93,8 @@ public class LaunchRoomManager : MonoBehaviour
             playerTransform.position = playerSpawnPosition;
             
             domeTransform.position = new Vector3(spawnPosition.x, 0, spawnPosition.z);
+            SetMusicPlaylistActive();
+            musicManager.setInMenu(false);
         }
     }
 
@@ -102,6 +104,8 @@ public class LaunchRoomManager : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         Debug.Log("Hello World");
         domeTransform.position = new Vector3(0, -50, 0);
+        musicManager.PlayTannernetSpace();
+        musicManager.setInMenu(true);
     }
 
     public void SetMusicPlaylistActive()

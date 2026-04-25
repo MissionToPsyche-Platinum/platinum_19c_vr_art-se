@@ -143,7 +143,7 @@ public class ExpoTimer : MonoBehaviour
         LocomotionSettings.LOCOMOTION_MODE = LocomotionSettings.LocomotionMode.TELEPORT;
         GlobalSettings.MASTER_VOLUME = 1;
         SettingsManager.m_VideoVolumeChanged?.Invoke();
-        GlobalSettings.MUSIC_VOLUME = 1;
+        GlobalSettings.MUSIC_VOLUME = 0.7f;
         GlobalSettings.TEXT_SIZE_MULTIPLIER = 1;
         SettingsManager.m_TextSizeChanged.Invoke();
         LocomotionSettings.CONTINUOUS_VIGNETTE = false;

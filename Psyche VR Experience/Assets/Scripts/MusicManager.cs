@@ -5,16 +5,19 @@ using System.Collections.Generic;
 
 public class MusicManager : MonoBehaviour
 {
-    [Header("Link this to the audio source on the XR Origin Main Camera MusicSource")]
+    [Tooltip("Link this to the audio source on the XR Origin Main Camera MusicSource")]
     [SerializeField] AudioSource audioSource;
     [SerializeField] public AudioClip[] musicPlaylist;
+    [SerializeField] public AudioClip menuTheme;
     private Stack<int> previousIndexes = new Stack<int>();   
     public bool shuffle = false;
     private int songIndex = 0;
     bool isPlaying;
     bool togglePlay = true;
 
-    public BoxCollider artFrameCollider;
+    //public BoxCollider artFrameCollider;
+
+    bool inMenu = true;
 
     void Start()
     {
@@ -28,48 +31,19 @@ public class MusicManager : MonoBehaviour
 
     void Update()
     {
-        /*//Check to see if you just set the toggle to positive
-        if (audioSource.isPlaying == false && togglePlay == true)
-        {
-            Debug.Log("Started playing");
-            audioSource.Play();
-            //Ensure audio doesn’t play more than once
-            togglePlay = false;
-        }
-
-        //Check if you just set the toggle to false
-        if (audioSource.isPlaying == false && togglePlay == false)
-        {
-            Debug.Log("Stopped Playing");
-            audioSource.Stop();
-            //Ensure audio doesn’t play more than once
-            togglePlay = false;
-        } */
-
         if (!audioSource.isPlaying)
         {
             PlayNextClip();
         }
     }
 
-    void OnCollisionEnter(Collision collision)
-    {
-        if (collision.collider == artFrameCollider)
-        {
-            MusicFadeOut();
-        }
-    }
-
-    void OnCollisionExit(Collision collision)
-    {
-        if (collision.collider == artFrameCollider)
-        {
-            MusicFadeIn();
-        }
-    }
-
     public void PlayNextClip()
     {
+        if (inMenu = false)
+        {
+            audioSource.loop = false;
+        }
+
         Debug.Log("Now playing the next song... ");
         previousIndexes.Push(songIndex);
         if (shuffle)
@@ -115,30 +89,23 @@ public class MusicManager : MonoBehaviour
         return musicPlaylist[songIndex].name;
     }
 
-    private IEnumerator MusicFadeOut()
+    //Simple setter to see if we are in a menu
+    public void setInMenu(bool inMenu)
     {
-        Debug.Log("Music is fading out");
-        while (audioSource.volume > 0)
-        {
-            yield return new WaitForSeconds(0.1f);
-            audioSource.volume -= 1;
-        }
+        this.inMenu = inMenu;
     }
 
-    private IEnumerator MusicFadeIn()
+    public bool getInMenu()
     {
-        Debug.Log("Music is fading in");
-        while (audioSource.volume < GlobalSettings.MUSIC_VOLUME) 
-        {
-            yield return new WaitForSeconds(0.1f);
-            audioSource.volume += 1;    
-        }
+        return inMenu;
     }
-
     public void StartMuseumPlaylist()
     {
-        audioSource.clip = musicPlaylist[Random.Range(0, musicPlaylist.Length)];
-        isPlaying = true;
-        return;
+        PlayNextClip();
+    }
+
+    public void PlayTannernetSpace()
+    {
+        audioSource.clip = menuTheme;
     }
 }
