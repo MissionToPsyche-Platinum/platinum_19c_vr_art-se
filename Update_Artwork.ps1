@@ -1,17 +1,15 @@
 #PATHS
-$artworkPath = "./ART_DATABASE/Artwork" #change this to the path of the artwork folder, only necessary if building
-$bundleSource = "./Bundles" #change this to the path of the build bundle folder, keep as ./Bundles if building from Artwork
-$databasePath = "./ART_DATABASE/Database" #change this to the path of the database folder, always necessary
-
-# Config
-$bundleBuild = "./Psyche VR Experience\ServerData\Android"
-$packageName  = "com.PlatinumPsycheTeam19.VRArtMuseum"
-$deviceDest   = "/sdcard/Android/data/$packageName/files/aa/Android"
-$deviceDB = "/sdcard/Android/data/$packageName/files/Database"
-$adb          = "adb"  # or full path like "C:\platform-tools\adb.exe"
+$artworkPath = "C:\Artwork" #change this to the path of the artwork folder, only necessary if building
+$bundleSource = "./Bundles" #change this to the path of the build bundle folder, keep as ./Bundles if building from Artwork as this script will put a Bundles folder in the same directory as it was run in when -B is an arg
+$databasePath = "C:\Database" #change this to the path of the database folder, necessary when pushing to headset
 $unityExe  = "C:\Program Files\Unity\Hub\Editor\6000.2.10f1\Editor\Unity.exe" #change this to your Unity.exe path
 
-
+# Config
+$bundleBuild = "./Psyche VR Experience\ServerData\Android\*" #the spot to which the bundles are built in Unity, used to extract and copy them to the root directory
+$packageName  = "com.PlatinumPsycheTeam19.VRArtMuseum" #com.CompanyName.Program structure within Unity, used when determining the persistent data path
+$deviceDest   = "/sdcard/Android/data/$packageName/files/aa/Android" #the spot on the headset where the artwork is pushed
+$deviceDB = "/sdcard/Android/data/$packageName/files/Database" #the spot on the headset where the database is pushed
+$adb          = "adb"  # or full path like "C:\platform-tools\adb.exe", if system paths are set up properly leave this as "adb"
 
 function Push-Bundles {
     Write-Host "Checking for connected device..."
@@ -38,11 +36,13 @@ function Build-AndPush {
     $start = Get-Date
     Write-Host "Build started at $start"
 
+    Remove-Item $bundleBuild -recurse -Force
+
     $unityArgs = @(
         "-batchmode",
     	"-projectPath", "`"./Psyche VR Experience/`"",
     	"-executeMethod", "BuildScript.BuildAddressables",
-        "-artworkPath", $artworkPath,
+        "-artworkPath", "`"$artworkPath`"",
 	"-logFile", "unity_build.log",
         "-quit"
     )
@@ -55,7 +55,9 @@ function Build-AndPush {
 
     if ($exitCode -eq 0) {
         Write-Host "Build completed at $end (took $($duration.ToString('mm\:ss')))" -ForegroundColor Green
-	Move-Item -Path $bundleBuild -Destination $bundleSource
+	Remove-Item $bundleSource -recurse -Force
+	New-Item $bundleSource -ItemType Directory
+	Copy-Item -Path $bundleBuild -Destination "$bundleSource/" -recurse -Force
         Push-Bundles
     } else {
         Write-Host "Build failed after $($duration.ToString('mm\:ss'))" -ForegroundColor Red
