@@ -25,11 +25,11 @@ public class WatchTimer : MonoBehaviour
     }
 
     //Yes this is a duplicate from Expo Settings. Just roll with it, it makes more sense than linking it together all weirdly.
-    public string ConvertSecondsToTime(int duration) //Converts time in seconds to a 00:00 format
+    public string ConvertSecondsToTime(int duration) //Converts time in seconds to a 0:00 format
     {
         int minutes = duration / 60;
         int seconds = duration % 60;
-        string timeFormatted = string.Format("{0:D2}:{1:D2}", minutes, seconds);
+        string timeFormatted = string.Format("{0:D1}:{1:D2}", minutes, seconds);
         return timeFormatted;
     }
 }

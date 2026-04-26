@@ -39,9 +39,9 @@ public class MusicManager : MonoBehaviour
 
     public void PlayNextClip()
     {
-        if (inMenu = false)
+        if (inMenu = true)
         {
-            audioSource.loop = false;
+            PlayTannernetSpace();
         }
 
         Debug.Log("Now playing the next song... ");

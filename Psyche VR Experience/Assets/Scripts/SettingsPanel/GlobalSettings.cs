@@ -39,7 +39,7 @@ public static class GlobalSettings
     private static float rotationSpeed = 1f;
 
     private static float masterVolume = 1f;
-    private static float musicVolume = 1f;
+    private static float musicVolume = .7f;
     private static float textSizeMultplier = 1f;
     private static float interactionSizeMultplier = 1f;
     public static bool canSnapTurn = true;

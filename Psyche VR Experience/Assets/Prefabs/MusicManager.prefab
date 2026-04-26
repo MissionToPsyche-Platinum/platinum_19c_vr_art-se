@@ -53,5 +53,5 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 2f6bd78d48e499442902e82cac038cde, type: 3}
   - {fileID: 8300000, guid: 1519c2dc7a122914c8d5652732fc5141, type: 3}
   - {fileID: 8300000, guid: 8093b200586634d459299c05eb9fd611, type: 3}
+  menuTheme: {fileID: 8300000, guid: c96ee193c5b487a4aac05c6b057ee0e0, type: 3}
   shuffle: 1
-  artFrameCollider: {fileID: 0}
