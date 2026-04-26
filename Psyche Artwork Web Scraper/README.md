@@ -38,7 +38,6 @@ docker compose run --rm psyche-art-scraper
 ## Notes
 
 When using the adding and modifying functionality, keep in mind that any project media you would like to add must be on of the following file types in order to load into the VR museum: 
-- .mp4
 - .bmp
 - .exr
 - .gif
@@ -46,9 +45,11 @@ When using the adding and modifying functionality, keep in mind that any project
 - .iff
 - .jpeg
 - .jpg
+- .mp4
 - .pct
 - .pic
 - .pict
+- .pdf
 - .png
 - .psd
 - .tga
