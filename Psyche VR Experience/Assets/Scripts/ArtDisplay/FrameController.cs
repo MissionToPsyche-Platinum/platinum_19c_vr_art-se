@@ -124,7 +124,7 @@ public class FrameController : MonoBehaviour
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
 
         pauseSymbol = this.gameObject.transform.Find("ImageQuad").transform.Find("PauseSymbol").gameObject;
-        pauseButton = this.gameObject.transform.Find("ImageQuad").transform.Find("VRButton_Pause").gameObject;
+        pauseButton = this.gameObject.transform.Find("Buttons").transform.Find("VRButton_Pause").gameObject;
 
         SettingsManager.m_ButtonSizeChanged.AddListener(RepositionButtons_Callback);
     }
