@@ -314,7 +314,7 @@ public class MuseumManager : MonoBehaviour
                 decorationsList.Add("fountain");
                 decorationsList.Add("psyche satellite");
                 decorationsList.Add("psyche asteroid");
-                int decorationTicker = Random.Range(0, 9);
+                int decorationTicker = UnityEngine.Random.Range(0, 9);
 
                 for (int currY = yBound * chunkSize; currY < yBound * chunkSize + chunkSize; currY++)
                 {
@@ -325,7 +325,7 @@ public class MuseumManager : MonoBehaviour
                         {
                             if (decorationTicker == 8)
                             {
-                                int decorationTypeIndex = Random.Range(0, decorationsList.Count);
+                                int decorationTypeIndex = UnityEngine.Random.Range(0, decorationsList.Count);
                                 currRoom.setEmptyDecoration(decorationsList[decorationTypeIndex]);
                                 decorationsList.RemoveAt(decorationTypeIndex);
                             }
