@@ -138,7 +138,12 @@ public class ExpoTimer : MonoBehaviour
         timerDoneHappened = true;
         
         Debug.Log("Reset time");
-        
+
+        ResetSettings();
+    }
+
+    public void ResetSettings()
+    {
         // reset all settings back to defaults
         LocomotionSettings.LOCOMOTION_MODE = LocomotionSettings.LocomotionMode.TELEPORT;
         GlobalSettings.MASTER_VOLUME = 1;
@@ -152,7 +157,7 @@ public class ExpoTimer : MonoBehaviour
         GlobalSettings.INTERACTION_SIZE_MULTIPLER = 1;
         SettingsManager.m_ButtonSizeChanged.Invoke();
         GlobalSettings.SKYBOX_ROTATION_ON = 1f;
-        
+
         // set all menu visuals back to defaults
         locomotionToggle.Reset();
         masterVolSlider.normalizedValue = 1;
@@ -212,7 +217,7 @@ public class ExpoTimer : MonoBehaviour
 
         if (timerRunning || timerDoneHappened)
         {
-            timerDone();
+            ResetSettings();
             resetTimer();
             launchRoomManager.ReloadSceneAndPrepareMuseum();
         }
