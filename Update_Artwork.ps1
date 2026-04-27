@@ -1,7 +1,7 @@
 #PATHS
-$artworkPath = "C:\Artwork" #change this to the path of the artwork folder, only necessary if building
+$artworkPath = "C:\ART_DATABASE\Artwork" #change this to the path of the artwork folder, only necessary if building
 $bundleSource = "./Bundles" #change this to the path of the build bundle folder, keep as ./Bundles if building from Artwork as this script will put a Bundles folder in the same directory as it was run in when -B is an arg
-$databasePath = "C:\Database" #change this to the path of the database folder, necessary when pushing to headset
+$databasePath = "C:\ART_DATABASE\Database" #change this to the path of the database folder, necessary when pushing to headset
 $unityExe  = "C:\Program Files\Unity\Hub\Editor\6000.2.10f1\Editor\Unity.exe" #change this to your Unity.exe path
 
 # Config
@@ -36,7 +36,9 @@ function Build-AndPush {
     $start = Get-Date
     Write-Host "Build started at $start"
 
-    Remove-Item $bundleBuild -recurse -Force
+    if(Test-Path $bundleBuild){
+        Remove-Item $bundleBuild -recurse -Force
+    }
 
     $unityArgs = @(
         "-batchmode",
@@ -55,7 +57,11 @@ function Build-AndPush {
 
     if ($exitCode -eq 0) {
         Write-Host "Build completed at $end (took $($duration.ToString('mm\:ss')))" -ForegroundColor Green
-	Remove-Item $bundleSource -recurse -Force
+
+        if(Test-Path $bundleSource) {
+	    Remove-Item $bundleSource -recurse -Force
+        }
+
 	New-Item $bundleSource -ItemType Directory
 	Copy-Item -Path $bundleBuild -Destination "$bundleSource/" -recurse -Force
         Push-Bundles

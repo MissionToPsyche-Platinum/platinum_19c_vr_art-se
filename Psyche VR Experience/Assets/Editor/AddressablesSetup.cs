@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
+using UnityEditor.AddressableAssets.Settings.GroupSchemas;
 using UnityEngine;
 
 //note: this is kinda vibe coded but if it works it works!
@@ -37,6 +38,11 @@ public static class AddressablesSetup
                            "Create them via Window > Asset Management > Addressables > Groups.");
             return;
         }
+
+        var defGroup = settings.DefaultGroup;
+        var schema = defGroup.GetSchema<BundledAssetGroupSchema>();
+        schema.BundleNaming = BundledAssetGroupSchema.BundleNamingStyle.OnlyHash;
+        EditorUtility.SetDirty(defGroup);
 
         // Step 1 Copy any new/updated folders from input path into project
         if (!Directory.Exists(ArtworkInputPath))
