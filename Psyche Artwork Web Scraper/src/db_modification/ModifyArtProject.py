@@ -4,6 +4,7 @@ from pathlib import Path
 from datetime import datetime
 
 from src.db_modification.DatabaseUpdater import connection, UpsertMedia, CreateMediaId, GetMediaType, UpsertArtist, UpsertProject
+from src.db_modification.GetInputFiles import GetValidFilesInInputDirectory
 
 def add_art_file():
     # open connection
@@ -33,39 +34,49 @@ def add_art_file():
             art_title = title_list[title_selection][0]
             print("You are adding a file to the project " + art_title + ".")
             print("Warning: if there is already a file of the same name in the art project's directory, it will be overwritten.")
-            print("Enter the absolute file path of the art file you wish to add.  (To get the absolute path, right click on the desired file in your file explorer and click \"Copy as path\".  Paste the copied text into the command line.) (q to quit): ", end="")
 
-            # get path of file to add
-            new_file_path = input()
-            new_file_path = new_file_path.replace("\"", "")
+            all_file_names = GetValidFilesInInputDirectory()
+            chosen_files = []
+            while True:
+                print("\nAvailable files:")
+                for i, file in enumerate(all_file_names):
+                    print(f"  {i + 1}. {file.name}")
+                
+                print("\nIf you are not seeing the file you expect, make sure it is one of the allowed file types in the README")
+                user_input = input("\nEnter file number to select (or 'q' to quit): ").strip()
+                
+                if user_input.lower() == 'q':
+                    break
+                
+                try:
+                    index = int(user_input) - 1
+                    if 0 <= index < len(all_file_names):
+                        chosen_files.append(str(all_file_names[index]))
+                        print(f"Added to list: {all_file_names[index].name}")
+                    else:
+                        print("Invalid number, please try again.")
+                except ValueError:
+                    print("Invalid input, please enter a number or 'q'.")
 
-            # quit
-            if new_file_path == "q":
-                print("Quitting deletion.")
-            # check whether file path is valid/exists
-            elif not os.path.isfile(new_file_path):
-                print("That is not a valid file path.  Quitting addition.")
-            # check if file type is allowed
-            elif Path(new_file_path).suffix.lower() not in [".bmp", ".exr", ".gif", ".hdr", ".iff", ".jpeg", ".jpg", ".pct", ".pic", ".pict", ".png", ".psd", ".tga", ".tif", ".tiff"]:
-                print("That is not an allowed file type.  Quitting addition.")
             # add file
-            else:
+            for file_path in chosen_files:
+                file_name = Path(file_path).name
                 # get project id of selected art project
                 cursor.execute("select project_id from projects where title = ?", (title_list[title_selection][0],))
                 project_id = cursor.fetchone()[0]
 
                 # create absolute path and relative path
-                dst_abs_path = Path(os.getenv('OUTPUT_PATH')) / "Artwork" / str(project_id) / new_file_path.split("\\")[-1]
-                dst_rel_path = Path(str(project_id)) / new_file_path.split("\\")[-1]
+                dst_abs_path = Path(os.getenv('OUTPUT_PATH')) / "Artwork" / str(project_id) / file_name
+                dst_rel_path = Path("Artwork") / str(project_id) / file_name
                 # copy file to new destination
-                shutil.copy(new_file_path, dst_abs_path)
+                shutil.copy(file_path, dst_abs_path)
 
                 # add file path to sql database
                 artist_name = cursor.execute("select name from artists, projects where projects.project_id = ? and projects.artist_id = artists.artist_id", (project_id,)).fetchone()[0]
-                new_media_id = CreateMediaId(artist_name, art_title, new_file_path)
+                new_media_id = CreateMediaId(artist_name, art_title, file_path)
                 UpsertMedia(new_media_id, str(dst_rel_path), GetMediaType(str(dst_rel_path)), project_id)
 
-                print("Added file successfully!")
+                print(f"Added {file_name} successfully!")
 
 def delete_art_file():
     # open connection
@@ -99,7 +110,7 @@ def delete_art_file():
             # find all project media belonging to selected project
             cursor.execute("select filepath from project_media where project_id = ?", (project_id,))
             media_list = list(cursor)
-            print("\nYou are deleting a file from the project " + title_list[title_selection][0] + ".")
+            print("\nYou are deleting a file from the project: " + title_list[title_selection][0] + ".")
             for i in range(0, len(media_list)):
                 print(f"{i + 1}. {media_list[i][0]}")
 
@@ -117,10 +128,12 @@ def delete_art_file():
             else:
                 file_selection = int(file_selection) - 1
 
-                abs_art_path = Path(os.getenv('OUTPUT_PATH')) / "Artwork" / media_list[file_selection][0]
+                abs_art_path = Path(os.getenv('OUTPUT_PATH')) / media_list[file_selection][0]
+                rel_art_path = media_list[file_selection][0]
 
-                cursor.execute("delete from project_media where filepath = ?", (str(abs_art_path),))
+                cursor.execute("delete from project_media where filepath = ?", (str(rel_art_path),))
                 os.remove(abs_art_path)
+                print("Deleted file successfully!")
 
         # close cursor object
         cursor.close()
@@ -179,8 +192,8 @@ def modify_art_project():
                 name, major = cursor.fetchone()
 
                 in_str = input(f"""Would you like to modify the artist's name or major?
-                    1: Name (Currently {name})
-                    2: Major (Currently {major})\n""")
+                    1: Name (Currently: {name})
+                    2: Major (Currently: {major})\n""")
 
                 if in_str == "1":
                     name = input("Enter the new name of the artist: ")
@@ -199,10 +212,10 @@ def modify_art_project():
                 title, description, date, genre, artist_id = cursor.fetchone()
 
                 in_str = input(f"""Would you like to modify the artist's name or major?
-                    1: Title (Currently {title})
-                    2: Description (Currently {description})
-                    3: Date (Currently {date})
-                    4: Genre (Currently {genre})\n""")
+                    1: Title (Currently: {title})
+                    2: Description (Currently: {description})
+                    3: Date (Currently: {date})
+                    4: Genre (Currently: {genre})\n""")
 
                 if in_str == "1":
                     title = input("Enter the new title of the project: ")
