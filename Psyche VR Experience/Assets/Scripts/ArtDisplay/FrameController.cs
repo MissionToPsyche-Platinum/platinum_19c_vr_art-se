@@ -103,6 +103,7 @@ public class FrameController : MonoBehaviour
     // tags that count as the player, I just used "Player" and assigned XR origin, freeroam camera, and playercamera as "Player"
     [SerializeField] private string collisionTag = "MainCamera";
     private GameObject pauseSymbol = null;
+    private GameObject pauseButton = null;
     private int insideCount = 0;
     private Coroutine dwellRoutine;
 
@@ -123,6 +124,7 @@ public class FrameController : MonoBehaviour
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
 
         pauseSymbol = this.gameObject.transform.Find("ImageQuad").transform.Find("PauseSymbol").gameObject;
+        pauseButton = this.gameObject.transform.Find("ImageQuad").transform.Find("VRButton_Pause").gameObject;
 
         SettingsManager.m_ButtonSizeChanged.AddListener(RepositionButtons_Callback);
     }
@@ -647,6 +649,7 @@ public class FrameController : MonoBehaviour
         vp.Pause();
         vp.isLooping = vp.url.Contains("_GIF");
         pauseSymbol.SetActive(true);
+        pauseButton.SetActive(true);
 
         if (enableAudio && audioSource != null)
             audioSource.Pause();
