@@ -816,6 +816,31 @@ public class FrameController : MonoBehaviour
         }
     }
 
+    // this is for button play/pause
+    // will disable the play on proximity for that frame once pressed once,  
+    public void ToggleVideoPlayback()
+    {
+        if (!isVideoMode || videoPlayer == null)
+            return;
+        // debug
+        //if (!videoPlayer.isPrepared)
+        //{
+        //    Debug.Log("Video not ready yet.");
+        //    return;
+        //}
+
+        playVideoOnPlayerProximity = false;
+
+        if (videoPlayer.isPlaying)
+        {
+            PausePreparedVideo();
+        }
+        else
+        {
+            PlayPreparedVideo();
+        }
+    }
+
     /* -------------------------------------------------------------- *
      *                   Trigger Handling(Colliders)                  *
      * -------------------------------------------------------------- */
