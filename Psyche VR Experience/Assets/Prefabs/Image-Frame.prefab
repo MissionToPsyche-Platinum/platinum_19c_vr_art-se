@@ -780,6 +780,39 @@ MonoBehaviour:
   descriptionButtonTransform: {fileID: 4517881355701157180}
   plaqueContainerTransform: {fileID: 1989669719024610748}
   scrollingContainer: {fileID: 2520970654986798469}
+--- !u!1 &6536654213276019398
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2563838213955683450}
+  m_Layer: 0
+  m_Name: Side_Buttons
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2563838213955683450
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6536654213276019398}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 7983080753575209218}
+  - {fileID: 6780271596629369392}
+  m_Father: {fileID: 5301718059853157397}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7041081076663073737
 GameObject:
   m_ObjectHideFlags: 0
@@ -971,12 +1004,11 @@ Transform:
   m_GameObject: {fileID: 7731894668165872768}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.2, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 7983080753575209218}
-  - {fileID: 6780271596629369392}
+  - {fileID: 2563838213955683450}
   - {fileID: 5071377394816285264}
   m_Father: {fileID: 1196509109622901649}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1244,7 +1276,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 5301718059853157397}
+    m_TransformParent: {fileID: 2563838213955683450}
     m_Modifications:
     - target: {fileID: 3857310229923152413, guid: 3cdb3c574de4cf64a878be2898884b7c, type: 3}
       propertyPath: ButtonClickedEvent.m_PersistentCalls.m_Calls.Array.size
@@ -1793,7 +1825,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 5301718059853157397}
+    m_TransformParent: {fileID: 2563838213955683450}
     m_Modifications:
     - target: {fileID: 3857310229923152413, guid: 3cdb3c574de4cf64a878be2898884b7c, type: 3}
       propertyPath: ButtonClickedEvent.m_PersistentCalls.m_Calls.Array.size
