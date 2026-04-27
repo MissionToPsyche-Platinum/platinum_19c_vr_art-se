@@ -1,7 +1,9 @@
 import shutil
 from pathlib import Path
 
-from PsycheScraper import upsert_artist, upsert_project, upsert_media, make_artist_id, make_project_id, detect_media_type, make_media_id, ARTWORK_DIR
+from src.db_modification.DatabaseUpdater import UpsertArtist, UpsertProject, UpsertMedia, CreateArtistId, CreateProjectId, GetMediaType, CreateMediaId
+from src.db_modification.GetInputFiles import GetValidFilesInInputDirectory
+
 from datetime import datetime
 import os
 
@@ -12,7 +14,7 @@ def addArtProject(artInfo):
     artist_major = artInfo["artistMajor"]
     genre_medium = artInfo["genre"]
     description = artInfo["description"]
-    temp_files = artInfo["file_paths"]  # downloaded to ./psyche_media
+    temp_files = artInfo["file_paths"]
 
     # artist and project hash and upsert
     artist_id = make_artist_id(artist_name)
@@ -27,9 +29,9 @@ def addArtProject(artInfo):
     # media hash and upsert
     for filepath in temp_files:
         # create absolute path and relative path
-        file_name = filepath.split("\\")[-1]
+        file_name = Path(filepath).name
         dst_abs_path = dst_dir_abs_path / file_name
-        dst_rel_path = Path(str(project_id)) / file_name
+        dst_rel_path = Path("Artwork") / str(project_id) / file_name
         # copy file to new destination
         shutil.copy(filepath, dst_abs_path)
 
@@ -38,7 +40,7 @@ def addArtProject(artInfo):
         media_id = make_media_id(artist_name, art_title, filepath)
         upsert_media(media_id, str(dst_rel_path), media_type, project_id)
 
-        print("Art project added successfully!\n")
+    print("Art project added successfully!\n")
 
 def getArtProjectInfo():
     results = {}
@@ -58,19 +60,28 @@ def getArtProjectInfo():
         except ValueError:
             print("Invalid format. Please enter date as YYYY-MM-DD.")
 
-    print("Enter the absolute file path of each art file you wish to add, pressing enter in between each file.  When you have entered the last file, enter \"f\".  (To get the absolute path, right click on the desired file in your file explorer and click \"Copy as path\".  Paste the copied text into the command line.)")
-    file_paths = []
+    all_file_names = GetValidFilesInInputDirectory()
+    chosen_files = []
     while True:
-        file_path = input()
-        file_path = file_path.replace("\"", "")
-
-        if file_path.lower() == "f":
-            print("Ending file collection.")
+        print("\nAvailable files:")
+        for i, file in enumerate(all_file_names):
+            print(f"  {i + 1}. {file.name}")
+        
+        print("\nIf you are not seeing the file you expect, make sure it is one of the allowed file types in the README")
+        user_input = input("\nEnter file number to select (or 'q' to quit): ").strip()
+        
+        if user_input.lower() == 'q':
             break
-        if os.path.isfile(file_path):
-            file_paths.append(file_path)
-        else:
-            print("That is not a valid file path. Please enter a new one.")
+        
+        try:
+            index = int(user_input) - 1
+            if 0 <= index < len(all_file_names):
+                chosen_files.append(str(all_file_names[index]))
+                print(f"Added: {all_file_names[index].name}")
+            else:
+                print("Invalid number, please try again.")
+        except ValueError:
+            print("Invalid input, please enter a number or 'q'.")
 
-    results["file_paths"] = file_paths
+    results["file_paths"] = chosen_files
     return results

@@ -25,37 +25,24 @@ namespace PsycheDB
         /// </summary>
         public static void Initialize()
         {
-            EnsureFolder();
-            var firstTime = !File.Exists(DatabasePath);
-            using (var conn = Open())
-            {
-                using (var cmd = conn.CreateCommand())
-                {
-                    // PRAGMAs
-                    // - foreign key enforcement
-                    // - Write-Ahead Logging(rollback in case of error)
-                    // - Normal synchronous mode allows rollback in case of crash in WAL mode)
-                    cmd.CommandText = @"
-                        PRAGMA foreign_keys = ON;   
-                        PRAGMA journal_mode = WAL;
-                        PRAGMA synchronous = NORMAL;
-                    ";
-                    cmd.ExecuteNonQuery();
-                }
+            //EnsureFolder();
+            //var firstTime = !File.Exists(DatabasePath);
+            //string dbPath = Application.streamingAssetsPath + "/Database/" + "artwork.db";
 
-                // Create / migrate schema (idempotent)
-                CreateSchema(conn);
+            //UnityWebRequest request = UnityWebRequest.Get(dbPath);
+            //await request.SendWebRequest();
 
-                // for debugging, leave alone
-                if (firstTime)
-                {
-                    Debug.Log($"[DB] Created new database at: {DatabasePath}");
-                }
-                else
-                {
-                    Debug.Log($"[DB] Opened database at: {DatabasePath}");
-                }
-            }
+            //if (request.result == UnityWebRequest.Result.Success)
+            //{
+            //    File.WriteAllBytes(DatabasePath, request.downloadHandler.data);
+            //    Debug.Log("COPIED DATABASE PROPERLY TO " + DatabasePath);
+            //}
+            //else
+            //{
+            //    Debug.LogError("FAILED TO LOAD DATABASE FROM STREAMINGASSETS");
+            //}
+
+            
         }
 
         /*  API  */

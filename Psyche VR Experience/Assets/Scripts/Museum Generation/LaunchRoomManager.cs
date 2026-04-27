@@ -1,6 +1,11 @@
-using Unity.VisualScripting;
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.Rendering;
+using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -23,6 +28,9 @@ public class LaunchRoomManager : MonoBehaviour
     // survives scene reload because static
     public static bool PrepareMuseumAfterReload = false;
 
+
+    public static List<AsyncOperationHandle> handles = new List<AsyncOperationHandle>();
+
     public async void Start()
     {
         // if previous scene requested a preload, do it now
@@ -30,9 +38,38 @@ public class LaunchRoomManager : MonoBehaviour
         {
             PrepareMuseumAfterReload = false;
             await PrepareNextMuseum();
+
+            //bool valid = museumManager.AtLeastOneArtwork();
+            //Debug.Log($"MUSEUM IS VALID = {valid}");
+
+            //if (valid)
+            //{
+            //    Debug.Log("RELOADING MUSEUM");
+            //    ReloadSceneAndPrepareMuseum();
+            //} else
+            //{
+            //    Debug.LogWarning("SOME KINDA FAILURE!");
+            //}
         }
     }
 
+#if UNITY_EDITOR
+    public bool manual_start = false;
+    public bool manual_restart = false;
+    private void Update()
+    {
+        if (manual_start)
+        {
+            startExpoExperience();
+            manual_start = false;
+        }
+        if (manual_restart)
+        {
+            ReloadSceneAndPrepareMuseum();
+            manual_restart = false;
+        }
+    }
+#endif
 
     public async void startExpoExperience()
     {
@@ -60,7 +97,7 @@ public class LaunchRoomManager : MonoBehaviour
 
         preparationInProgress = true;
         museumPrepared = false;
-
+            
         // first ever generation
         if (!museumGeneratedAtLeastOnce)
         {
@@ -98,9 +135,22 @@ public class LaunchRoomManager : MonoBehaviour
         }
     }
 
-    public void ReloadSceneAndPrepareMuseum()
+    public async void ReloadSceneAndPrepareMuseum()
     {
+        foreach (var handle in handles)
+        {
+            if(handle.IsValid())
+                Addressables.Release(handle);
+        }
+        handles.Clear();
+        handles = new List<AsyncOperationHandle>();
+
+        Caching.ClearCache();
+
+        await Resources.UnloadUnusedAssets();
+
         PrepareMuseumAfterReload = true;
+        //SceneManager.LoadScene("Main Menu");
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         Debug.Log("Hello World");
         domeTransform.position = new Vector3(0, -50, 0);

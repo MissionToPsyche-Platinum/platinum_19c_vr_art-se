@@ -107,15 +107,16 @@ public class FrameController : MonoBehaviour
     [SerializeField] private GameObject buttonNext;
     [SerializeField] private GameObject buttonPrev;
 
+    //[HideInInspector]
+    //public AsyncOperationHandle handle = default;
+    public bool mediaLoaded = false;
+    bool applyAllRunning = false;
+
     void Awake()
     {
         SettingsManager.m_VideoVolumeChanged.AddListener(VolumeChanged);
 
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
-        
-        fallbackTexture = LoadImage(ResolveFullPath("Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png"));
-        if (fallbackTexture == null)
-            Debug.LogError("Fallback image missing! Add it at Assets/Resources/Fallbacks/Badge_Solid/Color/Psyche_BadgeSolid_Color.png");
 
         pauseSymbol = this.gameObject.transform.Find("ImageQuad").transform.Find("PauseSymbol").gameObject;
 
@@ -141,6 +142,17 @@ public class FrameController : MonoBehaviour
         }
         ApplyAll();
     }
+
+    private void OnDestroy()
+    {
+        SettingsManager.m_VideoVolumeChanged.RemoveListener(VolumeChanged);
+        SettingsManager.m_VideoVolumeChanged.RemoveListener(RepositionButtons_Callback);
+
+        //if(handle.IsValid())
+        //    Addressables.Release(handle);
+    }
+
+    public bool apply_all_manual = false;
 
     void Update()
     {
@@ -263,141 +275,143 @@ public class FrameController : MonoBehaviour
         // is manually iterating, we just want to turn this off
     }
 
-    public void NextImage()
+    public async void NextImage()
     {
         if (mediaPaths == null || mediaPaths.Count == 0) return;
         currentMediaIndex = (currentMediaIndex + 1) % mediaPaths.Count;
-        ApplyAll();
+        await ApplyAll();
         textBoxController.UpdateTextLocation();
     }
 
-    public void PreviousImage()
+    public async void PreviousImage()
     {
         if (mediaPaths == null || mediaPaths.Count == 0) return;
         currentMediaIndex = (currentMediaIndex - 1 + mediaPaths.Count) % mediaPaths.Count;
-        ApplyAll();
+        await ApplyAll();
         textBoxController.UpdateTextLocation();
     }
 
-    void ApplyAll()
+    async Task ApplyAll()
     {
+        while (applyAllRunning)
+        {
+            await Task.Delay(100);
+        }
+
+        applyAllRunning = true;
+
+        mediaLoaded = false;
+
         if (!imageQuadRenderer) return;
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
 
         // Ensure valid index or display generic psyche logo instead
         if (mediaPaths == null || mediaPaths.Count == 0)
         {
-            Debug.LogWarning("[FrameController] No media found : using fallback image.");
-
-            ShowFallbackImage();
+            Debug.LogWarning("[FrameController] No media found");
             return;
         }
 
         if (currentMediaIndex < 0 || currentMediaIndex >= mediaPaths.Count)
             currentMediaIndex = 0;
 
-        string raw = mediaPaths[currentMediaIndex];
-        string fullPath = ResolveFullPath(raw);
-        
-        
-        if (IsAudioFile(fullPath))
+        string key = mediaPaths[currentMediaIndex];
+
+        try
         {
-            Debug.LogWarning($"[FrameController] Skipping audio file: {raw}");
-            NextImage();   // automatically go to next file
+            AsyncOperationHandle<UnityEngine.Object> handle = Addressables.LoadAssetAsync<UnityEngine.Object>(key);
+            //LaunchRoomManager.handles.Add(handle);
+
+            await handle.Task;
+
+            if (handle.Status == AsyncOperationStatus.Succeeded)
+            {
+                UnityEngine.Object asset = handle.Result;
+
+                if (asset is AudioClip)
+                {
+                    AudioClip clip = (AudioClip)asset;
+
+                    Addressables.Release(handle);
+
+                    if (clip != null)
+                    {
+                        NextImage();
+                        applyAllRunning = false;
+                        return;
+                    }
+                }
+                else if (asset is VideoClip)
+                {
+                    VideoClip clip = (VideoClip)asset;
+
+                    Addressables.Release(handle);
+
+                    if (clip != null)
+                    {
+                        ShowVideo(clip);
+                        applyAllRunning = false;
+                        mediaLoaded = true;
+                        return;
+                    }
+                }
+                else if (asset is Texture2D)
+                {
+
+                    Texture2D tex = (Texture2D)asset;
+
+                    StopVideoIfNeeded();
+                    currentVideoDuration = 0.0;
+
+                    // destroy previous texture, if any
+                    if (lastLoadedImage != null)
+                    {
+                        //DestroyImmediate(lastLoadedImage, true);
+                        lastLoadedImage = null;
+                    }
+
+                    LaunchRoomManager.handles.Add(handle);
+
+                    imageQuadRenderer.GetPropertyBlock(_mpb);
+                    _mpb.SetTexture("_BaseMap", tex);
+                    _mpb.SetTexture("_MainTex", tex);
+                    imageQuadRenderer.SetPropertyBlock(_mpb);
+
+                    // Sizing based on the current texture
+                    Vector2Int res = tex ? new(tex.width, tex.height) : baseResolution;
+                    ResizeFrame(res);
+                }
+                else
+                {
+                    Addressables.Release(handle);
+                    Debug.LogError($"ASSET UNRECOGNIZED! TRIED TO LOAD ASSET AT KEY {key}");
+                    applyAllRunning = false;
+                    return;
+                }
+            } else
+            {
+                Addressables.Release(handle);
+                Debug.LogError($"ASSET LOAD FAILED!");
+                mediaLoaded = false;
+                applyAllRunning = false;
+                return;
+            }
+
+            mediaLoaded = true;
+            applyAllRunning = false;
+
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+            applyAllRunning = false;
             return;
         }
-
-        // VIDEO MODE?
-        if (IsVideoFile(fullPath))
-        {
-            ShowVideo(fullPath);
-            return;
-        }
-
-        // IMAGE MODE
-        StopVideoIfNeeded();
-        currentVideoDuration = 0.0;
-        Texture2D tex = LoadImage(fullPath);
-
-        // destroy previous texture, if any
-        if (lastLoadedImage != null)
-        {
-            Destroy(lastLoadedImage);
-        }
-
-        lastLoadedImage = tex;
-
-        imageQuadRenderer.GetPropertyBlock(_mpb);
-        _mpb.SetTexture("_BaseMap", tex);
-        _mpb.SetTexture("_MainTex", tex);
-        imageQuadRenderer.SetPropertyBlock(_mpb);
-
-        //Vector3 scale = transform.localScale; //keep track of this in case it changes
-
-        // Sizing based on the current texture
-        Vector2Int res = tex ? new(tex.width, tex.height) : baseResolution;
-        ResizeFrame(res);
-
-        //make sure text controller isn't affected by the scaling (this is a little costly)
-        //if(scale != transform.localScale)
-        //{
-        //    textBoxController.ChangeTextSize();
-        //}
     }
 
     /* --------------------------------------------------------------
      * PATH RESOLUTION + SAFE IMAGE LOADING
      * -------------------------------------------------------------- */
-
-    private string ResolveFullPath(string raw)
-    {
-        if (string.IsNullOrEmpty(raw)) return null;
-
-        raw = raw.Replace('\\', '/');
-
-        if (System.IO.Path.IsPathRooted(raw))
-            return raw;
-
-        if (raw.StartsWith("Assets/"))
-        {
-            string relative = raw.Substring("Assets/".Length);
-            return System.IO.Path.Combine(Application.dataPath, relative);
-        }
-
-        return System.IO.Path.Combine(Application.dataPath, raw);
-    }
-
-
-    private Texture2D LoadImage(string path)
-    {
-        if (!System.IO.File.Exists(path))
-        {
-            Debug.LogWarning("[FrameController] Image not found: " + path);
-            return null;
-        }
-
-        byte[] bytes = System.IO.File.ReadAllBytes(path);
-        Texture2D tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-        tex.LoadImage(bytes);
-        return tex;
-    }
-
-    private void ShowFallbackImage()
-    {
-        if (fallbackTexture == null || videoPlayer == null)
-            return;
-
-        videoPlayer.Stop();
-        imageQuadRenderer.enabled = true;
-        videoPlayer.gameObject.SetActive(false);
-
-        // apply the fallback texture
-        imageQuadRenderer.sharedMaterial.mainTexture = fallbackTexture;
-
-        // adjust quad aspect ratio if needed
-        float aspect = (float)fallbackTexture.width / fallbackTexture.height;
-        imageQuadRenderer.transform.localScale = new Vector3(aspect, 1f, 1f);
-    }
 
 
     /* --------------------------------------------------------------
@@ -593,27 +607,6 @@ public class FrameController : MonoBehaviour
     *                   VIDEO AND AUDIO HANDLING
     * -------------------------------------------------------------- */
 
-
-    // helper for detecting videofile(just checks the extension)
-    private bool IsVideoFile(string path)
-    {
-        if (string.IsNullOrEmpty(path)) return false;
-        string ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
-        return ext == ".mp4" || ext == ".mov" || ext == ".m4v" || ext == ".avi" || ext == ".webm";
-    }
-    private bool IsAudioFile(string path)
-    {
-        if (string.IsNullOrEmpty(path)) return false;
-        string ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
-        return ext == ".mp3" || ext == ".wav" || ext == ".m4a" || ext == ".ogg" || ext == ".flac";
-    }
-    private bool IsCurrentMediaVideo()
-    {
-        if (mediaPaths == null || mediaPaths.Count == 0) return false;
-        string full = ResolveFullPath(mediaPaths[currentMediaIndex]);
-        return IsVideoFile(full);
-    }
-
     private void OnVideoPrepared(VideoPlayer vp)
     {
         vp.prepareCompleted -= OnVideoPrepared;
@@ -680,8 +673,6 @@ public class FrameController : MonoBehaviour
         pauseSymbol.SetActive(true);
     }
 
-
-
     private void StopVideoIfNeeded()
     {
         if (videoPlayer != null)
@@ -693,7 +684,7 @@ public class FrameController : MonoBehaviour
         isVideoMode = false;
     }
 
-    private void ShowVideo(string fullPath)
+    private void ShowVideo(VideoClip clip)
     {
         // stop any currently running video
         StopVideoIfNeeded();
@@ -701,20 +692,17 @@ public class FrameController : MonoBehaviour
         // free last image texture if switching to video
         if (lastLoadedImage != null)
         {
-            Destroy(lastLoadedImage);
             lastLoadedImage = null;
         }
 
         // start playing this video
-        PlayVideo(fullPath);
+        PlayVideo(clip);
 
         // mark that we are now in video mode
         isVideoMode = true;
     }
 
-
-
-    private void PlayVideo(string fullPath)
+    private async void PlayVideo(string fullPath)
     {
         if (!System.IO.File.Exists(fullPath))
         {
@@ -793,6 +781,31 @@ public class FrameController : MonoBehaviour
         if (audioSource != null)
         {
             audioSource.volume = GlobalSettings.MASTER_VOLUME;
+        }
+    }
+
+    // this is for button play/pause
+    // will disable the play on proximity for that frame once pressed once,  
+    public void ToggleVideoPlayback()
+    {
+        if (!isVideoMode || videoPlayer == null)
+            return;
+        // debug
+        //if (!videoPlayer.isPrepared)
+        //{
+        //    Debug.Log("Video not ready yet.");
+        //    return;
+        //}
+
+        playVideoOnPlayerProximity = false;
+
+        if (videoPlayer.isPlaying)
+        {
+            PausePreparedVideo();
+        }
+        else
+        {
+            PlayPreparedVideo();
         }
     }
 
