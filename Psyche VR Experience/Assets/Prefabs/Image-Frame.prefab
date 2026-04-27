@@ -199,6 +199,7 @@ MonoBehaviour:
   textBoxController: {fileID: 8324016763856121832}
   buttonNext: {fileID: 3851546702784573974}
   buttonPrev: {fileID: 406086890372282660}
+  mediaLoaded: 0
   apply_all_manual: 0
 --- !u!65 &3539333914771748472
 BoxCollider:
@@ -970,7 +971,7 @@ Transform:
   m_GameObject: {fileID: 7731894668165872768}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
