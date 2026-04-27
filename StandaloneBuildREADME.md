@@ -18,7 +18,8 @@ In order to fully install the museum, do the following:
 9. Enter the command `Set-ExecutionPolicy Unrestricted` and select the "Yes to All" option.
 	> ⚠️ This will result in your computer allowing PowerShell scripts from any source to be run.  If you would like to revert this setting to its original value after installing the museum program, run the command `Set-ExecutionPolicy Restricted` after you have finished the rest of the steps.
 10. IF BUILDING FROM ARTWORK FOLDER: Make sure Unity isn't running, and then Run `.\Update_Artwork.ps1 -B` in this directory. Otherwise just running `.\Update_Artwork.ps1` with a valid Bundles folder will install the bundles to the headset.
-	* If asked, select the "Run once" option in the terminal.  
+	* If asked, select the "Run once" option in the terminal. 
+	* The "-B" variant will take around 10 minutes, be patient! 
 
 Once the script finishes, the database should be ready to go on the headset! There's also build functionality in the script if it's run in the project directory, to where given an Artwork and Database folder, a full fresh install of the database can be automatically done. For the purposes of installing the project, the above should suffice.
 Building the project causes a Bundles directory to be generated in the project root. When sending the project to others to install, this directory is vital along with the Database folder to install the artwork for the museum to display.
