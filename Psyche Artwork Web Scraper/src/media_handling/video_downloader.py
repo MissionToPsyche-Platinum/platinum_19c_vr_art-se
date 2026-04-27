@@ -438,8 +438,9 @@ def _download_vimeo(
 def _safe_name(s: str) -> str:
     """Strip spaces for use in file names."""
     s = s.replace(" ", "")
-    return re.sub(r'[\\/:*?"<>|]', "_", s)
-
+    s = re.sub(r'[^\x00-\x7F]', "_", s)
+    s = re.sub(r'[\\/:*?"<>|]', "_", s)
+    return s
 def _safe_remove(path: Optional[Path]) -> None:
     """Delete a file silently if it exists."""
     try:
