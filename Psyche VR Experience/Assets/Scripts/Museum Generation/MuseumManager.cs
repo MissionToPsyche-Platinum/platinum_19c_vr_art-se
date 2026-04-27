@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using Unity.VisualScripting;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -194,30 +196,94 @@ public class MuseumManager : MonoBehaviour
 
     public int ChunkCountForArtPieces(int numArtPieces)
     {
-        //approximate error of +/- 20ish per chunk
+        int minArtCount = patterns[0].numArtSpaces;
+        foreach (RoomPattern room in patterns)
+        {
+            minArtCount = Mathf.Min(minArtCount, room.numArtSpaces);
+        }
 
-        //1 chunk ~= 33
-        //2 chunks ~= 130
-        //3 chunks ~= 330
-        //4 chunks ~= 583
-        //5 chunks ~= 911
-        //6 chunks ~= 1300
-
-        float result = 12226f + (0.0014f - 12226f) / (1 + Mathf.Pow(numArtPieces / 377528.4f, 0.5f));
-        result /= 100;
-
-        int chunkCount = (int)(result);
+        int chunkCount = Mathf.CeilToInt(Mathf.Sqrt(numArtPieces / minArtCount));
 
         return chunkCount;
     }
 
     public async Awaitable GenerateMuseum(int numArtPieces)
     {
+        int seed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+        UnityEngine.Random.InitState(seed);
+        Debug.Log($"SNEED IS {seed}");
+
         this.numArtPieces = numArtPieces;
         Debug.Log("NUM ART PIECES SHOULD BE: " + numArtPieces);
-        //int numChunks = ChunkCountForArtPieces(numArtPieces);
+        int numChunks = ChunkCountForArtPieces(numArtPieces);
         
-        await GenerateMuseumByChunks(4, numArtPieces);
+        await GenerateMuseumByChunks(numChunks + 1, numArtPieces);
+
+        //if (!ValidateMuseum())
+        //{
+        //    Debug.LogError("MUSEUM FAILED!");
+        //}
+    }
+
+    public bool ValidateMuseum()
+    {
+        for (int y = 0; y < roomGrid.Length; y++)
+        {
+            for (int x = 0; x < roomGrid[y].Length; x++)
+            {
+                if(roomGrid[y][x] == null)
+                {
+                    continue;
+                }
+
+                if(roomGrid[y][x].roomType == RoomModule.RoomType.FourOpen || roomGrid[y][x].roomType == RoomModule.RoomType.FlatOpen)
+                {
+                    continue;
+                }
+
+                foreach (FrameController fc in roomGrid[y][x].display.frameControllers)
+                {
+                    if(fc != null && fc.isActiveAndEnabled && !fc.mediaLoaded)
+                    {
+                        fc.name = "FAILED_FRAME_";
+                        fc.name += $"{x}_{y}";
+                        Debug.LogWarning($"FRAME {fc.name} HAD FAILED MEDIA LOAD");
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public bool AtLeastOneArtwork()
+    {
+        for (int y = 0; y < roomGrid.Length; y++)
+        {
+            for (int x = 0; x < roomGrid[y].Length; x++)
+            {
+                if (roomGrid[y][x] == null)
+                {
+                    continue;
+                }
+
+                if (roomGrid[y][x].roomType == RoomModule.RoomType.FourOpen || roomGrid[y][x].roomType == RoomModule.RoomType.FlatOpen)
+                {
+                    continue;
+                }
+
+                foreach (FrameController fc in roomGrid[y][x].display.frameControllers)
+                {
+                    if (fc != null && fc.isActiveAndEnabled && fc.mediaLoaded)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     public async Awaitable GenerateMuseumByChunks(int numChunks, int numArtPieces)
@@ -338,7 +404,7 @@ public class MuseumManager : MonoBehaviour
     {
         int startX = chunkX * chunkSize;
         int startY = chunkY * chunkSize;
-        int roomIndex = Random.Range(0, patterns.Length);
+        int roomIndex = UnityEngine.Random.Range(0, patterns.Length);
 
         RoomPattern pattern = patterns[roomIndex];
 
@@ -372,7 +438,7 @@ public class MuseumManager : MonoBehaviour
 
         List<Vector2Int> directions = new List<Vector2Int>() { new Vector2Int(1, 0), new Vector2Int(-1, 0), new Vector2Int(0, 1), new Vector2Int(0, -1) };
 
-        int startInd = Random.Range(0, 4);
+        int startInd = UnityEngine.Random.Range(0, 4);
 
         //loop over every direction we checked in the first loop
         for (int i = 0; i < directions.Count; i++)
@@ -458,36 +524,78 @@ public class MuseumManager : MonoBehaviour
             return;
         }
 
-        int spotsFilled = 0;
-
-        //int numSpaces = (numSpots / numArtPieces) - 2;
-        //int n = 0;
-
-        //if (numSpaces == 0)
-        //{
-        //    numSpaces = 1;
-        //}
-
-        int index = 0;
-        int numVisits = 0;
-        int factor = numRooms % 2 == 0 ? 1 : 2;
-        while (spotsFilled < requestCount || numVisits < numRooms)
+        if(roomsWithFrameControllers.Count == 0)
         {
-            index = (index + 6 + factor) % numRooms;
-            numVisits++;
+            Debug.LogError("[MuseumManager] PopulateDisplays: NO VALID ROOMS FOUND!");
+        }
 
-            int numToFill = 0;
+        //keep track of rooms we've populated
+        bool[] filled = new bool[numRooms];
+        int position = 0;
+        int spotsFilled = 0;
+        int factor = numRooms % 2 == 0 ? 1 : 2;
 
-            if (spotsFilled < requestCount)
+        for (int i = 0; i < numRooms; i++){
+
+            for(int j = 0; j < numRooms && filled[(j + position) % numRooms]; j++){
+                position++;
+                position %= numRooms;
+            }
+
+            if (requestCount > spotsFilled)
             {
-                numToFill = Random.Range(1, roomsWithFrameControllers[index].GetNumArtDisplays() + 1);
-                await roomsWithFrameControllers[index].SetArtDisplays(numToFill, items, spotsFilled, asyncPopulate, populateDelay);
+                int numToFill = Mathf.Min(roomsWithFrameControllers[position].GetNumArtDisplays(), numSpots - requestCount);
+                await roomsWithFrameControllers[position].SetArtDisplays(numToFill, items, spotsFilled, asyncPopulate, populateDelay);
                 spotsFilled += numToFill;
+                filled[position] = true;
+            } else
+            {
+                break;
+            }
+
+            position = (position + 6 + factor) % numRooms;
+        }
+
+        for (int i = 0; i < numRooms; i++)
+        {
+            if (filled[i])
+            {
                 continue;
             }
 
-            await roomsWithFrameControllers[index].SetArtDisplays(0);
+            await roomsWithFrameControllers[i].SetArtDisplays(0);
         }
+
+        //int spotsFilled = 0;
+
+        ////int numSpaces = (numSpots / numArtPieces) - 2;
+        ////int n = 0;
+
+        ////if (numSpaces == 0)
+        ////{
+        ////    numSpaces = 1;
+        ////}
+
+        //int index = 0;
+        //int numVisits = 0;
+        //int factor = numRooms % 2 == 0 ? 1 : 2;
+        //while (spotsFilled < requestCount || numVisits < numRooms)
+        //{
+        //    index = (index + 6 + factor) % numRooms;
+        //    numVisits++;
+
+        //    int numToFill = 0;
+
+        //    if (spotsFilled < requestCount)
+        //    {
+        //        numToFill = Random.Range(1, roomsWithFrameControllers[index].GetNumArtDisplays() + 1);
+        //        await roomsWithFrameControllers[index].SetArtDisplays(numToFill, items, spotsFilled, asyncPopulate, populateDelay);
+        //        spotsFilled += numToFill;
+        //        continue;
+        //    }
+
+        //    await roomsWithFrameControllers[index].SetArtDisplays(0);
+        //}
     }
 
 #if UNITY_EDITOR

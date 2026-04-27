@@ -111,9 +111,10 @@ public class FrameController : MonoBehaviour
     [SerializeField] private GameObject buttonNext;
     [SerializeField] private GameObject buttonPrev;
 
-    private bool applyallrunning = false;
-
-    AsyncOperationHandle handle;
+    //[HideInInspector]
+    //public AsyncOperationHandle handle = default;
+    public bool mediaLoaded = false;
+    bool applyAllRunning = false;
 
     void Awake()
     {
@@ -151,8 +152,8 @@ public class FrameController : MonoBehaviour
         SettingsManager.m_VideoVolumeChanged.RemoveListener(VolumeChanged);
         SettingsManager.m_VideoVolumeChanged.RemoveListener(RepositionButtons_Callback);
 
-        if(handle.IsValid())
-            Addressables.Release(handle);
+        //if(handle.IsValid())
+        //    Addressables.Release(handle);
     }
 
     public bool apply_all_manual = false;
@@ -284,24 +285,33 @@ public class FrameController : MonoBehaviour
         // is manually iterating, we just want to turn this off
     }
 
-    public void NextImage()
+    public async void NextImage()
     {
         if (mediaPaths == null || mediaPaths.Count == 0) return;
         currentMediaIndex = (currentMediaIndex + 1) % mediaPaths.Count;
-        ApplyAll();
+        await ApplyAll();
         textBoxController.UpdateTextLocation();
     }
 
-    public void PreviousImage()
+    public async void PreviousImage()
     {
         if (mediaPaths == null || mediaPaths.Count == 0) return;
         currentMediaIndex = (currentMediaIndex - 1 + mediaPaths.Count) % mediaPaths.Count;
-        ApplyAll();
+        await ApplyAll();
         textBoxController.UpdateTextLocation();
     }
 
-    void ApplyAll()
+    async Task ApplyAll()
     {
+        while (applyAllRunning)
+        {
+            await Task.Delay(100);
+        }
+
+        applyAllRunning = true;
+
+        mediaLoaded = false;
+
         if (!imageQuadRenderer) return;
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
 
@@ -319,73 +329,93 @@ public class FrameController : MonoBehaviour
 
         try
         {
-            Addressables.LoadAssetAsync<UnityEngine.Object>(key).Completed += handle =>
+            AsyncOperationHandle<UnityEngine.Object> handle = Addressables.LoadAssetAsync<UnityEngine.Object>(key);
+            //LaunchRoomManager.handles.Add(handle);
+
+            await handle.Task;
+
+            if (handle.Status == AsyncOperationStatus.Succeeded)
             {
-                if (this.handle.IsValid())
+                UnityEngine.Object asset = handle.Result;
+
+                if (asset is AudioClip)
                 {
-                    Addressables.Release(this.handle);
-                }
+                    AudioClip clip = (AudioClip)asset;
 
-                this.handle = handle;
-                if (handle.Status == AsyncOperationStatus.Succeeded)
-                {
-                    UnityEngine.Object asset = handle.Result;
+                    Addressables.Release(handle);
 
-                    if (asset is AudioClip)
+                    if (clip != null)
                     {
-                        AudioClip clip = (AudioClip)asset;
-
-                        if (clip != null)
-                        {
-                            NextImage();
-                            return;
-                        }
-                    }
-                    else if (asset is VideoClip)
-                    {
-                        VideoClip clip = (VideoClip)asset;
-
-                        if (clip != null)
-                        {
-                            ShowVideo(clip);
-                            return;
-                        }
-                    }
-                    else if (asset is Texture2D)
-                    {
-                        Texture2D tex = (Texture2D)asset;
-
-                        StopVideoIfNeeded();
-                        currentVideoDuration = 0.0;
-
-                        // destroy previous texture, if any
-                        if (lastLoadedImage != null)
-                        {
-                            //Destroy(lastLoadedImage);
-                            lastLoadedImage = null;
-                        }
-
-                        lastLoadedImage = tex;
-
-                        imageQuadRenderer.GetPropertyBlock(_mpb);
-                        _mpb.SetTexture("_BaseMap", tex);
-                        _mpb.SetTexture("_MainTex", tex);
-                        imageQuadRenderer.SetPropertyBlock(_mpb);
-
-                        // Sizing based on the current texture
-                        Vector2Int res = tex ? new(tex.width, tex.height) : baseResolution;
-                        ResizeFrame(res);
-                    }
-                    else
-                    {
-                        Debug.LogError($"ASSET UNRECOGNIZED! TRIED TO LOAD ASSET AT KEY {key}");
+                        NextImage();
+                        applyAllRunning = false;
+                        return;
                     }
                 }
-            };
+                else if (asset is VideoClip)
+                {
+                    VideoClip clip = (VideoClip)asset;
+
+                    Addressables.Release(handle);
+
+                    if (clip != null)
+                    {
+                        ShowVideo(clip);
+                        applyAllRunning = false;
+                        mediaLoaded = true;
+                        return;
+                    }
+                }
+                else if (asset is Texture2D)
+                {
+
+                    Texture2D tex = (Texture2D)asset;
+
+                    StopVideoIfNeeded();
+                    currentVideoDuration = 0.0;
+
+                    // destroy previous texture, if any
+                    if (lastLoadedImage != null)
+                    {
+                        //DestroyImmediate(lastLoadedImage, true);
+                        lastLoadedImage = null;
+                    }
+
+                    LaunchRoomManager.handles.Add(handle);
+
+                    imageQuadRenderer.GetPropertyBlock(_mpb);
+                    _mpb.SetTexture("_BaseMap", tex);
+                    _mpb.SetTexture("_MainTex", tex);
+                    imageQuadRenderer.SetPropertyBlock(_mpb);
+
+                    // Sizing based on the current texture
+                    Vector2Int res = tex ? new(tex.width, tex.height) : baseResolution;
+                    ResizeFrame(res);
+                }
+                else
+                {
+                    Addressables.Release(handle);
+                    Debug.LogError($"ASSET UNRECOGNIZED! TRIED TO LOAD ASSET AT KEY {key}");
+                    applyAllRunning = false;
+                    return;
+                }
+            } else
+            {
+                Addressables.Release(handle);
+                Debug.LogError($"ASSET LOAD FAILED!");
+                mediaLoaded = false;
+                applyAllRunning = false;
+                return;
+            }
+
+            mediaLoaded = true;
+            applyAllRunning = false;
+
         }
         catch (Exception e)
         {
             Debug.LogError(e);
+            applyAllRunning = false;
+            return;
         }
     }
 
@@ -672,7 +702,6 @@ public class FrameController : MonoBehaviour
         // free last image texture if switching to video
         if (lastLoadedImage != null)
         {
-            Addressables.Release(handle);
             lastLoadedImage = null;
         }
 
