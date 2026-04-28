@@ -113,7 +113,7 @@ public class FrameController : MonoBehaviour
     [SerializeField] private GameObject buttonPrev;
 
     //[HideInInspector]
-    //public AsyncOperationHandle handle = default;
+    public AsyncOperationHandle handle = default;
     public bool mediaLoaded = false;
     bool applyAllRunning = false;
 
@@ -154,8 +154,8 @@ public class FrameController : MonoBehaviour
         SettingsManager.m_VideoVolumeChanged.RemoveListener(VolumeChanged);
         SettingsManager.m_VideoVolumeChanged.RemoveListener(RepositionButtons_Callback);
 
-        //if(handle.IsValid())
-        //    Addressables.Release(handle);
+        if (handle.IsValid())
+            Addressables.Release(handle);
     }
 
     public bool apply_all_manual = false;
@@ -332,6 +332,13 @@ public class FrameController : MonoBehaviour
         try
         {
             AsyncOperationHandle<UnityEngine.Object> handle = Addressables.LoadAssetAsync<UnityEngine.Object>(key);
+
+            if (this.handle.IsValid())
+            {
+                Addressables.Release(this.handle);
+            }
+            
+            this.handle = handle;
             //LaunchRoomManager.handles.Add(handle);
 
             await handle.Task;
@@ -344,7 +351,7 @@ public class FrameController : MonoBehaviour
                 {
                     AudioClip clip = (AudioClip)asset;
 
-                    Addressables.Release(handle);
+                    //Addressables.Release(handle);
 
                     if (clip != null)
                     {
@@ -357,7 +364,7 @@ public class FrameController : MonoBehaviour
                 {
                     VideoClip clip = (VideoClip)asset;
 
-                    Addressables.Release(handle);
+                    //Addressables.Release(handle);
 
                     if (clip != null)
                     {
@@ -382,7 +389,7 @@ public class FrameController : MonoBehaviour
                         lastLoadedImage = null;
                     }
 
-                    LaunchRoomManager.handles.Add(handle);
+                    //LaunchRoomManager.handles.Add(handle);
 
                     imageQuadRenderer.GetPropertyBlock(_mpb);
                     _mpb.SetTexture("_BaseMap", tex);
