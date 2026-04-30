@@ -151,6 +151,7 @@ GameObject:
   - component: {fileID: 7626248279004998098}
   - component: {fileID: 2547039604840461017}
   - component: {fileID: 4734638546647951386}
+  - component: {fileID: 1489913042727036801}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -171,7 +172,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2975366459856415817}
+  - {fileID: 117206228914238893}
   m_Father: {fileID: 5787946043375648521}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &7301392880746242751
@@ -406,7 +407,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.5
+  m_Radius: 0.3
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &4734638546647951386
 Rigidbody:
@@ -435,6 +436,21 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &1489913042727036801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 775054438645192288}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3354fe2dfb1e6eb41add4c46d30858c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRHeadTrigger
+  collisionMask:
+    serializedVersion: 2
+    m_Bits: 256
 --- !u!1 &1450729026315874006
 GameObject:
   m_ObjectHideFlags: 0
@@ -905,7 +921,7 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!1 &3541548618455482562
+--- !u!1 &2775782500686744887
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -913,47 +929,127 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2975366459856415817}
-  - component: {fileID: 8439801560630786619}
+  - component: {fileID: 117206228914238893}
+  - component: {fileID: 4436540911760766084}
   m_Layer: 0
-  m_Name: CollisionDetector
+  m_Name: Jukebox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2975366459856415817
+--- !u!4 &117206228914238893
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3541548618455482562}
+  m_GameObject: {fileID: 2775782500686744887}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1643452098413327134}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8439801560630786619
-MonoBehaviour:
+--- !u!82 &4436540911760766084
+AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3541548618455482562}
+  m_GameObject: {fileID: 2775782500686744887}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ca1088bd57d540f46b41eed45c1ee173, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HeadsetCollisionManager
-  detectionDelay: 0.05
-  detectionDistance: 0.2
-  detectionLayers:
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: c96ee193c5b487a4aac05c6b057ee0e0, type: 3}
+  m_PlayOnAwake: 1
+  m_Volume: 0.6
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
     serializedVersion: 2
-    m_Bits: 256
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &3562136429363707729
 GameObject:
   m_ObjectHideFlags: 0
@@ -1211,6 +1307,8 @@ GameObject:
   - component: {fileID: 352839523240806990}
   - component: {fileID: 4514834091348339466}
   - component: {fileID: 5918975738570322914}
+  - component: {fileID: 1230116587504565729}
+  - component: {fileID: 7082040850064790528}
   m_Layer: 0
   m_Name: XR Origin (VR)
   m_TagString: Untagged
@@ -1268,6 +1366,50 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_ActionAssets:
   - {fileID: -944628639613478452, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+--- !u!114 &1230116587504565729
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3618679737214569059}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 228cf7c39d41af545830ca7cdd3f8e35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRHeadCollisionHandler
+  headTrigger: {fileID: 1489913042727036801}
+  headTransform: {fileID: 1643452098413327134}
+  xrOriginRoot: {fileID: 352839523240806990}
+  pushStrength: 2
+  ignoreVertical: 1
+--- !u!54 &7082040850064790528
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3618679737214569059}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &4244747939317442857
 GameObject:
   m_ObjectHideFlags: 0
@@ -3653,7 +3795,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2857859626816039777, guid: 99e67190654bfe94fb3c1ad447a28d04, type: 3}
       propertyPath: m_text
-      value: Master Volume
+      value: Video Volume
       objectReference: {fileID: 0}
     - target: {fileID: 2857859626816039777, guid: 99e67190654bfe94fb3c1ad447a28d04, type: 3}
       propertyPath: m_fontSize
@@ -3981,6 +4123,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4463163422776838532, guid: ddf721cbfa8d6f24b89b206fecdab107, type: 3}
+      propertyPath: m_fontSize
+      value: 1.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4463163422776838532, guid: ddf721cbfa8d6f24b89b206fecdab107, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 1.1
+      objectReference: {fileID: 0}
     - target: {fileID: 4578762249514050455, guid: ddf721cbfa8d6f24b89b206fecdab107, type: 3}
       propertyPath: m_Layer
       value: 3
@@ -3997,6 +4147,10 @@ PrefabInstance:
       propertyPath: expoTimer
       value: 
       objectReference: {fileID: 2018407149880274070}
+    - target: {fileID: 9160674371044922682, guid: ddf721cbfa8d6f24b89b206fecdab107, type: 3}
+      propertyPath: m_Resource
+      value: 
+      objectReference: {fileID: 8300000, guid: fba4833bf5a51aa4599bae869ba3f7d2, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4020,6 +4174,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5726407453223257981}
     m_Modifications:
+    - target: {fileID: 2366053935513795159, guid: 99e67190654bfe94fb3c1ad447a28d04, type: 3}
+      propertyPath: m_Value
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 2366053935513795159, guid: 99e67190654bfe94fb3c1ad447a28d04, type: 3}
+      propertyPath: m_MaxValue
+      value: 0.25
+      objectReference: {fileID: 0}
     - target: {fileID: 2366053935513795159, guid: 99e67190654bfe94fb3c1ad447a28d04, type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.size
       value: 1
