@@ -12,7 +12,7 @@ public class MusicManager : MonoBehaviour
     private Stack<int> previousIndexes = new Stack<int>();   
     public bool shuffle = false;
     private int songIndex = 0;
-    bool isPlaying;
+    bool isPlaying = true;
     bool togglePlay = true;
 
     //public BoxCollider artFrameCollider;
@@ -35,6 +35,10 @@ public class MusicManager : MonoBehaviour
         {
             PlayNextClip();
         }
+        if (isPlaying == true)
+        {
+            audioSource.volume = GlobalSettings.MUSIC_VOLUME;
+        }
     }
 
     public void PlayNextClip()
@@ -42,6 +46,7 @@ public class MusicManager : MonoBehaviour
         if (inMenu == true)
         {
             PlayTannernetSpace();
+            return;
         }
 
         Debug.Log("Now playing the next song... ");
@@ -94,10 +99,16 @@ public class MusicManager : MonoBehaviour
     {
         this.inMenu = inMenu;
     }
+    
 
     public bool getInMenu()
     {
         return inMenu;
+    }
+
+    public void setIsPlaying(bool isPlaying)
+    {
+        this.inPlaying = isPlaying;
     }
     public void StartMuseumPlaylist()
     {

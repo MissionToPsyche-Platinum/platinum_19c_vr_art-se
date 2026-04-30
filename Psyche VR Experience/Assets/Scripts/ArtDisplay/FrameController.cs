@@ -686,6 +686,7 @@ public class FrameController : MonoBehaviour
         if (insideCount >= 1)
         {
             M_Manager.SetAudioVolume(0f);
+            M_Manager.SetIsPlaying(false);
         }
     }
 
@@ -700,6 +701,7 @@ public class FrameController : MonoBehaviour
         {
             float baseVolume = GlobalSettings.MUSIC_VOLUME;
             M_Manager.SetAudioVolume(baseVolume);
+            M_Manager.SetIsPlaying(true);
         }
     }
 
@@ -909,6 +911,7 @@ public class FrameController : MonoBehaviour
         if (insideCount >= 1)
         {
             M_Manager.SetAudioVolume(0f);
+            M_Manager.SetIsPlaying(false);
         }
         // start (or restart) dwell timer when someone enters
         if (dwellRoutine != null) StopCoroutine(dwellRoutine);
@@ -928,6 +931,7 @@ public class FrameController : MonoBehaviour
         {
             float baseVolume = GlobalSettings.MUSIC_VOLUME;
             M_Manager.SetAudioVolume(baseVolume);
+            M_Manager.SetIsPlaying(true);
             if (dwellRoutine != null)
             {
                 StopCoroutine(dwellRoutine);
