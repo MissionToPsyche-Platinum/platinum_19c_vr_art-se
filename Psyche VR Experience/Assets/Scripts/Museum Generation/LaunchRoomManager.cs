@@ -29,8 +29,6 @@ public class LaunchRoomManager : MonoBehaviour
 
     bool waiting = false;
 
-    public static List<AsyncOperationHandle> handles = new List<AsyncOperationHandle>();
-
     public async void Start()
     {
         // if previous scene requested a preload, do it now
@@ -140,20 +138,8 @@ public class LaunchRoomManager : MonoBehaviour
         }
     }
 
-    public async void ReloadSceneAndPrepareMuseum()
+    public void ReloadSceneAndPrepareMuseum()
     {
-        foreach (var handle in handles)
-        {
-            if(handle.IsValid())
-                Addressables.Release(handle);
-        }
-        handles.Clear();
-        handles = new List<AsyncOperationHandle>();
-
-        Caching.ClearCache();
-
-        await Resources.UnloadUnusedAssets();
-
         PrepareMuseumAfterReload = true;
         //SceneManager.LoadScene("Main Menu");
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);

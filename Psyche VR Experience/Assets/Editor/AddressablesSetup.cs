@@ -108,6 +108,9 @@ public static class AddressablesSetup
 
     private static void CopyArtworkIntoProject(string sourcePath, string destPath)
     {
+        if (Directory.Exists(destPath))
+            Directory.Delete(destPath, true);
+
         // Ensure destination root exists
         Directory.CreateDirectory(destPath);
 
