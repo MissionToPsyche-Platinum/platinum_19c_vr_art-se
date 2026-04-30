@@ -13,6 +13,7 @@ public class LaunchRoomManager : MonoBehaviour
 {
     [SerializeField] private ExpoTimer expoTimer;
     [SerializeField] private MuseumManager museumManager;
+    [SerializeField] private MusicManager musicManager;
     [SerializeField] private Transform playerTransform;
     [SerializeField] private Transform domeTransform;
 
@@ -28,8 +29,6 @@ public class LaunchRoomManager : MonoBehaviour
     public static bool PrepareMuseumAfterReload = false;
 
     bool waiting = false;
-
-    public static List<AsyncOperationHandle> handles = new List<AsyncOperationHandle>();
 
     public async void Start()
     {
@@ -137,27 +136,23 @@ public class LaunchRoomManager : MonoBehaviour
             playerTransform.position = playerSpawnPosition;
             
             domeTransform.position = new Vector3(spawnPosition.x, 0, spawnPosition.z);
+            SetMusicPlaylistActive();
+            musicManager.setInMenu(false);
         }
     }
 
-    public async void ReloadSceneAndPrepareMuseum()
+    public void ReloadSceneAndPrepareMuseum()
     {
-        foreach (var handle in handles)
-        {
-            if(handle.IsValid())
-                Addressables.Release(handle);
-        }
-        handles.Clear();
-        handles = new List<AsyncOperationHandle>();
-
-        Caching.ClearCache();
-
-        await Resources.UnloadUnusedAssets();
-
         PrepareMuseumAfterReload = true;
         //SceneManager.LoadScene("Main Menu");
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        
+        musicManager.PlayTannernetSpace();
+        musicManager.setInMenu(true);
         domeTransform.position = new Vector3(0, -50, 0);
+    }
+
+        public void SetMusicPlaylistActive()
+    {
+        musicManager.StartMuseumPlaylist();
     }
 }

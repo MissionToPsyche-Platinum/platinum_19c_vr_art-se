@@ -407,7 +407,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.2
+  m_Radius: 0.3
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &4734638546647951386
 Rigidbody:
@@ -1381,7 +1381,7 @@ MonoBehaviour:
   headTrigger: {fileID: 1489913042727036801}
   headTransform: {fileID: 1643452098413327134}
   xrOriginRoot: {fileID: 352839523240806990}
-  pushStrength: 1.7
+  pushStrength: 2
   ignoreVertical: 1
 --- !u!54 &7082040850064790528
 Rigidbody:
@@ -4176,11 +4176,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2366053935513795159, guid: 99e67190654bfe94fb3c1ad447a28d04, type: 3}
       propertyPath: m_Value
-      value: 0.6
+      value: 0.25
       objectReference: {fileID: 0}
     - target: {fileID: 2366053935513795159, guid: 99e67190654bfe94fb3c1ad447a28d04, type: 3}
       propertyPath: m_MaxValue
-      value: 0.6
+      value: 0.25
       objectReference: {fileID: 0}
     - target: {fileID: 2366053935513795159, guid: 99e67190654bfe94fb3c1ad447a28d04, type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.size

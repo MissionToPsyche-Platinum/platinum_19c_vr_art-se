@@ -144,29 +144,34 @@ public class ExpoTimer : MonoBehaviour
 
     public void ResetSettings()
     {
-        // reset all settings back to defaults
-        LocomotionSettings.LOCOMOTION_MODE = LocomotionSettings.LocomotionMode.TELEPORT;
-        GlobalSettings.MASTER_VOLUME = 1;
-        SettingsManager.m_VideoVolumeChanged?.Invoke();
-        GlobalSettings.MUSIC_VOLUME = .25f;
-        GlobalSettings.TEXT_SIZE_MULTIPLIER = 1;
-        SettingsManager.m_TextSizeChanged.Invoke();
-        LocomotionSettings.CONTINUOUS_VIGNETTE = false;
-        LocomotionSettings.TELEPORT_FADE_TIME = 0.5f;
-        LocomotionSettings.TELEPORT_FADE_WAIT = 0.5f;
-        GlobalSettings.INTERACTION_SIZE_MULTIPLER = 1;
-        SettingsManager.m_ButtonSizeChanged.Invoke();
-        GlobalSettings.SKYBOX_ROTATION_ON = 1f;
+        try
+        {
+            // reset all settings back to defaults
+            LocomotionSettings.LOCOMOTION_MODE = LocomotionSettings.LocomotionMode.TELEPORT;
+            GlobalSettings.MASTER_VOLUME = 1;
+            SettingsManager.m_VideoVolumeChanged?.Invoke();
+            GlobalSettings.MUSIC_VOLUME = .25f;
+            GlobalSettings.TEXT_SIZE_MULTIPLIER = 1;
+            SettingsManager.m_TextSizeChanged?.Invoke();
+            LocomotionSettings.CONTINUOUS_VIGNETTE = false;
+            LocomotionSettings.TELEPORT_FADE_TIME = 0.5f;
+            LocomotionSettings.TELEPORT_FADE_WAIT = 0.5f;
+            GlobalSettings.INTERACTION_SIZE_MULTIPLER = 1;
+            SettingsManager.m_ButtonSizeChanged?.Invoke();
+            GlobalSettings.SKYBOX_ROTATION_ON = 1f;
 
-        // set all menu visuals back to defaults
-        locomotionToggle.Reset();
-        masterVolSlider.normalizedValue = 1;
-        musicVolSlider.normalizedValue = 1;
-        textSizeChoice.ResetChoice();
-        vignetteToggle.Reset();
-        teleportFadeSlider.normalizedValue = 0.5f;
-        buttonSizeChoice.ResetChoice();
-        rotationToggle.Reset();
+            // set all menu visuals back to defaults
+            locomotionToggle.Reset();
+            masterVolSlider.normalizedValue = 1;
+            musicVolSlider.normalizedValue = 1;
+            textSizeChoice.ResetChoice();
+            vignetteToggle.Reset();
+            teleportFadeSlider.normalizedValue = 0.5f;
+            buttonSizeChoice.ResetChoice();
+            rotationToggle.Reset();
+        } catch
+        {
+        }
     }
 
     public float getSecondsLeft()
@@ -215,12 +220,15 @@ public class ExpoTimer : MonoBehaviour
     {
         Debug.Log("Reset Event Performed!");
 
-        if (timerRunning || timerDoneHappened)
-        {
+        //if (timerRunning || timerDoneHappened)
+        //{
             ResetSettings();
             resetTimer();
             launchRoomManager.ReloadSceneAndPrepareMuseum();
-        }
+        //} else
+        //{
+        //    resetTimer();
+        //}
     }
 
     IEnumerator PlayWarningNTimes(int num)
