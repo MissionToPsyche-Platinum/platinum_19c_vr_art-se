@@ -880,7 +880,7 @@ public class FrameController : MonoBehaviour
         //    return;
         //}
 
-        playVideoOnPlayerProximity = false;
+        //playVideoOnPlayerProximity = false;
 
         if (videoPlayer.isPlaying)
         {
