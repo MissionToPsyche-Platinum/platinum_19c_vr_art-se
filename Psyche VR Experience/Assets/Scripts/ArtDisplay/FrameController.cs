@@ -683,7 +683,10 @@ public class FrameController : MonoBehaviour
         if (enableAudio && audioSource != null)
             audioSource.Play();
         pauseSymbol.SetActive(false);
-
+        if (insideCount >= 1)
+        {
+            M_Manager.SetAudioVolume(0f);
+        }
     }
 
     // will be used for proximity triggering and for pausing videos.
@@ -693,6 +696,11 @@ public class FrameController : MonoBehaviour
         if (videoPlayer != null) videoPlayer.Pause();
         if (audioSource != null) audioSource.Pause();
         pauseSymbol.SetActive(true);
+        if (insideCount <= 1)
+        {
+            float baseVolume = GlobalSettings.MUSIC_VOLUME;
+            M_Manager.SetAudioVolume(baseVolume);
+        }
     }
 
     private void StopVideoIfNeeded()
