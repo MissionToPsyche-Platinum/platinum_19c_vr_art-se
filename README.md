@@ -84,13 +84,12 @@ In order to fully install the museum, do the following:
 8. Run Powershell as an administrator in the project directory containing the file Update_Artwork.ps1.
 9. Enter the command `Set-ExecutionPolicy Unrestricted` and select the "Yes to All" option.
 	> ⚠️ This will result in your computer allowing PowerShell scripts from any source to be run, although you will still be asked to confirm manually each time before running.  If you would like to revert this setting to its original value after installing the museum program, run the command `Set-ExecutionPolicy Restricted` after you have finished the rest of the steps.
-10. IF BUILDING FROM ARTWORK FOLDER: Make sure Unity isn't running, and then Run `.\Update_Artwork.ps1 -B` in this directory. Otherwise just running `.\Update_Artwork.ps1` with a valid Bundles folder will install the bundles to the headset.
+10. IF BUILDING FROM ARTWORK/DATABASE FOLDER: Make sure Unity isn't running, and then Run `.\Update_Artwork.ps1 -B` in this directory. Otherwise just running `.\Update_Artwork.ps1` with a valid Bundles folder will install the bundles to the headset.
 	* If asked, select the "Run once" option in the terminal. 
 	* The "-B" variant will take around 10 minutes, be patient!
 
-Once the script finishes, the database should be ready to go on the headset! There's also build functionality in the script if it's run in the project directory, to where given an Artwork and Database folder, a full fresh install of the database can be automatically done. For the purposes of installing the project, the above should suffice.
+Once the script finishes, the database should be ready to go on the headset! If strange things happen when the museum attempts to load art, uninstalling and reinstalling the apk and then rebuilding the art database usually fixes those problems.
 Building the project causes a Bundles directory to be generated in the project root. When sending the project to others to install, this directory is vital along with the Database folder to install the artwork for the museum to display.
-Presently, there's a minor bug where an extra directory is sometimes produced in the Bundles directory, this is not intended.
 
 ## Disclaimer
 This work was created in partial fulfillment of ASU Capstone Course SER401/402. The work is a result of the Psyche Student Collaborations component of NASA’s Psyche Mission (https://psyche.ssl.berkeley.edu). “Psyche: A Journey to a Metal World” [Contract number NNM16AA09C] is part of the NASA Discovery Program mission to solar system targets. Trade names and trademarks of ASU and NASA are used in this work for identification only. Their usage does not constitute an official endorsement, either expressed or implied, by Arizona State University or National Aeronautics and Space Administration. The content is solely the responsibility of the authors and does not necessarily represent the official views of ASU or NASA.
