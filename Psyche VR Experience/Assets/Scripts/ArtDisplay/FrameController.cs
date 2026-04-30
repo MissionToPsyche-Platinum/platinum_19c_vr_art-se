@@ -686,7 +686,7 @@ public class FrameController : MonoBehaviour
         if (insideCount >= 1)
         {
             M_Manager.SetAudioVolume(0f);
-            M_Manager.SetIsPlaying(false);
+            M_Manager.setIsPlaying(false);
         }
     }
 
@@ -701,7 +701,7 @@ public class FrameController : MonoBehaviour
         {
             float baseVolume = GlobalSettings.MUSIC_VOLUME;
             M_Manager.SetAudioVolume(baseVolume);
-            M_Manager.SetIsPlaying(true);
+            M_Manager.setIsPlaying(true);
         }
     }
 

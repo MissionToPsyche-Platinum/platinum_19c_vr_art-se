@@ -108,7 +108,7 @@ public class MusicManager : MonoBehaviour
 
     public void setIsPlaying(bool isPlaying)
     {
-        this.inPlaying = isPlaying;
+        this.isPlaying = isPlaying;
     }
     public void StartMuseumPlaylist()
     {
