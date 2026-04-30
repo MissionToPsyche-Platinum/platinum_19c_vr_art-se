@@ -11,6 +11,7 @@ using UnityEngine.Purchasing;
 using UnityEngine.ResourceManagement.ResourceLocations;
 using UnityEngine.Video;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.Rendering;
 
 public class FrameController : MonoBehaviour
 {
@@ -70,7 +71,6 @@ public class FrameController : MonoBehaviour
     [Tooltip("An image to display if the frame has nothing to display within itself due to errors or the media being audio only")]
     [SerializeField] Texture2D fallbackTexture;
 
-
     // names for borders
     const string BORDER_PARENT = "Borders";
     const string TOP = "Top";
@@ -107,6 +107,7 @@ public class FrameController : MonoBehaviour
     private int insideCount = 0;
     private Coroutine dwellRoutine;
 
+    public MusicManager M_Manager;
     [Header("Component References")]
     [SerializeField] private TextBoxController textBoxController;
     [SerializeField] private GameObject buttonNext;
@@ -125,6 +126,7 @@ public class FrameController : MonoBehaviour
 
         pauseSymbol = this.gameObject.transform.Find("ImageQuad").transform.Find("PauseSymbol").gameObject;
         pauseButton = this.gameObject.transform.Find("Buttons").transform.Find("VRButton_Pause").gameObject;
+        M_Manager = FindFirstObjectByType<MusicManager>();
 
         SettingsManager.m_ButtonSizeChanged.AddListener(RepositionButtons_Callback);
     }
@@ -896,7 +898,10 @@ public class FrameController : MonoBehaviour
         if (!isCollisionTag(other)) return;
 
         insideCount++;
-
+        if (insideCount >= 1)
+        {
+            M_Manager.SetAudioVolume(0f);
+        }
         // start (or restart) dwell timer when someone enters
         if (dwellRoutine != null) StopCoroutine(dwellRoutine);
         dwellRoutine = StartCoroutine(VideoDwellThenPlay());
@@ -913,6 +918,8 @@ public class FrameController : MonoBehaviour
         // if nobody left inside, cancel dwell + optionally pause
         if (insideCount == 0)
         {
+            float baseVolume = GlobalSettings.MUSIC_VOLUME;
+            M_Manager.SetAudioVolume(baseVolume);
             if (dwellRoutine != null)
             {
                 StopCoroutine(dwellRoutine);
