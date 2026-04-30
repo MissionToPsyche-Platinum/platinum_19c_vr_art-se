@@ -5,57 +5,44 @@ using UnityEngine;
 using System;
 using System.Data;
 using System.IO;
-using Mono.Data.Sqlite;
+using SQLite4Unity3d;
+using UnityEngine.Networking;
 
 
 namespace PsycheDB
 {
     public static class DatabaseManager
     {
-        // intended database location: Assets/Database/psyche_data.db
-        public static readonly string DatabaseFolder = Path.Combine(Application.dataPath, "Database");
-        public static readonly string DatabasePath = Path.Combine(DatabaseFolder, "psyche_data.db");
+        public static readonly string DatabaseFolder = Path.Combine(Application.persistentDataPath, "Database");
+        public static readonly string DatabasePath = Path.Combine(DatabaseFolder, "artwork.db");
 
         // connection string
-        private static string ConnString => $"URI=file:{DatabasePath};Pooling=True;Journal Mode=WAL;";
+        public static string ConnString => DatabasePath;
 
         /// <summary>
         /// Public entrypoint: ensure folder, create DB if missing, apply schema.
         /// Safe to call multiple times.
         /// </summary>
-        public static void Initialize()
+        public async static void Initialize()
         {
+#if UNITY_EDITOR
             EnsureFolder();
             var firstTime = !File.Exists(DatabasePath);
-            using (var conn = Open())
+            string dbPath = Application.streamingAssetsPath + "/Database/" + "artwork.db";
+
+            UnityWebRequest request = UnityWebRequest.Get(dbPath);
+            await request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
             {
-                using (var cmd = conn.CreateCommand())
-                {
-                    // PRAGMAs
-                    // - foreign key enforcement
-                    // - Write-Ahead Logging(rollback in case of error)
-                    // - Normal synchronous mode allows rollback in case of crash in WAL mode)
-                    cmd.CommandText = @"
-                        PRAGMA foreign_keys = ON;   
-                        PRAGMA journal_mode = WAL;
-                        PRAGMA synchronous = NORMAL;
-                    ";
-                    cmd.ExecuteNonQuery();
-                }
-
-                // Create / migrate schema (idempotent)
-                CreateSchema(conn);
-
-                // for debugging, leave alone
-                if (firstTime)
-                {
-                    Debug.Log($"[DB] Created new database at: {DatabasePath}");
-                }
-                else
-                {
-                    Debug.Log($"[DB] Opened database at: {DatabasePath}");
-                }
+                File.WriteAllBytes(DatabasePath, request.downloadHandler.data);
+                Debug.Log("COPIED DATABASE PROPERLY TO " + DatabasePath);
             }
+            else
+            {
+                Debug.LogError("FAILED TO LOAD DATABASE FROM STREAMINGASSETS");
+            }
+#endif
         }
 
         /*  API  */
@@ -65,21 +52,20 @@ namespace PsycheDB
         public static void UpsertArtist(int artistId, string name, string major)
         {
             using (var connection = Open())
-            using (var transaction = connection.BeginTransaction())
-            using (var command = connection.CreateCommand())
             {
-                command.CommandText = @"
-                    INSERT INTO artists (artist_id, name, major)
-                    VALUES (@id, @name, @major)
-                    ON CONFLICT(artist_id) DO UPDATE SET
-                        name = excluded.name,
-                        major = excluded.major;
-                ";
-                command.Parameters.Add(new SqliteParameter("@id", artistId));
-                command.Parameters.Add(new SqliteParameter("@name", name ?? string.Empty));
-                command.Parameters.Add(new SqliteParameter("@major", major ?? string.Empty));
-                command.ExecuteNonQuery();
-                transaction.Commit();
+                connection.BeginTransaction();
+
+                string command = $@"
+                        INSERT INTO artists (artist_id, name, major)
+                        VALUES ({artistId}, {name}, {major})
+                        ON CONFLICT(artist_id) DO UPDATE SET
+                            name = excluded.name,
+                            major = excluded.major;
+                    ";
+
+                connection.Execute(command);
+
+                connection.Commit();
             }
         }
 
@@ -87,29 +73,29 @@ namespace PsycheDB
             int projectId, string title, string description, string dateIso8601,
             string genreMedium, int artistId)
         {
-            using (var connection = Open())
-            using (var transaction = connection.BeginTransaction())
-            using (var command = connection.CreateCommand())
-            {
-                command.CommandText = @"
-                    INSERT INTO projects (project_id, title, description, date, genre_medium, artist_id)
-                    VALUES (@id, @title, @desc, @date, @genre, @artist)
-                    ON CONFLICT(project_id) DO UPDATE SET
-                        title = excluded.title,
-                        description = excluded.description,
-                        date = excluded.date,
-                        genre_medium = excluded.genre_medium,
-                        artist_id = excluded.artist_id;
-                ";
-                command.Parameters.Add(new SqliteParameter("@id", projectId));
-                command.Parameters.Add(new SqliteParameter("@title", title ?? string.Empty));
-                command.Parameters.Add(new SqliteParameter("@desc", description ?? string.Empty));
-                command.Parameters.Add(new SqliteParameter("@date", dateIso8601 ?? string.Empty));// store dates as ISO8601 TEXT ("YYYY-MM-DD")
-                command.Parameters.Add(new SqliteParameter("@genre", genreMedium ?? string.Empty));
-                command.Parameters.Add(new SqliteParameter("@artist", artistId));
-                command.ExecuteNonQuery();
-                transaction.Commit();
-            }
+            using (var connection = Open()) ;
+            //using (var transaction = connection.BeginTransaction())
+            //using (var command = connection.CreateCommand())
+            //{
+            //    command.CommandText = @"
+            //        INSERT INTO projects (project_id, title, description, date, genre_medium, artist_id)
+            //        VALUES (@id, @title, @desc, @date, @genre, @artist)
+            //        ON CONFLICT(project_id) DO UPDATE SET
+            //            title = excluded.title,
+            //            description = excluded.description,
+            //            date = excluded.date,
+            //            genre_medium = excluded.genre_medium,
+            //            artist_id = excluded.artist_id;
+            //    ";
+            //    command.Parameters.Add(new SqliteParameter("@id", projectId));
+            //    command.Parameters.Add(new SqliteParameter("@title", title ?? string.Empty));
+            //    command.Parameters.Add(new SqliteParameter("@desc", description ?? string.Empty));
+            //    command.Parameters.Add(new SqliteParameter("@date", dateIso8601 ?? string.Empty));// store dates as ISO8601 TEXT ("YYYY-MM-DD")
+            //    command.Parameters.Add(new SqliteParameter("@genre", genreMedium ?? string.Empty));
+            //    command.Parameters.Add(new SqliteParameter("@artist", artistId));
+            //    command.ExecuteNonQuery();
+            //    transaction.Commit();
+            //}
         }
 
         public static void UpsertProjectMedia(int mediaId, string filepath, string mediaType, int projectId)
@@ -121,25 +107,25 @@ namespace PsycheDB
                 throw new ArgumentException("media_type must be one of: image, video, audio");
             }
 
-            using (var connection = Open())
-            using (var transasction = connection.BeginTransaction())
-            using (var command = connection.CreateCommand())
-            {
-                command.CommandText = @"
-                    INSERT INTO project_media (media_id, filepath, media_type, project_id)
-                    VALUES (@id, @path, @type, @proj)
-                    ON CONFLICT(media_id) DO UPDATE SET
-                        filepath = excluded.filepath,
-                        media_type = excluded.media_type,
-                        project_id = excluded.project_id;
-                ";
-                command.Parameters.Add(new SqliteParameter("@id", mediaId));
-                command.Parameters.Add(new SqliteParameter("@path", filepath ?? string.Empty));
-                command.Parameters.Add(new SqliteParameter("@type", mType));
-                command.Parameters.Add(new SqliteParameter("@proj", projectId));
-                command.ExecuteNonQuery();
-                transasction.Commit();
-            }
+            using (var connection = Open()) ;
+            //using (var transasction = connection.BeginTransaction())
+            //using (var command = connection.CreateCommand())
+            //{
+            //    command.CommandText = @"
+            //        INSERT INTO project_media (media_id, filepath, media_type, project_id)
+            //        VALUES (@id, @path, @type, @proj)
+            //        ON CONFLICT(media_id) DO UPDATE SET
+            //            filepath = excluded.filepath,
+            //            media_type = excluded.media_type,
+            //            project_id = excluded.project_id;
+            //    ";
+            //    command.Parameters.Add(new SqliteParameter("@id", mediaId));
+            //    command.Parameters.Add(new SqliteParameter("@path", filepath ?? string.Empty));
+            //    command.Parameters.Add(new SqliteParameter("@type", mType));
+            //    command.Parameters.Add(new SqliteParameter("@proj", projectId));
+            //    command.ExecuteNonQuery();
+            //    transasction.Commit();
+            //}
         }
 
         /* internals */
@@ -155,30 +141,27 @@ namespace PsycheDB
         }
 
         // Establishes connection
-        private static SqliteConnection Open()
+        private static SQLiteConnection Open()
         {
-            var connection = new SqliteConnection(ConnString);
-            connection.Open();
+            var connection = new SQLiteConnection(ConnString);
             return connection;
         }
 
         // sets ups the schemas
-        private static void CreateSchema(SqliteConnection connection)
+        private static void CreateSchema(SQLiteConnection connection)
         {
-            using (var command = connection.CreateCommand())
-            {
-                // artists
-                command.CommandText = @"
+            // artists
+            string command = @"
                     CREATE TABLE IF NOT EXISTS artists (
                         artist_id      INTEGER PRIMARY KEY,
                         name           TEXT NOT NULL,
                         major          TEXT
                     );
                 ";
-                command.ExecuteNonQuery();
+            connection.Execute(command);
 
-                // projects / artworks
-                command.CommandText = @"
+            // projects / artworks
+            command = @"
                     CREATE TABLE IF NOT EXISTS projects (
                         project_id     INTEGER PRIMARY KEY,
                         title          TEXT NOT NULL,
@@ -192,10 +175,10 @@ namespace PsycheDB
                           ON DELETE CASCADE
                     );
                 ";
-                command.ExecuteNonQuery();
+            connection.Execute(command);
 
-                // project media (enum via CHECK)
-                command.CommandText = @"
+            // project media (enum via CHECK)
+            command = @"
                     CREATE TABLE IF NOT EXISTS project_media (
                         media_id       INTEGER PRIMARY KEY,
                         filepath       TEXT NOT NULL,
@@ -207,15 +190,14 @@ namespace PsycheDB
                           ON DELETE CASCADE
                     );
                 ";
-                command.ExecuteNonQuery();
+            connection.Execute(command);
 
-                // helpful indexes for debug and perusing
-                command.CommandText = @"
+            // helpful indexes for debug and perusing
+            command = @"
                     CREATE INDEX IF NOT EXISTS idx_projects_artist ON projects(artist_id);
                     CREATE INDEX IF NOT EXISTS idx_media_project   ON project_media(project_id);
                 ";
-                command.ExecuteNonQuery();
-            }
+            connection.Execute(command);
         }
 
 
@@ -228,17 +210,20 @@ namespace PsycheDB
         {
             if (!File.Exists(DatabasePath)) return;
             using (var connection = Open())
-            using (var command = connection.CreateCommand())
             {
-                command.CommandText = @"
-                    PRAGMA foreign_keys = OFF;
-                    DROP TABLE IF EXISTS project_media;
-                    DROP TABLE IF EXISTS projects;
-                    DROP TABLE IF EXISTS artists;
-                    PRAGMA foreign_keys = ON;
-                ";
-                command.ExecuteNonQuery();
+
             }
+            //using (var command = connection.CreateCommand())
+            //{
+            //    command.CommandText = @"
+            //        PRAGMA foreign_keys = OFF;
+            //        DROP TABLE IF EXISTS project_media;
+            //        DROP TABLE IF EXISTS projects;
+            //        DROP TABLE IF EXISTS artists;
+            //        PRAGMA foreign_keys = ON;
+            //    ";
+            //    command.ExecuteNonQuery();
+            //}
             Debug.Log("[DB] Dropped all tables.");
         }
     }

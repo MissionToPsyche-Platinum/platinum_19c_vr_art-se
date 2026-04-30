@@ -1,6 +1,11 @@
-using Unity.VisualScripting;
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.Rendering;
+using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -8,7 +13,9 @@ public class LaunchRoomManager : MonoBehaviour
 {
     [SerializeField] private ExpoTimer expoTimer;
     [SerializeField] private MuseumManager museumManager;
+    [SerializeField] private MusicManager musicManager;
     [SerializeField] private Transform playerTransform;
+    [SerializeField] private Transform domeTransform;
 
     [Tooltip("Where the player will spawn")]
     [SerializeField] private Vector3 playerSpawnPosition;
@@ -21,6 +28,8 @@ public class LaunchRoomManager : MonoBehaviour
     // survives scene reload because static
     public static bool PrepareMuseumAfterReload = false;
 
+    bool waiting = false;
+
     public async void Start()
     {
         // if previous scene requested a preload, do it now
@@ -28,16 +37,52 @@ public class LaunchRoomManager : MonoBehaviour
         {
             PrepareMuseumAfterReload = false;
             await PrepareNextMuseum();
+
+            //bool valid = museumManager.AtLeastOneArtwork();
+            //Debug.Log($"MUSEUM IS VALID = {valid}");
+
+            //if (valid)
+            //{
+            //    Debug.Log("RELOADING MUSEUM");
+            //    ReloadSceneAndPrepareMuseum();
+            //} else
+            //{
+            //    Debug.LogWarning("SOME KINDA FAILURE!");
+            //}
         }
     }
 
+#if UNITY_EDITOR
+    public bool manual_start = false;
+    public bool manual_restart = false;
+    private void Update()
+    {
+        if (manual_start)
+        {
+            startExpoExperience();
+            manual_start = false;
+        }
+        if (manual_restart)
+        {
+            ReloadSceneAndPrepareMuseum();
+            manual_restart = false;
+        }
+    }
+#endif
 
     public async void startExpoExperience()
     {
-        if (InMuseum || preparationInProgress)
+        if (InMuseum || waiting)
         {
             return;
         }
+
+        waiting = true;
+        while (preparationInProgress)
+        {
+            await Task.Delay(1000);
+        }
+        waiting = false;
 
         InMuseum = true;
 
@@ -58,7 +103,7 @@ public class LaunchRoomManager : MonoBehaviour
 
         preparationInProgress = true;
         museumPrepared = false;
-
+            
         // first ever generation
         if (!museumGeneratedAtLeastOnce)
         {
@@ -89,12 +134,25 @@ public class LaunchRoomManager : MonoBehaviour
         {
             Vector3 playerSpawnPosition = new Vector3(spawnPosition.x, 0, spawnPosition.z);
             playerTransform.position = playerSpawnPosition;
+            
+            domeTransform.position = new Vector3(spawnPosition.x, 0, spawnPosition.z);
+            SetMusicPlaylistActive();
+            musicManager.setInMenu(false);
         }
     }
 
     public void ReloadSceneAndPrepareMuseum()
     {
         PrepareMuseumAfterReload = true;
+        //SceneManager.LoadScene("Main Menu");
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        musicManager.PlayTannernetSpace();
+        musicManager.setInMenu(true);
+        domeTransform.position = new Vector3(0, -50, 0);
+    }
+
+        public void SetMusicPlaylistActive()
+    {
+        musicManager.StartMuseumPlaylist();
     }
 }

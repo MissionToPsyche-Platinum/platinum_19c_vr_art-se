@@ -1,0 +1,13 @@
+Inspiration Songs
+Stellaris OST: 
+https://www.youtube.com/watch?v=qjqsIENcFR0
+Deep Space Relaxation Playlist:
+https://www.youtube.com/playlist?list=PLQAuJ2UwHIbEx5PnAo8MpWl-lncpiSCeZ
+
+
+Began researching how to use music editing software
+Determined the best way to store and hold music within the Unity Project (best compression versus quality)
+Planning to use 192kbps (mp3) as the audio type.
+Creates good quality while still being reasonable on space requirements
+
+Currently in the planning and playing around stage, this will be a longer term task that needs to be completed.
