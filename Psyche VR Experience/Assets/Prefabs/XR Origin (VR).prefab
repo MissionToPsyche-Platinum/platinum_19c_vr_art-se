@@ -3795,7 +3795,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2857859626816039777, guid: 99e67190654bfe94fb3c1ad447a28d04, type: 3}
       propertyPath: m_text
-      value: Master Volume
+      value: Video Volume
       objectReference: {fileID: 0}
     - target: {fileID: 2857859626816039777, guid: 99e67190654bfe94fb3c1ad447a28d04, type: 3}
       propertyPath: m_fontSize
