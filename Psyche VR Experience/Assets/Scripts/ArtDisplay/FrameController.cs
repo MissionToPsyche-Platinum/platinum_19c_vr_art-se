@@ -11,6 +11,7 @@ using UnityEngine.Purchasing;
 using UnityEngine.ResourceManagement.ResourceLocations;
 using UnityEngine.Video;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.Rendering;
 
 public class FrameController : MonoBehaviour
 {
@@ -70,7 +71,6 @@ public class FrameController : MonoBehaviour
     [Tooltip("An image to display if the frame has nothing to display within itself due to errors or the media being audio only")]
     [SerializeField] Texture2D fallbackTexture;
 
-
     // names for borders
     const string BORDER_PARENT = "Borders";
     const string TOP = "Top";
@@ -103,17 +103,20 @@ public class FrameController : MonoBehaviour
     // tags that count as the player, I just used "Player" and assigned XR origin, freeroam camera, and playercamera as "Player"
     [SerializeField] private string collisionTag = "MainCamera";
     private GameObject pauseSymbol = null;
+    private GameObject pauseButton = null;
     private int insideCount = 0;
     private Coroutine dwellRoutine;
 
+    public MusicManager M_Manager;
     [Header("Component References")]
     [SerializeField] private TextBoxController textBoxController;
     [SerializeField] private GameObject buttonNext;
     [SerializeField] private GameObject buttonPrev;
 
-    private bool applyallrunning = false;
-
-    AsyncOperationHandle handle;
+    //[HideInInspector]
+    public AsyncOperationHandle handle = default;
+    public bool mediaLoaded = false;
+    bool applyAllRunning = false;
 
     void Awake()
     {
@@ -122,6 +125,8 @@ public class FrameController : MonoBehaviour
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
 
         pauseSymbol = this.gameObject.transform.Find("ImageQuad").transform.Find("PauseSymbol").gameObject;
+        pauseButton = this.gameObject.transform.Find("Buttons").transform.Find("VRButton_Pause").gameObject;
+        M_Manager = FindFirstObjectByType<MusicManager>();
 
         SettingsManager.m_ButtonSizeChanged.AddListener(RepositionButtons_Callback);
     }
@@ -151,7 +156,7 @@ public class FrameController : MonoBehaviour
         SettingsManager.m_VideoVolumeChanged.RemoveListener(VolumeChanged);
         SettingsManager.m_VideoVolumeChanged.RemoveListener(RepositionButtons_Callback);
 
-        if(handle.IsValid())
+        if (handle.IsValid())
             Addressables.Release(handle);
     }
 
@@ -284,24 +289,33 @@ public class FrameController : MonoBehaviour
         // is manually iterating, we just want to turn this off
     }
 
-    public void NextImage()
+    public async void NextImage()
     {
         if (mediaPaths == null || mediaPaths.Count == 0) return;
         currentMediaIndex = (currentMediaIndex + 1) % mediaPaths.Count;
-        ApplyAll();
+        await ApplyAll();
         textBoxController.UpdateTextLocation();
     }
 
-    public void PreviousImage()
+    public async void PreviousImage()
     {
         if (mediaPaths == null || mediaPaths.Count == 0) return;
         currentMediaIndex = (currentMediaIndex - 1 + mediaPaths.Count) % mediaPaths.Count;
-        ApplyAll();
+        await ApplyAll();
         textBoxController.UpdateTextLocation();
     }
 
-    void ApplyAll()
+    async Task ApplyAll()
     {
+        while (applyAllRunning)
+        {
+            await Task.Delay(100);
+        }
+
+        applyAllRunning = true;
+
+        mediaLoaded = false;
+
         if (!imageQuadRenderer) return;
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
 
@@ -319,73 +333,100 @@ public class FrameController : MonoBehaviour
 
         try
         {
-            Addressables.LoadAssetAsync<UnityEngine.Object>(key).Completed += handle =>
+            AsyncOperationHandle<UnityEngine.Object> handle = Addressables.LoadAssetAsync<UnityEngine.Object>(key);
+
+            if (this.handle.IsValid())
             {
-                if (this.handle.IsValid())
+                Addressables.Release(this.handle);
+            }
+            
+            this.handle = handle;
+            //LaunchRoomManager.handles.Add(handle);
+
+            await handle.Task;
+
+            if (handle.Status == AsyncOperationStatus.Succeeded)
+            {
+                UnityEngine.Object asset = handle.Result;
+
+                if (asset is AudioClip)
                 {
-                    Addressables.Release(this.handle);
-                }
+                    AudioClip clip = (AudioClip)asset;
 
-                this.handle = handle;
-                if (handle.Status == AsyncOperationStatus.Succeeded)
-                {
-                    UnityEngine.Object asset = handle.Result;
+                    //Addressables.Release(handle);
 
-                    if (asset is AudioClip)
+                    if (clip != null)
                     {
-                        AudioClip clip = (AudioClip)asset;
-
-                        if (clip != null)
-                        {
-                            NextImage();
-                            return;
-                        }
-                    }
-                    else if (asset is VideoClip)
-                    {
-                        VideoClip clip = (VideoClip)asset;
-
-                        if (clip != null)
-                        {
-                            ShowVideo(clip);
-                            return;
-                        }
-                    }
-                    else if (asset is Texture2D)
-                    {
-                        Texture2D tex = (Texture2D)asset;
-
-                        StopVideoIfNeeded();
-                        currentVideoDuration = 0.0;
-
-                        // destroy previous texture, if any
-                        if (lastLoadedImage != null)
-                        {
-                            //Destroy(lastLoadedImage);
-                            lastLoadedImage = null;
-                        }
-
-                        lastLoadedImage = tex;
-
-                        imageQuadRenderer.GetPropertyBlock(_mpb);
-                        _mpb.SetTexture("_BaseMap", tex);
-                        _mpb.SetTexture("_MainTex", tex);
-                        imageQuadRenderer.SetPropertyBlock(_mpb);
-
-                        // Sizing based on the current texture
-                        Vector2Int res = tex ? new(tex.width, tex.height) : baseResolution;
-                        ResizeFrame(res);
-                    }
-                    else
-                    {
-                        Debug.LogError($"ASSET UNRECOGNIZED! TRIED TO LOAD ASSET AT KEY {key}");
+                        NextImage();
+                        applyAllRunning = false;
+                        return;
                     }
                 }
-            };
+                else if (asset is VideoClip)
+                {
+                    VideoClip clip = (VideoClip)asset;
+
+                    //Addressables.Release(handle);
+
+                    if (clip != null)
+                    {
+                        ShowVideo(clip);
+                        applyAllRunning = false;
+                        mediaLoaded = true;
+                        return;
+                    }
+                }
+                else if (asset is Texture2D)
+                {
+
+                    Texture2D tex = (Texture2D)asset;
+
+                    StopVideoIfNeeded();
+                    currentVideoDuration = 0.0;
+
+                    // destroy previous texture, if any
+                    if (lastLoadedImage != null)
+                    {
+                        //DestroyImmediate(lastLoadedImage, true);
+                        lastLoadedImage = null;
+                    }
+
+                    //LaunchRoomManager.handles.Add(handle);
+
+                    imageQuadRenderer.GetPropertyBlock(_mpb);
+                    _mpb.SetTexture("_BaseMap", tex);
+                    _mpb.SetTexture("_MainTex", tex);
+                    imageQuadRenderer.SetPropertyBlock(_mpb);
+
+                    // Sizing based on the current texture
+                    Vector2Int res = tex ? new(tex.width, tex.height) : baseResolution;
+                    ResizeFrame(res);
+                }
+                else
+                {
+                    Addressables.Release(handle);
+                    Debug.LogError($"ASSET UNRECOGNIZED! TRIED TO LOAD ASSET AT KEY {key}");
+                    applyAllRunning = false;
+                    return;
+                }
+            } else
+            {
+                Addressables.Release(handle);
+                Debug.LogError($"ASSET LOAD FAILED!");
+                mediaLoaded = false;
+                applyAllRunning = false;
+                return;
+            }
+
+            mediaLoaded = true;
+            applyAllRunning = false;
+
         }
         catch (Exception e)
         {
             Debug.LogError(e);
+            applyAllRunning = false;
+            return;
         }
     }
 
@@ -617,6 +658,7 @@ public class FrameController : MonoBehaviour
         vp.Pause();
         vp.isLooping = vp.url.Contains("_GIF");
         pauseSymbol.SetActive(true);
+        pauseButton.SetActive(true);
 
         if (enableAudio && audioSource != null)
             audioSource.Pause();
@@ -641,7 +683,11 @@ public class FrameController : MonoBehaviour
         if (enableAudio && audioSource != null)
             audioSource.Play();
         pauseSymbol.SetActive(false);
-
+        if (insideCount >= 1)
+        {
+            M_Manager.SetAudioVolume(0f);
+            M_Manager.setIsPlaying(false);
+        }
     }
 
     // will be used for proximity triggering and for pausing videos.
@@ -651,6 +697,12 @@ public class FrameController : MonoBehaviour
         if (videoPlayer != null) videoPlayer.Pause();
         if (audioSource != null) audioSource.Pause();
         pauseSymbol.SetActive(true);
+        if (insideCount <= 1)
+        {
+            float baseVolume = GlobalSettings.MUSIC_VOLUME;
+            M_Manager.SetAudioVolume(baseVolume);
+            M_Manager.setIsPlaying(true);
+        }
     }
 
     private void StopVideoIfNeeded()
@@ -672,7 +724,6 @@ public class FrameController : MonoBehaviour
         // free last image texture if switching to video
         if (lastLoadedImage != null)
         {
-            Addressables.Release(handle);
             lastLoadedImage = null;
         }
 
@@ -816,6 +867,31 @@ public class FrameController : MonoBehaviour
         }
     }
 
+    // this is for button play/pause
+    // will disable the play on proximity for that frame once pressed once,  
+    public void ToggleVideoPlayback()
+    {
+        if (!isVideoMode || videoPlayer == null)
+            return;
+        // debug
+        //if (!videoPlayer.isPrepared)
+        //{
+        //    Debug.Log("Video not ready yet.");
+        //    return;
+        //}
+
+        //playVideoOnPlayerProximity = false;
+
+        if (videoPlayer.isPlaying)
+        {
+            PausePreparedVideo();
+        }
+        else
+        {
+            PlayPreparedVideo();
+        }
+    }
+
     /* -------------------------------------------------------------- *
      *                   Trigger Handling(Colliders)                  *
      * -------------------------------------------------------------- */
@@ -832,7 +908,11 @@ public class FrameController : MonoBehaviour
         if (!isCollisionTag(other)) return;
 
         insideCount++;
-
+        if (insideCount >= 1)
+        {
+            M_Manager.SetAudioVolume(0f);
+            M_Manager.setIsPlaying(false);
+        }
         // start (or restart) dwell timer when someone enters
         if (dwellRoutine != null) StopCoroutine(dwellRoutine);
         dwellRoutine = StartCoroutine(VideoDwellThenPlay());
@@ -849,6 +929,9 @@ public class FrameController : MonoBehaviour
         // if nobody left inside, cancel dwell + optionally pause
         if (insideCount == 0)
         {
+            float baseVolume = GlobalSettings.MUSIC_VOLUME;
+            M_Manager.SetAudioVolume(baseVolume);
+            M_Manager.setIsPlaying(true);
             if (dwellRoutine != null)
             {
                 StopCoroutine(dwellRoutine);

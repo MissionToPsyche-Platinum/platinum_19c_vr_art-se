@@ -40,7 +40,7 @@ MonoBehaviour:
   m_BundleTimeout: 0
   m_BundleRetryCount: 0
   m_BundleRedirectLimit: -1
-  m_SharedBundleSettings: 0
+  m_SharedBundleSettings: 1
   m_SharedBundleSettingsCustomGroupIndex: 0
   m_ContiguousBundles: 1
   m_StripUnityVersionFromBundleBuild: 0

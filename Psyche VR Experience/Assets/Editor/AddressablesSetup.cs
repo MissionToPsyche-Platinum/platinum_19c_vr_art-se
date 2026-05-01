@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
+using UnityEditor.AddressableAssets.Settings.GroupSchemas;
 using UnityEngine;
 
 //note: this is kinda vibe coded but if it works it works!
@@ -17,8 +18,9 @@ public static class AddressablesSetup
             var args = System.Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
             {
-                if (args[i] == "-artworkPath")
+                if (args[i] == "-artworkPath") {
                     return args[i + 1];
+                }
             }
             // Fallback default
             return @"C:\Artwork";
@@ -37,7 +39,12 @@ public static class AddressablesSetup
             return;
         }
 
-        // Step 1 — Copy any new/updated folders from input path into project
+        var defGroup = settings.DefaultGroup;
+        var schema = defGroup.GetSchema<BundledAssetGroupSchema>();
+        schema.BundleNaming = BundledAssetGroupSchema.BundleNamingStyle.OnlyHash;
+        EditorUtility.SetDirty(defGroup);
+
+        // Step 1 Copy any new/updated folders from input path into project
         if (!Directory.Exists(ArtworkInputPath))
         {
             Debug.LogError($"Input path not found: {ArtworkInputPath}");
@@ -46,10 +53,10 @@ public static class AddressablesSetup
 
         CopyArtworkIntoProject(ArtworkInputPath, ArtworkDestPath);
 
-        // Step 2 — Refresh AssetDatabase so Unity sees the new files
+        // Step 2 Refresh AssetDatabase so Unity sees the new files
         AssetDatabase.Refresh();
 
-        // Step 3 — Mark each subfolder as its own Addressable group
+        // Step 3 Mark each subfolder as its own Addressable group
         var subfolders = Directory.GetDirectories(ArtworkDestPath);
         int marked = 0;
 
@@ -87,7 +94,7 @@ public static class AddressablesSetup
             Debug.Log($"[AddressablesSetup] Group '{folderName}': {validGuids.Count} assets marked.");
         }
 
-        // Step 4 — Save settings
+        // Step 4 Save settings
         settings.SetDirty(
             AddressableAssetSettings.ModificationEvent.EntryMoved,
             eventData: null,
@@ -101,6 +108,9 @@ public static class AddressablesSetup
 
     private static void CopyArtworkIntoProject(string sourcePath, string destPath)
     {
+        if (Directory.Exists(destPath))
+            Directory.Delete(destPath, true);
+
         // Ensure destination root exists
         Directory.CreateDirectory(destPath);
 

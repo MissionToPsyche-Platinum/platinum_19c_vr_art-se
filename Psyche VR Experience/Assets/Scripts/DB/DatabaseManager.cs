@@ -13,7 +13,6 @@ namespace PsycheDB
 {
     public static class DatabaseManager
     {
-        // intended database location: Assets/Database/psyche_data.db
         public static readonly string DatabaseFolder = Path.Combine(Application.persistentDataPath, "Database");
         public static readonly string DatabasePath = Path.Combine(DatabaseFolder, "artwork.db");
 
@@ -26,24 +25,24 @@ namespace PsycheDB
         /// </summary>
         public async static void Initialize()
         {
-            //EnsureFolder();
-            //var firstTime = !File.Exists(DatabasePath);
-            //string dbPath = Application.streamingAssetsPath + "/Database/" + "artwork.db";
+#if UNITY_EDITOR
+            EnsureFolder();
+            var firstTime = !File.Exists(DatabasePath);
+            string dbPath = Application.streamingAssetsPath + "/Database/" + "artwork.db";
 
-            //UnityWebRequest request = UnityWebRequest.Get(dbPath);
-            //await request.SendWebRequest();
+            UnityWebRequest request = UnityWebRequest.Get(dbPath);
+            await request.SendWebRequest();
 
-            //if (request.result == UnityWebRequest.Result.Success)
-            //{
-            //    File.WriteAllBytes(DatabasePath, request.downloadHandler.data);
-            //    Debug.Log("COPIED DATABASE PROPERLY TO " + DatabasePath);
-            //}
-            //else
-            //{
-            //    Debug.LogError("FAILED TO LOAD DATABASE FROM STREAMINGASSETS");
-            //}
-
-            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                File.WriteAllBytes(DatabasePath, request.downloadHandler.data);
+                Debug.Log("COPIED DATABASE PROPERLY TO " + DatabasePath);
+            }
+            else
+            {
+                Debug.LogError("FAILED TO LOAD DATABASE FROM STREAMINGASSETS");
+            }
+#endif
         }
 
         /*  API  */
