@@ -22,9 +22,11 @@ If you see an error or no output, Docker may not be installed correctly — revi
 
 **Prerequisites**
 1. Start Docker Desktop (or the Docker daemon)
-2. Create an input folder and populate it with your CSV file and art pieces (if modifying existing projects)
-3. Create an output folder for the results
-4. Copy `.env.example` to a new file named `.env` and update `INPUT_PATH` and `OUTPUT_PATH` to point to your chosen folders
+2. At least 5 GB of free space (as of 4/25/2026). The Psyche Artwork Gallery has many beautiful pieces of art and is ever-growing, so it takes up a decent chunk of space on your system.
+3. Create an input folder and populate it with your CSV file and art pieces (if modifying existing projects)
+4. Create an output folder for the results
+5. Copy `.env.example` to a new file named `.env` and update `INPUT_PATH` and `OUTPUT_PATH` to point to your chosen folders
+6. (Optional) In order to avoid duplicates, you should delete any existing artwork from previous runs of the web scraper. You shouldn't delete any files you added manually.
 
 > ⚠️ The `.env` file is required — the scraper will not run without it.
 
@@ -42,7 +44,7 @@ docker compose run --rm psyche-art-scraper
 
 ## Notes
 
-This program takes a long time to run.  Do not worry if it is still running after an hour.
+This program takes a long time to update the database via CSV.  Do not worry if it is still running after an hour.
 
 Some of the libraries used may show warning or error messages in the terminal.  These are normal and will not negatively affect the program's outcome.
 
@@ -65,12 +67,14 @@ When using the adding and modifying functionality, keep in mind that any project
 - .tif
 - .tiff
 
+You can find a more in depth explanation + tutorial of the scraper by [CLICKING HERE](https://youtu.be/-R4r6X_Sf6A)
+
 ## Running the Standalone Installer
 
 In order to fully install the museum, do the following:
 
 1. Install the project repository using the command `git clone https://github.com/MissionToPsyche-Platinum/platinum_19c_vr_art-se.git`
-2. Run the web scraper before running this script.  Tools and instructions on how to do this can be found in the Psyche Artwork Web Scraper folder in the project directory.
+2. Run the web scraper before running this script.  Tools and instructions on how to do this can be found directly above this section of the README.
 3. Install ADB from [this website](https://developer.android.com/tools/releases/platform-tools) if you don't already have it and add it to system path.
 4. Install Unity if you don't already have it.  To do this, you must install the Unity Hub from [this website](https://docs.unity.com/en-us/hub/install-hub).  Launch the Unity Hub and download Unity from the Installs page.  Our project runs on Unity 6000.2.10f1. You must also install Android Build Support, which can be done by opening Unity Hub -> Installs and on Unity 6.2, clicking Manage -> Add Modules and installing Android Build Support.
 5. Plug in the Quest VR headset.
