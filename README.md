@@ -78,6 +78,8 @@ In order to fully install the museum, do the following:
 3. Install ADB from [this website](https://developer.android.com/tools/releases/platform-tools) if you don't already have it and add it to system path.
 4. Install Unity if you don't already have it.  To do this, you must install the Unity Hub from [this website](https://docs.unity.com/en-us/hub/install-hub).  Launch the Unity Hub and download Unity from the Installs page.  Our project runs on Unity 6000.2.10f1. You must also install Android Build Support, which can be done by opening Unity Hub -> Installs and on Unity 6.2, clicking Manage -> Add Modules and installing Android Build Support.
 5. Plug in the Quest VR headset.
+> 📦 Pre-built APK release files can be downloaded here:
+> https://drive.google.com/file/d/18eg9na-HlxtPnVWInzp87xMNzCLOlGaK/view
 6. Install the APK onto the headset. [`adb install -r PsycheVRMuseum.apk`]
 7. Open the Update_Artworks.ps1 file in a text editor.  Depending on your use case, you will need to change different variables. It is recommended to use absolute paths, like "C:/Folder/Artwork".
 	* `artworkPath`: If you are building the project, update this variable to the path of the Artwork folder produced by running the web scraper.
